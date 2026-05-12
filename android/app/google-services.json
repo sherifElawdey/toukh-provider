@@ -1,0 +1,126 @@
+{
+  "project_info": {
+    "project_number": "919479487381",
+    "project_id": "toukh-b5708",
+    "storage_bucket": "toukh-b5708.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919479487381:android:d85257e624b7f470f1449c",
+        "android_client_info": {
+          "package_name": "com.toukh.delivery"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919479487381-hu0fcn2q5q1tegjsqa17hr68nvg1euhv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuKELex1C9aTB3-1ovOyjlEcMpj9VyVlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919479487381-hu0fcn2q5q1tegjsqa17hr68nvg1euhv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "919479487381-4t1q5a9j7fftc2fo0fihjfck38kt17e0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.toukh.delivery"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919479487381:android:6fb7de347903adbef1449c",
+        "android_client_info": {
+          "package_name": "com.toukh.provider.toukh_provider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919479487381-hu0fcn2q5q1tegjsqa17hr68nvg1euhv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuKELex1C9aTB3-1ovOyjlEcMpj9VyVlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919479487381-hu0fcn2q5q1tegjsqa17hr68nvg1euhv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "919479487381-4t1q5a9j7fftc2fo0fihjfck38kt17e0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.toukh.delivery"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:919479487381:android:58a2507a24c933aef1449c",
+        "android_client_info": {
+          "package_name": "com.toukh.toukh"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "919479487381-m6hgjmcug2bakt374sr6utm503ep5vhn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.toukh.toukh",
+            "certificate_hash": "e23833920447a7478957502f9e06d0750743088a"
+          }
+        },
+        {
+          "client_id": "919479487381-hu0fcn2q5q1tegjsqa17hr68nvg1euhv.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuKELex1C9aTB3-1ovOyjlEcMpj9VyVlw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "919479487381-hu0fcn2q5q1tegjsqa17hr68nvg1euhv.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "919479487381-4t1q5a9j7fftc2fo0fihjfck38kt17e0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.toukh.delivery"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
