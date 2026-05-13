@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
@@ -59,7 +58,7 @@ class RegisterKindScreen extends StatelessWidget {
   void _onSelectKind(BuildContext context, ServiceType kind) {
     final cubit = context.read<RegistrationCubit>();
     cubit.selectKindForRegistration(kind);
-    if (kind == ServiceType.homeService || kind == ServiceType.restaurant) {
+    if (kind == ServiceType.homeService) {
       context.push(AppRoutes.registerCategory);
     } else {
       context.push(AppRoutes.registerCredentials);
@@ -76,37 +75,55 @@ class RegisterKindScreen extends StatelessWidget {
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => context.pop(),
         ),
-        title: CustomText(AppStrings.Registration.kindTitle),
+        titleSpacing: AppSizes.spaceSm,
+        title: Row(
+          children: [
+            ToukhServiceLogo(
+              size: 36,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            SizedBox(width: AppSizes.spaceSm),
+            Expanded(
+              child: CustomText(
+                AppStrings.Registration.kindTitle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: AppSizes.fontTitle,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
       body: Padding(
         padding: AppSizes.screenPadding,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: ToukhServiceLogo(
-                size: 56,
-                borderRadius: BorderRadius.circular(14),
-              ),
-            ),
-            SizedBox(height: AppSizes.spaceMd),
             CustomText(
-              AppStrings.Registration.kindSubtitle.tr,
+              AppStrings.Registration.kindSubtitle,
               style: TextStyle(
                 fontSize: AppSizes.fontBody,
                 color: scheme.onSurface.withValues(alpha: 0.72),
               ),
             ),
-            SizedBox(height: AppSizes.spaceXl),
+            SizedBox(height: AppSizes.spaceLg),
             Expanded(
-              child: ListView.separated(
+              child: GridView.builder(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: AppSizes.spaceMd,
+                  crossAxisSpacing: AppSizes.spaceMd,
+                  childAspectRatio: 0.95,
+                ),
                 itemCount: _kRegistrationKindOrder.length,
-                separatorBuilder: (_, _) => SizedBox(height: AppSizes.spaceMd),
                 itemBuilder: (context, index) {
                   final kind = _kRegistrationKindOrder[index];
                   return _KindCard(
                     selected: draft.kind == kind,
-                    title: _kindLabelKey(kind).tr,
+                    title: _kindLabelKey(kind),
                     icon: _kindIcon(kind),
                     onTap: () => _onSelectKind(context, kind),
                   );
@@ -151,21 +168,26 @@ class _KindCard extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSizes.radiusLg),
         child: Padding(
-          padding: const EdgeInsets.all(AppSizes.spaceBase),
-          child: Row(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSizes.spaceSm,
+            vertical: AppSizes.spaceMd,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(icon, size: 40, color: AppColors.secondColor),
-              SizedBox(width: AppSizes.spaceMd),
-              Expanded(
-                child: CustomText(
-                  title,
-                  style: const TextStyle(
-                    fontSize: AppSizes.fontTitle,
-                    fontWeight: FontWeight.w700,
-                  ),
+              Icon(icon, size: 36, color: AppColors.secondColor),
+              SizedBox(height: AppSizes.spaceSm),
+              CustomText(
+                title,
+                textAlign: TextAlign.center,
+                maxLines: 3,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: AppSizes.fontBody,
+                  fontWeight: FontWeight.w700,
+                  height: 1.25,
                 ),
               ),
-              const Icon(Icons.chevron_right_rounded),
             ],
           ),
         ),

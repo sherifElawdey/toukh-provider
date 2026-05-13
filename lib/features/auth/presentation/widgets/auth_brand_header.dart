@@ -7,20 +7,27 @@ class AuthBrandHeader extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    this.logoSize,
   });
 
   final String title;
   final String subtitle;
+  final double? logoSize;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final effectiveLogo = logoSize ?? AppSizes.logoAuth;
     return Column(
       children: [
         ToukhServiceLogo(
-          size: AppSizes.logoAuth,
+          size: effectiveLogo,
         ),
-        SizedBox(height: AppSizes.spaceXl),
+        SizedBox(
+          height: effectiveLogo < AppSizes.logoAuth
+              ? AppSizes.spaceMd
+              : AppSizes.spaceXl,
+        ),
         CustomText(
           title,
           textAlign: TextAlign.center,

@@ -196,6 +196,11 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
   void selectKindForRegistration(ServiceType kind) {
     switch (kind) {
       case ServiceType.restaurant:
+        emit(state.copyWith(
+          kind: kind,
+          shopCategory: ShopCategory.restaurant,
+          clearServiceCategoryId: true,
+        ));
       case ServiceType.homeService:
         emit(state.copyWith(
           kind: kind,

@@ -120,6 +120,16 @@ class AppTranslations extends Translations {
     'registration.hours_end_after_start':
         'End time must be after start time.',
     'registration.delivery_title': 'Delivery options',
+    'registration.delivery_price_required':
+        'Enter a valid delivery price (greater than 0) to continue.',
+    'registration.review_business_type': 'Business type',
+    'registration.review_delivery_none': 'No delivery offered',
+    'registration.review_delivery_free': 'Free delivery',
+    'registration.review_delivery_paid': 'Paid delivery: @price EGP (@mode)',
+    'registration.review_delivery_not_set': 'Not set',
+    'registration.review_prep_time': 'Avg prep time (minutes)',
+    'registration.delivery_mode_fixed': 'Fixed',
+    'registration.delivery_mode_per_km': 'Per km',
     'registration.review_title': 'Review & submit',
     'registration.submit': 'Submit application',
     'registration.brand_name': 'Brand name',
@@ -132,8 +142,8 @@ class AppTranslations extends Translations {
     'registration.kind_grocery': 'Grocery / produce',
     'registration.kind_pharmacy': 'Pharmacy',
     'registration.kind_home_brands': 'Home brands',
-    'registration.brand_logo_title': 'Brand logo',
-    'registration.brand_image_required': 'Add your brand logo to continue.',
+    'registration.brand_logo_title': 'Logo or image',
+    'registration.brand_image_required': 'Add a logo or image to continue.',
     'registration.home_categories_empty':
         'No active home service categories yet. Ask an admin to add documents to the HomeServices collection, or run the seed tool.',
     'registration.home_categories_load_error':
@@ -171,6 +181,10 @@ class AppTranslations extends Translations {
     'registration.menu_tap_add_item_photo': 'Tap to add photo',
     'registration.menu_remove_item_photo': 'Remove photo',
     'registration.portfolio_title': 'Portfolio',
+    'registration.portfolio_hint':
+        'Upload your business gallery — add up to 5 photos that showcase your work, team, or store so customers can see what you offer.',
+    'registration.portfolio_add_photo': 'Add photo',
+    'registration.portfolio_min_one': 'Add at least one photo to continue.',
     'registration.shop_pharmacy': 'Pharmacy',
     'registration.shop_supermarket': 'Supermarket',
     'registration.shop_fruit_veg': 'Fruits & vegetables',
@@ -487,6 +501,16 @@ class AppTranslations extends Translations {
     'registration.hours_end_after_start':
         'وقت الإغلاق يجب أن يكون بعد وقت الفتح.',
     'registration.delivery_title': 'خيارات التوصيل',
+    'registration.delivery_price_required':
+        'أدخل سعر توصيل صالحًا (أكبر من صفر) للمتابعة.',
+    'registration.review_business_type': 'نوع النشاط',
+    'registration.review_delivery_none': 'لا يوجد توصيل',
+    'registration.review_delivery_free': 'توصيل مجاني',
+    'registration.review_delivery_paid': 'توصيل مدفوع: @price جنيه (@mode)',
+    'registration.review_delivery_not_set': 'غير محدد',
+    'registration.review_prep_time': 'متوسط وقت التجهيز (دقيقة)',
+    'registration.delivery_mode_fixed': 'سعر ثابت',
+    'registration.delivery_mode_per_km': 'لكل كم',
     'registration.review_title': 'مراجعة وإرسال',
     'registration.submit': 'إرسال الطلب',
     'registration.brand_name': 'اسم العلامة',
@@ -499,8 +523,8 @@ class AppTranslations extends Translations {
     'registration.kind_grocery': 'بقالة / خضار وفاكهة',
     'registration.kind_pharmacy': 'صيدلية',
     'registration.kind_home_brands': 'علامات منزلية',
-    'registration.brand_logo_title': 'شعار العلامة',
-    'registration.brand_image_required': 'أضِف شعار علامتك للمتابعة.',
+    'registration.brand_logo_title': 'شعار أو صورة',
+    'registration.brand_image_required': 'أضِف شعارًا أو صورة للمتابعة.',
     'registration.home_categories_empty':
         'لا توجد تصنيفات خدمات منزلية مفعّلة بعد. اطلب من المسؤول إضافة بيانات إلى مجموعة HomeServices، أو شغّل أداة البذر.',
     'registration.home_categories_load_error':
@@ -537,6 +561,10 @@ class AppTranslations extends Translations {
     'registration.menu_tap_add_item_photo': 'اضغط لإضافة صورة',
     'registration.menu_remove_item_photo': 'إزالة الصورة',
     'registration.portfolio_title': 'معرض الأعمال',
+    'registration.portfolio_hint':
+        'ارفع معرضًا لعملك — أضِف حتى ٥ صور تُظهر أعمالك أو فريقك أو متجرك ليعرف العملاء ما تقدّمه.',
+    'registration.portfolio_add_photo': 'إضافة صورة',
+    'registration.portfolio_min_one': 'أضِف صورة واحدة على الأقل للمتابعة.',
     'registration.shop_pharmacy': 'صيدلية',
     'registration.shop_supermarket': 'سوبر ماركت',
     'registration.shop_fruit_veg': 'خضار وفاكهة',

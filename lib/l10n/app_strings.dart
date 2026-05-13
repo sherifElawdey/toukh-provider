@@ -341,6 +341,15 @@ class _Registration {
   String get hoursSelectOneDay => 'registration.hours_select_one_day';
   String get hoursEndAfterStart => 'registration.hours_end_after_start';
   String get deliveryTitle => 'registration.delivery_title';
+  String get deliveryPriceRequired => 'registration.delivery_price_required';
+  String get reviewBusinessType => 'registration.review_business_type';
+  String get reviewDeliveryNone => 'registration.review_delivery_none';
+  String get reviewDeliveryFree => 'registration.review_delivery_free';
+  String get reviewDeliveryPaid => 'registration.review_delivery_paid';
+  String get reviewDeliveryNotSet => 'registration.review_delivery_not_set';
+  String get reviewPrepTime => 'registration.review_prep_time';
+  String get deliveryModeFixed => 'registration.delivery_mode_fixed';
+  String get deliveryModePerKm => 'registration.delivery_mode_per_km';
   String get reviewTitle => 'registration.review_title';
   String get submit => 'registration.submit';
   String get brandName => 'registration.brand_name';
@@ -359,6 +368,9 @@ class _Registration {
   String get homeCategoriesLoadError => 'registration.home_categories_load_error';
   String get menuBuilderTitle => 'registration.menu_builder_title';
   String get portfolioTitle => 'registration.portfolio_title';
+  String get portfolioHint => 'registration.portfolio_hint';
+  String get portfolioAddPhoto => 'registration.portfolio_add_photo';
+  String get portfolioMinOne => 'registration.portfolio_min_one';
 
   /// Menu builder (categories + items)
   String get menuBuilderSubtitle =>

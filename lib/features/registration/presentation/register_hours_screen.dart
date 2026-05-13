@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -111,7 +112,12 @@ class _RegisterHoursScreenState extends State<RegisterHoursScreen> {
       return;
     }
     context.read<RegistrationCubit>().setWorkingHours(_buildResult());
-    context.push(AppRoutes.registerDelivery);
+    final kind = context.read<RegistrationCubit>().state.kind;
+    if (kind == ServiceType.homeService) {
+      context.push(AppRoutes.registerReview);
+    } else {
+      context.push(AppRoutes.registerDelivery);
+    }
   }
 
   @override

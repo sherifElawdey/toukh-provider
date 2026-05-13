@@ -22,6 +22,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   LatLng _target = const LatLng(30.0444, 31.2357);
   String _address = '';
   bool _busy = true;
+  bool _hasLocationPermission = false;
 
   @override
   void initState() {
@@ -29,11 +30,22 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     _initLocation();
   }
 
+  @override
+  void dispose() {
+    _map?.dispose();
+    super.dispose();
+  }
+
   Future<void> _initLocation() async {
     try {
       final serviceOn = await Geolocator.isLocationServiceEnabled();
       if (!serviceOn) {
-        setState(() => _busy = false);
+        if (mounted) {
+          setState(() {
+            _busy = false;
+            _hasLocationPermission = false;
+          });
+        }
         return;
       }
       var perm = await Geolocator.checkPermission();
@@ -42,18 +54,30 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       }
       if (perm == LocationPermission.denied ||
           perm == LocationPermission.deniedForever) {
-        setState(() => _busy = false);
+        if (mounted) {
+          setState(() {
+            _busy = false;
+            _hasLocationPermission = false;
+          });
+        }
         return;
       }
       final pos = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
       setState(() {
         _target = LatLng(pos.latitude, pos.longitude);
         _busy = false;
+        _hasLocationPermission = true;
       });
       await _reverseGeocode(_target);
       await _map?.animateCamera(CameraUpdate.newLatLngZoom(_target, 15));
     } catch (_) {
-      setState(() => _busy = false);
+      if (mounted) {
+        setState(() {
+          _busy = false;
+          _hasLocationPermission = false;
+        });
+      }
     }
   }
 
@@ -74,21 +98,41 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .join(', ');
-      setState(() => _address = parts);
+      if (mounted) setState(() => _address = parts);
     } catch (_) {}
+  }
+
+  Future<void> _onCameraIdle() async {
+    final controller = _map;
+    if (controller == null || !mounted) return;
+    try {
+      final region = await controller.getVisibleRegion();
+      final center = LatLng(
+        (region.northeast.latitude + region.southwest.latitude) / 2,
+        (region.northeast.longitude + region.southwest.longitude) / 2,
+      );
+      if (!mounted) return;
+      setState(() => _target = center);
+      await _reverseGeocode(center);
+    } catch (_) {
+      if (mounted) await _reverseGeocode(_target);
+    }
   }
 
   void _continue() {
     context.read<RegistrationCubit>().setLocation(
           lat: _target.latitude,
           lng: _target.longitude,
-          formattedAddress: _address.isEmpty ? '${_target.latitude},${_target.longitude}' : _address,
+          formattedAddress: _address.isEmpty
+              ? '${_target.latitude},${_target.longitude}'
+              : _address,
         );
     context.push(AppRoutes.registerHours);
   }
 
   @override
   Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).padding.bottom + 160;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -98,24 +142,29 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
         title: CustomText(AppStrings.Registration.mapTitle),
       ),
       body: Stack(
+        fit: StackFit.expand,
         children: [
-          GoogleMap(
-            initialCameraPosition: CameraPosition(
-              target: _target,
-              zoom: 14,
+          Positioned.fill(
+            child: GoogleMap(
+              initialCameraPosition: CameraPosition(
+                target: _target,
+                zoom: 14,
+              ),
+              padding: EdgeInsets.only(bottom: bottomInset),
+              myLocationEnabled: _hasLocationPermission,
+              myLocationButtonEnabled: _hasLocationPermission,
+              compassEnabled: true,
+              mapToolbarEnabled: false,
+              zoomControlsEnabled: false,
+              onMapCreated: (c) {
+                _map = c;
+                if (!_busy) {
+                  c.animateCamera(CameraUpdate.newLatLngZoom(_target, 14));
+                }
+              },
+              onCameraMove: (pos) => _target = pos.target,
+              onCameraIdle: _onCameraIdle,
             ),
-            myLocationEnabled: true,
-            myLocationButtonEnabled: true,
-            onMapCreated: (c) {
-              _map = c;
-              if (!_busy) {
-                c.animateCamera(CameraUpdate.newLatLngZoom(_target, 14));
-              }
-            },
-            onCameraIdle: () async {
-              await _reverseGeocode(_target);
-            },
-            onCameraMove: (pos) => _target = pos.target,
           ),
           Center(
             child: Padding(
