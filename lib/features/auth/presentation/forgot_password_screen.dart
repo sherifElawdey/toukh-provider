@@ -8,6 +8,7 @@ import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
+import 'package:toukh_provider/features/auth/presentation/otp_delivery_snack.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.dart';
 import 'package:toukh_provider/features/auth/presentation/widgets/auth_brand_header.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -48,15 +49,26 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       return;
     }
     try {
-      final token = await context.withAppLoading(
+      final result = await context.withAppLoading(
         () => _otpRepository.requestOtp(phone: phone),
       );
       if (!mounted) return;
+      final ten = national.length >= 10
+          ? national.substring(national.length - 10)
+          : national;
+      final phoneDisplay = ten.length == 10
+          ? '+20 ${formatEgyptTenDigitsDisplay(ten)}'
+          : phone;
+      showOtpSentChannelSnack(
+        context,
+        channel: result.channel,
+        phoneDisplay: phoneDisplay,
+      );
       context.push(
         AppRoutes.verifyOtp,
         extra: VerifyOtpRouteArgs(
           phone: phone,
-          requestToken: token,
+          requestToken: result.requestToken,
           flow: VerifyOtpFlow.passwordReset,
         ),
       );

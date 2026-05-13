@@ -8,6 +8,7 @@ import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/auth/presentation/otp_delivery_snack.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -41,15 +42,24 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
 
     final otpRepository = getIt<OtpRepository>();
     try {
-      final token = await context.withAppLoading(
+      final result = await context.withAppLoading(
         () => otpRepository.requestOtp(phone: phone),
       );
       if (!context.mounted) return;
+      final ten = egyptTenDigitsFromStored(phone);
+      final phoneDisplay = ten != null && ten.length == 10
+          ? '+20 ${formatEgyptTenDigitsDisplay(ten)}'
+          : phone;
+      showOtpSentChannelSnack(
+        context,
+        channel: result.channel,
+        phoneDisplay: phoneDisplay,
+      );
       await context.push(
         AppRoutes.verifyOtp,
         extra: VerifyOtpRouteArgs(
           phone: phone,
-          requestToken: token,
+          requestToken: result.requestToken,
           flow: VerifyOtpFlow.providerPhoneVerification,
         ),
       );

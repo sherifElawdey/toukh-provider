@@ -5,6 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
+import 'package:toukh_provider/features/welcome/widgets/welcome_locale_choice_card.dart';
+import 'package:toukh_provider/features/welcome/widgets/welcome_section_label.dart';
+import 'package:toukh_provider/features/welcome/widgets/welcome_theme_choice_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -86,7 +89,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: AppSizes.space2xl),
-                _SectionLabel(
+                WelcomeSectionLabel(
                   label: AppStrings.Welcome.chooseLanguage.tr,
                   scheme: scheme,
                 ),
@@ -94,7 +97,7 @@ class WelcomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _LocaleChoiceCard(
+                      child: WelcomeLocaleChoiceCard(
                         selected: settings.locale.languageCode == 'en',
                         flagText: _flagUk,
                         regionLabel: AppStrings.Welcome.regionUk.tr,
@@ -107,7 +110,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     SizedBox(width: AppSizes.spaceMd),
                     Expanded(
-                      child: _LocaleChoiceCard(
+                      child: WelcomeLocaleChoiceCard(
                         selected: settings.locale.languageCode == 'ar',
                         flagText: _flagEg,
                         regionLabel: AppStrings.Welcome.regionEgypt.tr,
@@ -121,7 +124,7 @@ class WelcomeScreen extends StatelessWidget {
                   ],
                 ),
                 SizedBox(height: AppSizes.spaceXl),
-                _SectionLabel(
+                WelcomeSectionLabel(
                   label: AppStrings.Welcome.chooseTheme.tr,
                   scheme: scheme,
                 ),
@@ -129,7 +132,7 @@ class WelcomeScreen extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: _ThemeChoiceCard(
+                      child: WelcomeThemeChoiceCard(
                         selected: settings.themeMode == ThemeMode.light,
                         icon: Icons.wb_sunny_rounded,
                         label: AppStrings.Common.light.tr,
@@ -140,7 +143,7 @@ class WelcomeScreen extends StatelessWidget {
                     ),
                     SizedBox(width: AppSizes.spaceMd),
                     Expanded(
-                      child: _ThemeChoiceCard(
+                      child: WelcomeThemeChoiceCard(
                         selected: settings.themeMode == ThemeMode.dark,
                         icon: Icons.dark_mode_rounded,
                         label: AppStrings.Common.dark.tr,
@@ -187,191 +190,3 @@ class WelcomeScreen extends StatelessWidget {
   }
 }
 
-class _SectionLabel extends StatelessWidget {
-  const _SectionLabel({
-    required this.label,
-    required this.scheme,
-  });
-
-  final String label;
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 4),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 1.1,
-          color: scheme.onSurface.withValues(alpha: 0.45),
-        ),
-      ),
-    );
-  }
-}
-
-class _LocaleChoiceCard extends StatelessWidget {
-  const _LocaleChoiceCard({
-    required this.selected,
-    required this.flagText,
-    required this.regionLabel,
-    required this.languageLabel,
-    required this.onTap,
-  });
-
-  final bool selected;
-  final String flagText;
-  final String regionLabel;
-  final String languageLabel;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final borderColor = selected
-        ? AppColors.secondColor
-        : scheme.outline.withValues(alpha: 0.12);
-    final fill = selected
-        ? AppColors.secondColor.withValues(alpha: 0.08)
-        : scheme.surfaceContainerHighest.withValues(alpha: 0.45);
-
-    return Material(
-      color: fill,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        side: BorderSide(
-          color: borderColor,
-          width: selected ? 2 : 1,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spaceMd,
-            vertical: AppSizes.spaceBase,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text(
-                    flagText,
-                    style: const TextStyle(fontSize: 26, height: 1),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      regionLabel,
-                      style: TextStyle(
-                        fontSize: AppSizes.fontTitle,
-                        fontWeight: FontWeight.w700,
-                        color: scheme.onSurface,
-                      ),
-                    ),
-                  ),
-                  if (selected)
-                    Icon(
-                      Icons.check_circle_rounded,
-                      size: 22,
-                      color: AppColors.secondColor,
-                    ),
-                ],
-              ),
-              SizedBox(height: AppSizes.spaceXs),
-              Text(
-                languageLabel,
-                style: TextStyle(
-                  fontSize: AppSizes.fontLabel,
-                  fontWeight: FontWeight.w500,
-                  color: scheme.onSurface.withValues(alpha: 0.62),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _ThemeChoiceCard extends StatelessWidget {
-  const _ThemeChoiceCard({
-    required this.selected,
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  final bool selected;
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final borderColor = selected
-        ? AppColors.secondColor
-        : scheme.outline.withValues(alpha: 0.12);
-    final fill = selected
-        ? AppColors.secondColor.withValues(alpha: 0.08)
-        : scheme.surfaceContainerHighest.withValues(alpha: 0.45);
-
-    return Material(
-      color: fill,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        side: BorderSide(
-          color: borderColor,
-          width: selected ? 2 : 1,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppSizes.spaceBase,
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                size: 32,
-                color: selected
-                    ? AppColors.secondColor
-                    : scheme.onSurface.withValues(alpha: 0.55),
-              ),
-              SizedBox(height: AppSizes.spaceSm),
-              CustomText(
-                label,
-                style: TextStyle(
-                  fontSize: AppSizes.fontBody,
-                  fontWeight: FontWeight.w700,
-                  color: scheme.onSurface,
-                ),
-              ),
-              if (selected) ...[
-                SizedBox(height: 4),
-                Icon(
-                  Icons.check_circle_rounded,
-                  size: 18,
-                  color: AppColors.secondColor,
-                ),
-              ],
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

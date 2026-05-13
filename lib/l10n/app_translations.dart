@@ -67,6 +67,10 @@ class AppTranslations extends Translations {
     'auth.verify_otp': 'Verify code',
     'auth.otp_sent_title': 'Enter code',
     'auth.otp_sent_subtitle': 'We sent a 6-digit code to @phone.',
+    'auth.otp_sent_whatsapp':
+        'We sent a verification code to your WhatsApp (@phone).',
+    'auth.otp_sent_sms':
+        'We sent a verification code by SMS (@phone).',
     'auth.resend_code_in': 'Resend code in @time',
     'auth.resend_code': 'Resend code',
     'auth.reset_password_title': 'New password',
@@ -449,6 +453,9 @@ class AppTranslations extends Translations {
     'auth.verify_otp': 'تأكيد الرمز',
     'auth.otp_sent_title': 'أدخل الرمز',
     'auth.otp_sent_subtitle': 'أرسلنا رمزًا مكوّنًا من 6 أرقام إلى @phone.',
+    'auth.otp_sent_whatsapp':
+        'أرسلنا رمز التحقق إلى واتساب الخاص بك (@phone).',
+    'auth.otp_sent_sms': 'أرسلنا رمز التحقق عبر رسالة نصية (@phone).',
     'auth.resend_code_in': 'إعادة الإرسال خلال @time',
     'auth.resend_code': 'إعادة إرسال الرمز',
     'auth.reset_password_title': 'كلمة مرور جديدة',

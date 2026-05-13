@@ -9,6 +9,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_sheet.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_app_version_footer.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_profile_header_card.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_theme_toggle.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -100,14 +101,14 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: AppSizes.spaceLg),
-                _SectionTitle(labelKey: AppStrings.Settings.appearance),
+                SettingsSectionTitle(labelKey: AppStrings.Settings.appearance),
                 SizedBox(height: AppSizes.spaceSm),
                 SettingsThemeToggle(
                   value: settings.themeMode,
                   onChanged: context.read<SettingsCubit>().setThemeMode,
                 ),
                 SizedBox(height: AppSizes.spaceXl),
-                _SectionTitle(labelKey: AppStrings.Settings.language),
+                SettingsSectionTitle(labelKey: AppStrings.Settings.language),
                 SizedBox(height: AppSizes.spaceSm),
                 SettingsTile(
                   icon: Icons.translate_rounded,
@@ -149,7 +150,7 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: AppSizes.spaceXl),
-                _SectionTitle(labelKey: AppStrings.Settings.legal),
+                SettingsSectionTitle(labelKey: AppStrings.Settings.legal),
                 SizedBox(height: AppSizes.spaceSm),
                 SettingsTile(
                   icon: Icons.description_outlined,
@@ -225,31 +226,6 @@ class SettingsScreen extends StatelessWidget {
           },
         );
       },
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  const _SectionTitle({required this.labelKey});
-
-  final String labelKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: AppSizes.spaceSm),
-      child: CustomText(
-        labelKey,
-        style: TextStyle(
-          fontSize: AppSizes.fontLabel,
-          fontWeight: FontWeight.w700,
-          color: Theme.of(context)
-              .colorScheme
-              .onSurface
-              .withValues(alpha: 0.55),
-          letterSpacing: 0.3,
-        ),
-      ),
     );
   }
 }

@@ -7,7 +7,9 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/id_photo_picker_card.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/square_brand_image_block.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -142,7 +144,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _SquareBrandImageBlock(
+              SquareBrandImageBlock(
                 file: _brand,
                 onTapPick: _showPicker,
                 onPicked: (f) => setState(() => _brand = f),
@@ -169,7 +171,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: _IdPhotoPickerCard(
+                    child: IdPhotoPickerCard(
                       title: AppStrings.Auth.idFrontPhoto,
                       aspectRatio: 4 / 5,
                       compactTitle: true,
@@ -182,7 +184,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
                   ),
                   SizedBox(width: AppSizes.spaceMd),
                   Expanded(
-                    child: _IdPhotoPickerCard(
+                    child: IdPhotoPickerCard(
                       title: AppStrings.Auth.idBackPhoto,
                       aspectRatio: 4 / 5,
                       compactTitle: true,
@@ -210,309 +212,3 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
   }
 }
 
-class _SquareBrandImageBlock extends StatelessWidget {
-  const _SquareBrandImageBlock({
-    required this.file,
-    required this.onPicked,
-    required this.onTapPick,
-  });
-
-  final File? file;
-  final ValueChanged<File> onPicked;
-  final Future<void> Function(void Function(File) onPicked) onTapPick;
-
-  static const double _side = 128;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Center(
-          child: Material(
-            color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-            elevation: 0,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-              side: BorderSide(
-                color: file != null
-                    ? AppColors.secondColor.withValues(alpha: 0.45)
-                    : scheme.outline.withValues(alpha: 0.22),
-                width: file != null ? 2 : 1,
-              ),
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: InkWell(
-              onTap: () => onTapPick(onPicked),
-              child: SizedBox(
-                width: _side,
-                height: _side,
-                child: file == null
-                    ? Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add_a_photo_outlined,
-                            size: 36,
-                            color: scheme.onSurface.withValues(alpha: 0.38),
-                          ),
-                          SizedBox(height: AppSizes.spaceXs),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppSizes.spaceSm,
-                            ),
-                            child: CustomText(
-                              AppStrings.Auth.tapToAddPhoto,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: AppSizes.fontCaption,
-                                fontWeight: FontWeight.w600,
-                                color: scheme.onSurface.withValues(alpha: 0.55),
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    : Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Image.file(
-                            file!,
-                            fit: BoxFit.cover,
-                            filterQuality: FilterQuality.medium,
-                            errorBuilder: (context, error, stackTrace) => Center(
-                              child: Icon(
-                                Icons.broken_image_outlined,
-                                size: 40,
-                                color: scheme.onSurface.withValues(alpha: 0.35),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            left: 0,
-                            right: 0,
-                            bottom: 0,
-                            child: DecoratedBox(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [
-                                    Colors.black.withValues(alpha: 0.5),
-                                    Colors.transparent,
-                                  ],
-                                ),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: AppSizes.spaceXs,
-                                  horizontal: AppSizes.spaceSm,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.edit_outlined,
-                                      size: 14,
-                                      color: Colors.white.withValues(alpha: 0.95),
-                                    ),
-                                    SizedBox(width: AppSizes.spaceXs),
-                                    Flexible(
-                                      child: CustomText(
-                                        AppStrings.Auth.tapToReplaceIdPhoto,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          fontSize: AppSizes.fontCaption,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.95),
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-          ),
-        ),
-        SizedBox(height: AppSizes.spaceMd),
-        CustomText(
-          AppStrings.Auth.createAccountSubtitle,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: AppSizes.fontBody,
-            height: 1.45,
-            color: scheme.onSurface.withValues(alpha: 0.72),
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _IdPhotoPickerCard extends StatelessWidget {
-  const _IdPhotoPickerCard({
-    required this.title,
-    this.aspectRatio = 16 / 10,
-    this.compactTitle = false,
-    this.compactPlaceholderIcon = false,
-    required this.file,
-    required this.placeholderLabel,
-    required this.onPicked,
-    required this.onTapPick,
-  });
-
-  final String title;
-  final double aspectRatio;
-  final bool compactTitle;
-  final bool compactPlaceholderIcon;
-  final File? file;
-  final String placeholderLabel;
-  final ValueChanged<File> onPicked;
-  final Future<void> Function(void Function(File) onPicked) onTapPick;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final titleSize =
-        compactTitle ? AppSizes.fontLabel : AppSizes.fontTitle;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        CustomText(
-          title,
-          style: TextStyle(
-            fontSize: titleSize,
-            fontWeight: FontWeight.w600,
-            color: scheme.onSurface,
-          ),
-        ),
-        SizedBox(height: AppSizes.spaceSm),
-        Material(
-          color: scheme.surfaceContainerHighest.withValues(alpha: 0.5),
-          elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-            side: BorderSide(
-              color: file != null
-                  ? AppColors.secondColor.withValues(alpha: 0.35)
-                  : scheme.outline.withValues(alpha: 0.2),
-              width: file != null ? 2 : 1,
-            ),
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => onTapPick(onPicked),
-            child: AspectRatio(
-              aspectRatio: aspectRatio,
-              child: file == null
-                  ? Padding(
-                      padding: const EdgeInsets.all(AppSizes.spaceSm),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.add_a_photo_outlined,
-                            size: compactPlaceholderIcon ? 28 : 40,
-                            color: scheme.onSurface.withValues(alpha: 0.38),
-                          ),
-                          SizedBox(height: AppSizes.spaceSm),
-                          CustomText(
-                            placeholderLabel,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: compactTitle
-                                  ? AppSizes.fontCaption
-                                  : AppSizes.fontLabel,
-                              color: scheme.onSurface.withValues(alpha: 0.55),
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    )
-                  : Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Image.file(
-                          file!,
-                          fit: BoxFit.cover,
-                          filterQuality: FilterQuality.medium,
-                          errorBuilder: (context, error, stackTrace) => Center(
-                            child: Icon(
-                              Icons.broken_image_outlined,
-                              size: 48,
-                              color: scheme.onSurface.withValues(alpha: 0.35),
-                            ),
-                          ),
-                        ),
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.55),
-                                  Colors.transparent,
-                                ],
-                              ),
-                            ),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: AppSizes.spaceSm,
-                                horizontal: AppSizes.spaceMd,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.edit_outlined,
-                                    size: 18,
-                                    color: Colors.white.withValues(alpha: 0.95),
-                                  ),
-                                  SizedBox(width: AppSizes.spaceXs),
-                                  Flexible(
-                                    child: CustomText(
-                                      AppStrings.Auth.tapToReplaceIdPhoto,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        fontSize: AppSizes.fontCaption,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.white
-                                            .withValues(alpha: 0.95),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

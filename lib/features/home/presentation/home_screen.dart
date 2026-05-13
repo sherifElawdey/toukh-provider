@@ -1,10 +1,6 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:toukh_provider/core/dev/provider_accounts_seed.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_sections.dart';
@@ -175,53 +171,6 @@ class HomeScreen extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-}
-
-Future<void> _onSeedDemoProviders(BuildContext context) async {
-  final ok = await showDialog<bool>(
-        context: context,
-        builder: (ctx) => AlertDialog(
-          title: CustomText(AppStrings.Home.seedDemoProvidersTitle.tr),
-          content: SingleChildScrollView(
-            child: CustomText(AppStrings.Home.seedDemoProvidersBody.tr),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx, false),
-              child: CustomText(AppStrings.Common.cancel.tr),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.pop(ctx, true),
-              child: CustomText(AppStrings.Home.seedDemoProvidersConfirm.tr),
-            ),
-          ],
-        ),
-      ) ??
-      false;
-  if (!ok || !context.mounted) return;
-  try {
-    await context.withAppLoading(
-      () => seedProviderAccounts(
-        auth: FirebaseAuth.instance,
-        firestore: FirebaseFirestore.instance,
-      ),
-    );
-    if (!context.mounted) return;
-    AppSnack.show(
-      context,
-      message: AppStrings.Home.seedDemoProvidersDone.tr,
-      state: AppSnackState.success,
-      icon: Icons.check_circle_outline,
-    );
-  } catch (e) {
-    if (!context.mounted) return;
-    AppSnack.show(
-      context,
-      message: '$e',
-      state: AppSnackState.error,
-      icon: Icons.error_outline,
     );
   }
 }

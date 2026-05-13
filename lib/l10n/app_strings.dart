@@ -95,6 +95,8 @@ class _Auth {
   String get verifyOtp => 'auth.verify_otp';
   String get otpSentTitle => 'auth.otp_sent_title';
   String get otpSentSubtitle => 'auth.otp_sent_subtitle';
+  String get otpSentWhatsapp => 'auth.otp_sent_whatsapp';
+  String get otpSentSms => 'auth.otp_sent_sms';
   String get resendCodeIn => 'auth.resend_code_in';
   String get resendCode => 'auth.resend_code';
   String get resetPasswordTitle => 'auth.reset_password_title';

@@ -20,6 +20,10 @@ Configure Firebase for your bundle IDs (see `lib/firebase_options.dart`). For Go
 flutter run
 ```
 
+## OTP (Twilio Verify)
+
+Forgot password, registration, and phone verification use **Twilio Verify** when all of `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, and `TWILIO_VERIFY_SERVICE_SID` are passed as `--dart-define` at build time. Otherwise the app uses `OtpServiceStub`. Details: [`packages/toukh_ui/README.md`](../packages/toukh_ui/README.md).
+
 ## Analyze
 
 ```bash

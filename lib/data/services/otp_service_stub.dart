@@ -1,8 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
-/// In-memory [OtpRepository] used while no real SMS provider is wired.
+/// In-memory [OtpRepository] used while Twilio env vars are not set.
 ///
 /// Behaviour (deliberately strict to match "mock OTP" expectations):
 ///   * `requestOtp(phone)` returns an opaque token and remembers which phone
@@ -19,12 +20,15 @@ class OtpServiceStub implements OtpRepository {
   String _digits(String raw) => raw.replaceAll(RegExp(r'\D'), '');
 
   @override
-  Future<String> requestOtp({required String phone}) async {
+  Future<OtpRequestResult> requestOtp({required String phone}) async {
     debugPrint('[OtpServiceStub] requestOtp(phone=$phone)');
     await Future<void>.delayed(const Duration(milliseconds: 400));
     final token = 'stub-token-${DateTime.now().microsecondsSinceEpoch}';
     _tokenToPhone[token] = _digits(phone);
-    return token;
+    return OtpRequestResult(
+      requestToken: token,
+      channel: OtpDeliveryChannel.sms,
+    );
   }
 
   @override
@@ -38,14 +42,14 @@ class OtpServiceStub implements OtpRepository {
     await Future<void>.delayed(const Duration(milliseconds: 300));
     final stored = _tokenToPhone[requestToken];
     if (stored == null) {
-      throw const FormatException('Verification session expired. Resend code.');
+      throw const FormatException(
+        'Verification session expired. Resend code.',
+      );
     }
     final normalizedCode = _digits(code);
     if (normalizedCode.length != 6) {
       throw const FormatException('Code must be 6 digits.');
     }
-    // Demo behaviour: accept any phone as long as the user enters
-    // the configured mock code (123456).
     if (normalizedCode != AppConstants.mockOtpCode) {
       throw const FormatException('Invalid verification code.');
     }

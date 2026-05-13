@@ -14,9 +14,11 @@ import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/auth/presentation/otp_delivery_snack.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/register_review_tile.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -131,11 +133,20 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
 
   Future<void> _maybeSendOtp(String phoneE164) async {
     try {
-      final token = await _otpRepository.requestOtp(phone: phoneE164);
+      final result = await _otpRepository.requestOtp(phone: phoneE164);
       if (!mounted) return;
+      final ten = egyptTenDigitsFromStored(phoneE164);
+      final phoneDisplay = ten != null && ten.length == 10
+          ? '+20 ${formatEgyptTenDigitsDisplay(ten)}'
+          : phoneE164;
+      showOtpSentChannelSnack(
+        context,
+        channel: result.channel,
+        phoneDisplay: phoneDisplay,
+      );
       final args = VerifyOtpRouteArgs(
         phone: phoneE164,
-        requestToken: token,
+        requestToken: result.requestToken,
         flow: VerifyOtpFlow.registerApplication,
       );
       getIt<RegistrationOtpArgsHolder>().stashForRegistration(args);
@@ -184,7 +195,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final locationValue = address.isEmpty ? '—' : address;
 
     final children = <Widget>[
-      _ReviewTile(
+      RegisterReviewTile(
         icon: Icons.store_mall_directory_outlined,
         titleKey: AppStrings.Registration.reviewBusinessType,
         value: draft.kind == null ? '—' : _kindKey(draft.kind!).tr,
@@ -195,7 +206,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final cat = _categoryEntry(draft);
     if (cat != null) {
       children.add(
-        _ReviewTile(
+        RegisterReviewTile(
           icon: Icons.label_outline,
           titleKey: cat.$1,
           value: cat.$2,
@@ -205,32 +216,32 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     }
 
     children.addAll([
-      _ReviewTile(
+      RegisterReviewTile(
         icon: Icons.badge_outlined,
         titleKey: AppStrings.Registration.brandName,
         value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
         scheme: scheme,
       ),
       if (draft.description.trim().isNotEmpty)
-        _ReviewTile(
+        RegisterReviewTile(
           icon: Icons.notes_outlined,
           titleKey: AppStrings.Registration.description,
           value: draft.description.trim(),
           scheme: scheme,
         ),
-      _ReviewTile(
+      RegisterReviewTile(
         icon: Icons.phone_outlined,
         titleKey: AppStrings.Auth.phoneNumber,
         value: draft.phoneNational.trim().isEmpty ? '—' : draft.phoneNational,
         scheme: scheme,
       ),
-      _ReviewTile(
+      RegisterReviewTile(
         icon: Icons.location_on_outlined,
         titleKey: AppStrings.Registration.mapTitle,
         value: locationValue,
         scheme: scheme,
       ),
-      _ReviewTile(
+      RegisterReviewTile(
         icon: Icons.schedule_outlined,
         titleKey: AppStrings.Registration.hoursTitle,
         value: _hoursSummary(draft),
@@ -241,7 +252,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final delivery = _deliverySummary(draft);
     if (delivery != null) {
       children.add(
-        _ReviewTile(
+        RegisterReviewTile(
           icon: Icons.local_shipping_outlined,
           titleKey: AppStrings.Registration.deliveryTitle,
           value: delivery,
@@ -253,7 +264,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final prep = draft.avgPrepMinutes;
     if (prep != null && prep > 0) {
       children.add(
-        _ReviewTile(
+        RegisterReviewTile(
           icon: Icons.timer_outlined,
           titleKey: AppStrings.Registration.reviewPrepTime,
           value: '$prep',
@@ -336,60 +347,3 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
   }
 }
 
-class _ReviewTile extends StatelessWidget {
-  const _ReviewTile({
-    required this.icon,
-    required this.titleKey,
-    required this.value,
-    required this.scheme,
-  });
-
-  final IconData icon;
-  final String titleKey;
-  final String value;
-  final ColorScheme scheme;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.spaceMd),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor:
-                scheme.surfaceContainerHighest.withValues(alpha: 0.9),
-            child: Icon(icon, color: AppColors.secondColor, size: 22),
-          ),
-          SizedBox(width: AppSizes.spaceMd),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CustomText(
-                  titleKey,
-                  style: TextStyle(
-                    fontSize: AppSizes.fontLabel,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurface.withValues(alpha: 0.62),
-                  ),
-                ),
-                SizedBox(height: AppSizes.spaceXs),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: AppSizes.fontBody,
-                    height: 1.35,
-                    color: scheme.onSurface,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}

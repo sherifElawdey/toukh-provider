@@ -5,6 +5,7 @@ import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/register_kind_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -121,7 +122,7 @@ class RegisterKindScreen extends StatelessWidget {
                 itemCount: _kRegistrationKindOrder.length,
                 itemBuilder: (context, index) {
                   final kind = _kRegistrationKindOrder[index];
-                  return _KindCard(
+                  return RegisterKindCard(
                     selected: draft.kind == kind,
                     title: _kindLabelKey(kind),
                     icon: _kindIcon(kind),
@@ -137,61 +138,3 @@ class RegisterKindScreen extends StatelessWidget {
   }
 }
 
-class _KindCard extends StatelessWidget {
-  const _KindCard({
-    required this.selected,
-    required this.title,
-    required this.icon,
-    required this.onTap,
-  });
-
-  final bool selected;
-  final String title;
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: selected
-          ? AppColors.thirdColor.withValues(alpha: 0.35)
-          : scheme.surfaceContainerHighest.withValues(alpha: 0.45),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        side: BorderSide(
-          color: selected ? AppColors.secondColor : Colors.transparent,
-          width: 2,
-        ),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spaceSm,
-            vertical: AppSizes.spaceMd,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 36, color: AppColors.secondColor),
-              SizedBox(height: AppSizes.spaceSm),
-              CustomText(
-                title,
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: AppSizes.fontBody,
-                  fontWeight: FontWeight.w700,
-                  height: 1.25,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

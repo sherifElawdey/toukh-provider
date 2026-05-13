@@ -8,14 +8,11 @@ import 'package:toukh_provider/core/router/go_router_refresh.dart';
 import 'package:toukh_provider/core/router/provider_redirect.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
-import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/account_status/presentation/account_phone_verification_screen.dart';
 import 'package:toukh_provider/features/account_status/presentation/blocked_screen.dart';
-import 'package:toukh_provider/features/account_status/presentation/deleted_account_sheet.dart';
 import 'package:toukh_provider/features/account_status/presentation/unverified_screen.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/auth/presentation/forgot_password_screen.dart';
-import 'package:toukh_provider/features/auth/presentation/login_screen.dart';
 import 'package:toukh_provider/features/auth/presentation/post_login_status_screen.dart';
 import 'package:toukh_provider/features/auth/presentation/profile_pending_screen.dart';
 import 'package:toukh_provider/features/auth/presentation/request_submitted_screen.dart';
@@ -48,9 +45,10 @@ import 'package:toukh_provider/features/settings/presentation/legal_document_scr
 import 'package:toukh_provider/features/settings/presentation/settings_screen.dart';
 import 'package:toukh_provider/features/shell/main_shell_scaffold.dart';
 import 'package:toukh_provider/features/welcome/welcome_screen.dart';
-import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/router/widgets/login_with_deleted_sheet.dart';
+import 'package:toukh_provider/router/widgets/menu_or_gallery_tab_screen.dart';
+import 'package:toukh_provider/router/widgets/verify_otp_missing_args_placeholder.dart';
 
 final GlobalKey<NavigatorState> providerRootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'providerRoot');
@@ -88,7 +86,7 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const _LoginWithDeletedSheet(),
+        builder: (context, state) => const LoginWithDeletedSheet(),
       ),
       GoRoute(
         path: AppRoutes.postLoginStatus,
@@ -129,7 +127,7 @@ GoRouter createAppRouter({
                 router.go(AppRoutes.login);
               }
             });
-            return const _VerifyOtpMissingArgsPlaceholder();
+            return const VerifyOtpMissingArgsPlaceholder();
           }
 
           return VerifyOtpScreen(args: args);
@@ -290,7 +288,7 @@ GoRouter createAppRouter({
                 path: AppRoutes.menu,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const _MenuOrGalleryTabScreen(),
+                  child: const MenuOrGalleryTabScreen(),
                 ),
               ),
             ],
@@ -310,96 +308,4 @@ GoRouter createAppRouter({
       ),
     ],
   );
-}
-
-class _MenuOrGalleryTabScreen extends StatelessWidget {
-  const _MenuOrGalleryTabScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AuthCubit, AuthState>(
-      builder: (context, state) {
-        if (state is Authenticated && state.profile.isRestaurantShop) {
-          return const MenuBuilderScreen();
-        }
-        return const PortfolioScreen();
-      },
-    );
-  }
-}
-
-/// Shown briefly when `/verify-otp` has no route args (cold start / deep link).
-/// Matches [PostLoginStatusScreen] rehydrate loader so users never see a white frame.
-class _VerifyOtpMissingArgsPlaceholder extends StatelessWidget {
-  const _VerifyOtpMissingArgsPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.thirdColor.withValues(alpha: 0.55),
-              AppColors.surface,
-            ],
-          ),
-        ),
-        child: const SafeArea(
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ToukhServiceLogo(size: 72),
-                SizedBox(height: 20),
-                CircularProgressIndicator(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _LoginWithDeletedSheet extends StatefulWidget {
-  const _LoginWithDeletedSheet();
-
-  @override
-  State<_LoginWithDeletedSheet> createState() => _LoginWithDeletedSheetState();
-}
-
-class _LoginWithDeletedSheetState extends State<_LoginWithDeletedSheet> {
-  bool _sheetShown = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final auth = context.read<AuthCubit>().state;
-    if (auth is Authenticated &&
-        auth.profile.status == ProviderAccountStatus.deleted &&
-        !_sheetShown) {
-      _sheetShown = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) DeletedAccountSheet.show(context);
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocListener<AuthCubit, AuthState>(
-      listenWhen: (p, c) =>
-          c is Authenticated &&
-          c.profile.status == ProviderAccountStatus.deleted &&
-          !_sheetShown,
-      listener: (context, state) {
-        _sheetShown = true;
-        DeletedAccountSheet.show(context);
-      },
-      child: const LoginScreen(),
-    );
-  }
 }

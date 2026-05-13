@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/settings_theme_mode_option.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 /// Pill light/dark toggle (consumer app settings pattern).
 class SettingsThemeToggle extends StatelessWidget {
@@ -56,7 +57,7 @@ class SettingsThemeToggle extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _ThemeModeOption(
+                child: SettingsThemeModeOption(
                   icon: Icons.light_mode_rounded,
                   labelKey: AppStrings.Common.light,
                   selected: !isDark,
@@ -64,7 +65,7 @@ class SettingsThemeToggle extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: _ThemeModeOption(
+                child: SettingsThemeModeOption(
                   icon: Icons.dark_mode_rounded,
                   labelKey: AppStrings.Common.dark,
                   selected: isDark,
@@ -74,53 +75,6 @@ class SettingsThemeToggle extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _ThemeModeOption extends StatelessWidget {
-  const _ThemeModeOption({
-    required this.icon,
-    required this.labelKey,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final String labelKey;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkTheme = Theme.of(context).brightness == Brightness.dark;
-    final color = selected
-        ? AppColors.surface
-        : (isDarkTheme
-            ? Colors.grey
-            : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.62));
-
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-      onTap: onTap,
-      child: SizedBox(
-        height: 44,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 18, color: color),
-            SizedBox(width: AppSizes.spaceXs),
-            CustomText(
-              labelKey,
-              style: TextStyle(
-                color: color,
-                fontWeight: FontWeight.w700,
-                fontSize: AppSizes.fontLabel,
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

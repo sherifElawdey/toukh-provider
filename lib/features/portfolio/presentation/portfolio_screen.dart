@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/portfolio/presentation/widgets/portfolio_add_placeholder.dart';
+import 'package:toukh_provider/features/portfolio/presentation/widgets/portfolio_image_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -93,12 +95,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               itemCount: gridCount,
               itemBuilder: (context, i) {
                 if (i < _files.length) {
-                  return _PortfolioImageTile(
+                  return PortfolioImageTile(
                     file: _files[i],
                     onRemove: () => setState(() => _files.removeAt(i)),
                   );
                 }
-                return _PortfolioAddPlaceholder(
+                return PortfolioAddPlaceholder(
                   currentCount: _files.length,
                   maxCount: PortfolioScreen.kMaxPhotos,
                   scheme: scheme,
@@ -115,107 +117,6 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PortfolioImageTile extends StatelessWidget {
-  const _PortfolioImageTile({
-    required this.file,
-    required this.onRemove,
-  });
-
-  final File file;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-          child: Image.file(file, fit: BoxFit.cover),
-        ),
-        Positioned(
-          top: 4,
-          right: 4,
-          child: IconButton(
-            style: IconButton.styleFrom(
-              backgroundColor: Colors.black54,
-            ),
-            icon: const Icon(Icons.close, color: Colors.white, size: 20),
-            onPressed: onRemove,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PortfolioAddPlaceholder extends StatelessWidget {
-  const _PortfolioAddPlaceholder({
-    required this.currentCount,
-    required this.maxCount,
-    required this.scheme,
-    required this.onTap,
-  });
-
-  final int currentCount;
-  final int maxCount;
-  final ColorScheme scheme;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: scheme.surfaceContainerHighest.withValues(alpha: 0.4),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-        side: BorderSide(
-          color: AppColors.secondColor.withValues(alpha: 0.35),
-          width: 1.5,
-        ),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.spaceSm),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add_photo_alternate_outlined,
-                size: 40,
-                color: AppColors.secondColor,
-              ),
-              SizedBox(height: AppSizes.spaceSm),
-              CustomText(
-                AppStrings.Registration.portfolioAddPhoto,
-                textAlign: TextAlign.center,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: AppSizes.fontLabel,
-                  fontWeight: FontWeight.w600,
-                  color: scheme.onSurface.withValues(alpha: 0.88),
-                ),
-              ),
-              SizedBox(height: AppSizes.spaceXs),
-              Text(
-                '$currentCount/$maxCount',
-                style: TextStyle(
-                  fontSize: AppSizes.fontCaption,
-                  color: scheme.onSurface.withValues(alpha: 0.55),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }
