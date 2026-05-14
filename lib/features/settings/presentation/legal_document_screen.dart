@@ -45,8 +45,16 @@ class LegalDocumentScreen extends StatelessWidget {
               ),
             ),
             SizedBox(height: AppSizes.spaceLg),
-            FilledButton.icon(
-              onPressed: () async {
+            AppFilledButton(
+              text: AppStrings.Settings.legalOpenInBrowser,
+              icon: Icons.open_in_new_rounded,
+              color: AppColors.secondColor,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(
+                vertical: AppSizes.spaceMd,
+                horizontal: AppSizes.spaceBase,
+              ),
+              onTap: () async {
                 final uri = Uri.parse(url);
                 final ok = await launchUrl(
                   uri,
@@ -62,16 +70,6 @@ class LegalDocumentScreen extends StatelessWidget {
                   );
                 }
               },
-              icon: const Icon(Icons.open_in_new_rounded),
-              label: CustomText(AppStrings.Settings.legalOpenInBrowser),
-              style: FilledButton.styleFrom(
-                backgroundColor: AppColors.secondColor,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  vertical: AppSizes.spaceMd,
-                  horizontal: AppSizes.spaceBase,
-                ),
-              ),
             ),
           ],
         ),

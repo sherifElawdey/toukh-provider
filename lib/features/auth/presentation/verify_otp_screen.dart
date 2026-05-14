@@ -256,9 +256,12 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                           onChanged: (_) => setState(() {}),
                         ),
                         SizedBox(height: AppSizes.space2xl),
-                        FilledButton(
-                          onPressed: busy || !isOtpValid ? null : _submit,
-                          child: CustomText(AppStrings.Auth.verify),
+                        AppFilledButton(
+                          text: AppStrings.Auth.verify,
+                          status: busy || !isOtpValid
+                              ? AppButtonStatus.disabled
+                              : AppButtonStatus.enabled,
+                          onTap: _submit,
                         ),
                         SizedBox(height: AppSizes.spaceBase),
                         if (_ticksRemaining > 0)
@@ -274,9 +277,12 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                             ),
                           )
                         else
-                          TextButton(
-                            onPressed: busy || !canResend ? null : _onResendPressed,
-                            child: CustomText(AppStrings.Auth.resendCode),
+                          AppTextButton(
+                            text: AppStrings.Auth.resendCode,
+                            status: busy || !canResend
+                                ? AppButtonStatus.disabled
+                                : AppButtonStatus.enabled,
+                            onTap: _onResendPressed,
                           ),
                       ],
                     ),

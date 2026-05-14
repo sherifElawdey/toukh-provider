@@ -56,9 +56,9 @@ class PendingApprovalScreen extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                OutlinedButton(
-                  onPressed: () => context.read<AuthCubit>().signOut(),
-                  child: CustomText(AppStrings.AccountStatus.signOut),
+                AppOutlinedButton(
+                  text: AppStrings.AccountStatus.signOut,
+                  onTap: () => context.read<AuthCubit>().signOut(),
                 ),
               ],
             ),

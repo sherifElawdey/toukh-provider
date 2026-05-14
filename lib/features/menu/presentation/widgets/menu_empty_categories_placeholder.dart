@@ -43,10 +43,10 @@ class MenuEmptyCategoriesPlaceholder extends StatelessWidget {
               ),
             ),
             SizedBox(height: AppSizes.spaceLg),
-            FilledButton.icon(
-              onPressed: onAddCategory,
-              icon: const Icon(Icons.add_rounded),
-              label: CustomText(AppStrings.Registration.addCategory),
+            AppFilledButton(
+              text: AppStrings.Registration.addCategory,
+              icon: Icons.add_rounded,
+              onTap: onAddCategory,
             ),
           ],
         ),

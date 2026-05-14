@@ -95,9 +95,9 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             actions: [
-              TextButton(
-                onPressed: () => context.read<AuthCubit>().signOut(),
-                child: CustomText(AppStrings.AccountStatus.signOut),
+              AppTextButton(
+                text: AppStrings.AccountStatus.signOut,
+                onTap: () => context.read<AuthCubit>().signOut(),
               ),
             ],
           ),
@@ -151,9 +151,9 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
                       ),
                     ),
                     SizedBox(height: AppSizes.space3xl),
-                    FilledButton(
-                      onPressed: () => _sendOtp(context, authState),
-                      child: CustomText(AppStrings.Auth.sendOtp),
+                    AppFilledButton(
+                      text: AppStrings.Auth.sendOtp,
+                      onTap: () => _sendOtp(context, authState),
                     ),
                   ],
                 ),

@@ -158,17 +158,21 @@ class _PermissionsScreenState extends State<PermissionsScreen>
                 ),
               ),
               const Spacer(),
-              FilledButton(
-                onPressed: (!_status.allGranted || _loading) ? null : _onContinue,
-                child: CustomText(AppStrings.Permissions.continueLabel),
+              AppFilledButton(
+                text: AppStrings.Permissions.continueLabel,
+                status: (!_status.allGranted || _loading)
+                    ? AppButtonStatus.disabled
+                    : AppButtonStatus.enabled,
+                onTap: _onContinue,
               ),
               SizedBox(height: AppSizes.spaceMd),
-              TextButton(
-                onPressed: _loading
-                    ? null
-                    : () =>
-                        context.read<OnboardingCubit>().openSystemSettings(),
-                child: CustomText(AppStrings.Permissions.openSystemSettings),
+              AppTextButton(
+                text: AppStrings.Permissions.openSystemSettings,
+                status: _loading
+                    ? AppButtonStatus.disabled
+                    : AppButtonStatus.enabled,
+                onTap: () =>
+                    context.read<OnboardingCubit>().openSystemSettings(),
               ),
             ],
           ),

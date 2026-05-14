@@ -64,9 +64,9 @@ class _BlockedScreenState extends State<BlockedScreen> {
             automaticallyImplyLeading: false,
             backgroundColor: AppColors.transparent,
             actions: [
-              TextButton(
-                onPressed: () => context.read<AuthCubit>().signOut(),
-                child: CustomText(AppStrings.AccountStatus.signOut),
+              AppTextButton(
+                text: AppStrings.AccountStatus.signOut,
+                onTap: () => context.read<AuthCubit>().signOut(),
               ),
             ],
           ),

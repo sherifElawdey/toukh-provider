@@ -111,9 +111,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           Padding(
             padding: AppSizes.screenPadding.copyWith(top: AppSizes.spaceSm),
-            child: FilledButton(
-              onPressed: _save,
-              child: CustomText(AppStrings.Common.save),
+            child: AppFilledButton(
+              text: AppStrings.Common.save,
+              onTap: _save,
             ),
           ),
         ],

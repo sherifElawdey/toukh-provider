@@ -24,13 +24,13 @@ class SettingsScreen extends StatelessWidget {
         title: CustomText(AppStrings.App.logoutConfirmTitle),
         content: CustomText(AppStrings.App.logoutConfirmBody),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(false),
-            child: CustomText(AppStrings.Common.cancel),
+          AppTextButton(
+            text: AppStrings.Common.cancel,
+            onTap: () => Navigator.of(ctx).pop(false),
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(ctx).pop(true),
-            child: CustomText(AppStrings.Settings.signOut),
+          AppFilledButton(
+            text: AppStrings.Settings.signOut,
+            onTap: () => Navigator.of(ctx).pop(true),
           ),
         ],
       ),

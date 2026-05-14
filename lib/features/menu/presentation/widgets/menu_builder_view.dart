@@ -102,12 +102,13 @@ class MenuBuilderView extends StatelessWidget {
           textInputAction: TextInputAction.done,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: CustomText(AppStrings.Common.cancel),
+          AppTextButton(
+            text: AppStrings.Common.cancel,
+            onTap: () => Navigator.pop(ctx),
           ),
-          FilledButton(
-            onPressed: () {
+          AppFilledButton(
+            text: AppStrings.Common.save,
+            onTap: () {
               final v = ctrl.text.trim();
               if (v.isEmpty) return;
               if (cubit.state.categories.any(
@@ -124,7 +125,6 @@ class MenuBuilderView extends StatelessWidget {
               }
               Navigator.pop(ctx, v);
             },
-            child: CustomText(AppStrings.Common.save),
           ),
         ],
       ),
@@ -152,16 +152,15 @@ class MenuBuilderView extends StatelessWidget {
               ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: CustomText(AppStrings.Common.cancel),
+          AppTextButton(
+            text: AppStrings.Common.cancel,
+            onTap: () => Navigator.pop(ctx, false),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: CustomText(AppStrings.Common.delete),
+          AppFilledButton(
+            text: AppStrings.Common.delete,
+            color: Theme.of(ctx).colorScheme.error,
+            foregroundColor: Theme.of(ctx).colorScheme.onError,
+            onTap: () => Navigator.pop(ctx, true),
           ),
         ],
       ),
@@ -245,16 +244,15 @@ class MenuBuilderView extends StatelessWidget {
       builder: (ctx) => AlertDialog(
         title: CustomText(AppStrings.Registration.confirmDeleteItem),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: CustomText(AppStrings.Common.cancel),
+          AppTextButton(
+            text: AppStrings.Common.cancel,
+            onTap: () => Navigator.pop(ctx, false),
           ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(ctx, true),
-            child: CustomText(AppStrings.Common.delete),
+          AppFilledButton(
+            text: AppStrings.Common.delete,
+            color: Theme.of(ctx).colorScheme.error,
+            foregroundColor: Theme.of(ctx).colorScheme.onError,
+            onTap: () => Navigator.pop(ctx, true),
           ),
         ],
       ),

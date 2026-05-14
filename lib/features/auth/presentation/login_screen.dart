@@ -124,43 +124,42 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                             Align(
                               alignment: AlignmentDirectional.centerEnd,
-                              child: TextButton(
-                                onPressed: loading
-                                    ? null
-                                    : () => context.push(
-                                          AppRoutes.forgotPassword,
-                                        ),
-                                child: CustomText(
-                                  AppStrings.Auth.forgotPassword,
+                              child: AppTextButton(
+                                text: AppStrings.Auth.forgotPassword,
+                                status: loading
+                                    ? AppButtonStatus.disabled
+                                    : AppButtonStatus.enabled,
+                                onTap: () => context.push(
+                                  AppRoutes.forgotPassword,
                                 ),
                               ),
                             ),
                             SizedBox(height: AppSizes.spaceMd),
-                            FilledButton(
-                              onPressed: loading
-                                  ? null
-                                  : () {
-                                      if (!_formKey.currentState!.validate()) {
-                                        return;
-                                      }
-                                      final national =
-                                          _phone.text.replaceAll(RegExp(r'\D'), '');
-                                      context.read<AuthCubit>().signIn(
-                                            phone: egyptMobileE164(national),
-                                            password: _password.text,
-                                          );
-                                    },
-                              child: CustomText(AppStrings.Auth.signIn),
+                            AppFilledButton(
+                              text: AppStrings.Auth.signIn,
+                              status: loading
+                                  ? AppButtonStatus.loading
+                                  : AppButtonStatus.enabled,
+                              onTap: () {
+                                if (!_formKey.currentState!.validate()) {
+                                  return;
+                                }
+                                final national =
+                                    _phone.text.replaceAll(RegExp(r'\D'), '');
+                                context.read<AuthCubit>().signIn(
+                                      phone: egyptMobileE164(national),
+                                      password: _password.text,
+                                    );
+                              },
                             ),
                             SizedBox(height: AppSizes.spaceMd),
                             Center(
-                              child: TextButton(
-                                onPressed: loading
-                                    ? null
-                                    : () => context.push(AppRoutes.registerKind),
-                                child: CustomText(
-                                  AppStrings.Auth.createAccount,
-                                ),
+                              child: AppTextButton(
+                                text: AppStrings.Auth.createAccount,
+                                status: loading
+                                    ? AppButtonStatus.disabled
+                                    : AppButtonStatus.enabled,
+                                onTap: () => context.push(AppRoutes.registerKind),
                               ),
                             ),
                           ],

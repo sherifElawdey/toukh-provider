@@ -221,20 +221,22 @@ class _RegisterHoursScreenState extends State<RegisterHoursScreen> {
                               Row(
                                 children: [
                                   Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: hasDay
-                                          ? () => _pickTime(from: true)
-                                          : null,
-                                      child: Text(_fmt(_openFromMinutes)),
+                                    child: AppOutlinedButton(
+                                      text: _fmt(_openFromMinutes),
+                                      status: hasDay
+                                          ? AppButtonStatus.enabled
+                                          : AppButtonStatus.disabled,
+                                      onTap: () => _pickTime(from: true),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
-                                    child: OutlinedButton(
-                                      onPressed: hasDay
-                                          ? () => _pickTime(from: false)
-                                          : null,
-                                      child: Text(_fmt(_openToMinutes)),
+                                    child: AppOutlinedButton(
+                                      text: _fmt(_openToMinutes),
+                                      status: hasDay
+                                          ? AppButtonStatus.enabled
+                                          : AppButtonStatus.disabled,
+                                      onTap: () => _pickTime(from: false),
                                     ),
                                   ),
                                 ],

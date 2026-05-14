@@ -33,9 +33,9 @@ class HomeDashboardInProgressStrip extends StatelessWidget {
                 ),
               ),
             ),
-            TextButton(
-              onPressed: () => context.go(AppRoutes.orders),
-              child: CustomText(AppStrings.Home.dashboardViewOrders.tr),
+            AppTextButton(
+              text: AppStrings.Home.dashboardViewOrders.tr,
+              onTap: () => context.go(AppRoutes.orders),
             ),
           ],
         ),

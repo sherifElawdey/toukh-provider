@@ -130,9 +130,9 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                         : null,
                   ),
                   SizedBox(height: AppSizes.space2xl),
-                  FilledButton(
-                    onPressed: _submit,
-                    child: CustomText(AppStrings.Auth.savePassword),
+                  AppFilledButton(
+                    text: AppStrings.Auth.savePassword,
+                    onTap: _submit,
                   ),
                 ],
               ),

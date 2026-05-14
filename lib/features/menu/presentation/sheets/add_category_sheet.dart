@@ -83,9 +83,9 @@ class _AddCategorySheetState extends State<AddCategorySheet> {
                   errorText: _error,
                 ),
                 SizedBox(height: AppSizes.spaceMd),
-                FilledButton(
-                  onPressed: _submit,
-                  child: CustomText(AppStrings.Common.save),
+                AppFilledButton(
+                  text: AppStrings.Common.save,
+                  onTap: _submit,
                 ),
               ],
             ),

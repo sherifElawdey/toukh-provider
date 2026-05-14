@@ -131,9 +131,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     onFieldSubmitted: (_) => _sendOtp(),
                   ),
                   SizedBox(height: AppSizes.space2xl),
-                  FilledButton(
-                    onPressed: _sendOtp,
-                    child: CustomText(AppStrings.Auth.sendOtp),
+                  AppFilledButton(
+                    text: AppStrings.Auth.sendOtp,
+                    onTap: _sendOtp,
                   ),
                 ],
               ),

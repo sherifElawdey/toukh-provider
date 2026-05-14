@@ -155,15 +155,10 @@ class WelcomeScreen extends StatelessWidget {
                   ],
                 ),
                 const Spacer(),
-                FilledButton(
-                  style: FilledButton.styleFrom(
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(AppSizes.radiusLg),
-                    ),
-                  ),
-                  onPressed: () async {
+                AppFilledButton(
+                  text: AppStrings.Common.continueLabel,
+                  height: 52,
+                  onTap: () async {
                     final ok = await context
                         .read<SettingsCubit>()
                         .persistWelcomeSelectionsAndComplete();
@@ -179,7 +174,6 @@ class WelcomeScreen extends StatelessWidget {
                     }
                     context.go(AppRoutes.splash);
                   },
-                  child: CustomText(AppStrings.Common.continueLabel),
                 ),
               ],
             ),

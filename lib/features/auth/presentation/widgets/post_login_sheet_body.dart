@@ -205,27 +205,27 @@ class _PostLoginSheetBodyState extends State<PostLoginSheetBody> {
               ],
               if (status == ProviderAccountStatus.pending) ...[
                 SizedBox(height: AppSizes.spaceXl),
-                TextButton.icon(
-                  onPressed: widget.onContactSupport,
-                  icon: const Icon(Icons.mail_outline_rounded),
-                  label: CustomText(AppStrings.AccountStatus.postLoginContactUs),
+                AppTextButton(
+                  text: AppStrings.AccountStatus.postLoginContactUs,
+                  icon: Icons.mail_outline_rounded,
+                  onTap: widget.onContactSupport,
                 ),
               ],
               SizedBox(height: AppSizes.space2xl),
               Row(
                 children: [
                   Expanded(
-                    child: TextButton(
-                      onPressed: widget.onSignOut,
-                      child: CustomText(AppStrings.AccountStatus.signOut),
+                    child: AppTextButton(
+                      text: AppStrings.AccountStatus.signOut,
+                      onTap: widget.onSignOut,
                     ),
                   ),
                   SizedBox(width: AppSizes.spaceMd),
                   Expanded(
                     flex: 2,
-                    child: FilledButton(
-                      onPressed: widget.onContinue,
-                      child: CustomText(AppStrings.Common.continueLabel),
+                    child: AppFilledButton(
+                      text: AppStrings.Common.continueLabel,
+                      onTap: widget.onContinue,
                     ),
                   ),
                 ],

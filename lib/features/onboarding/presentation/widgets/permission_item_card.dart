@@ -71,19 +71,17 @@ class PermissionItemCard extends StatelessWidget {
             ),
             SizedBox(width: AppSizes.spaceSm),
             if (!granted)
-              OutlinedButton(
-                onPressed: busy ? null : onEnable,
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppSizes.spaceMd,
-                    vertical: AppSizes.spaceSm,
-                  ),
-                  minimumSize: const Size(0, 40),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-                  ),
+              AppOutlinedButton(
+                text: AppStrings.Permissions.enable,
+                status: busy
+                    ? AppButtonStatus.disabled
+                    : AppButtonStatus.enabled,
+                onTap: onEnable,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSizes.spaceMd,
+                  vertical: AppSizes.spaceSm,
                 ),
-                child: CustomText(AppStrings.Permissions.enable),
+                size: AppButtonSize.small,
               )
             else
               CustomText(

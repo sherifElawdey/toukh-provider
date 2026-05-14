@@ -50,9 +50,9 @@ class HomeScreen extends StatelessWidget {
                   style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.72)),
                 ),
                 const SizedBox(height: AppSizes.spaceLg),
-                FilledButton(
-                  onPressed: () => context.read<HomeDashboardCubit>().retry(),
-                  child: CustomText(AppStrings.Common.retry.tr),
+                AppFilledButton(
+                  text: AppStrings.Common.retry.tr,
+                  onTap: () => context.read<HomeDashboardCubit>().retry(),
                 ),
               ],
             ),

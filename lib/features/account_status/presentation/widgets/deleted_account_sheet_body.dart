@@ -93,21 +93,19 @@ class DeletedAccountSheetBody extends StatelessWidget {
               ),
             ),
             SizedBox(height: AppSizes.space2xl),
-            FilledButton.icon(
-              onPressed: () => _emailSupport(context),
-              icon: const Icon(Icons.mail_outline_rounded),
-              label: CustomText(AppStrings.AccountStatus.deletedAction),
-              style: FilledButton.styleFrom(
-                minimumSize: const Size.fromHeight(52),
-              ),
+            AppFilledButton(
+              text: AppStrings.AccountStatus.deletedAction,
+              icon: Icons.mail_outline_rounded,
+              height: 52,
+              onTap: () => _emailSupport(context),
             ),
             SizedBox(height: AppSizes.spaceMd),
-            TextButton(
-              onPressed: () {
+            AppTextButton(
+              text: AppStrings.AccountStatus.signOut,
+              onTap: () {
                 Navigator.of(context).pop();
                 context.read<AuthCubit>().signOut();
               },
-              child: CustomText(AppStrings.AccountStatus.signOut),
             ),
           ],
         ),

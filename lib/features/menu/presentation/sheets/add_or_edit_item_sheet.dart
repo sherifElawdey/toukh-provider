@@ -346,17 +346,16 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  TextButton.icon(
-                    onPressed: _pickImage,
-                    icon: const Icon(Icons.photo_library_outlined, size: 20),
-                    label: CustomText(AppStrings.Registration.menuItemPhoto),
+                  AppTextButton(
+                    text: AppStrings.Registration.menuItemPhoto,
+                    icon: Icons.photo_library_outlined,
+                    onTap: _pickImage,
                   ),
                   if (_pickedImage != null || hasRemote)
-                    TextButton.icon(
-                      onPressed: _clearImage,
-                      icon: const Icon(Icons.hide_image_outlined, size: 20),
-                      label:
-                          CustomText(AppStrings.Registration.menuRemoveItemPhoto),
+                    AppTextButton(
+                      text: AppStrings.Registration.menuRemoveItemPhoto,
+                      icon: Icons.hide_image_outlined,
+                      onTap: _clearImage,
                     ),
                 ],
               ),
@@ -483,12 +482,11 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                       ?.copyWith(fontWeight: FontWeight.w800),
                                 ),
                               ),
-                              TextButton.icon(
-                                onPressed: _addSizeRow,
-                                icon: const Icon(Icons.add, size: 18),
-                                label: CustomText(
-                                  AppStrings.Registration.addSize,
-                                ),
+                              AppTextButton(
+                                text: AppStrings.Registration.addSize,
+                                icon: Icons.add,
+                                size: AppButtonSize.small,
+                                onTap: _addSizeRow,
                               ),
                             ],
                           ),
@@ -591,16 +589,16 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: CustomText(AppStrings.Common.cancel),
+                          child: AppOutlinedButton(
+                            text: AppStrings.Common.cancel,
+                            onTap: () => Navigator.pop(context),
                           ),
                         ),
                         SizedBox(width: AppSizes.spaceMd),
                         Expanded(
-                          child: FilledButton(
-                            onPressed: _submit,
-                            child: CustomText(AppStrings.Common.save),
+                          child: AppFilledButton(
+                            text: AppStrings.Common.save,
+                            onTap: _submit,
                           ),
                         ),
                       ],
