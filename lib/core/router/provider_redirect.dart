@@ -39,7 +39,15 @@ String? resolveProviderRedirect({
 
   final loc = matchedLocation;
 
-  if (!settings.firstLaunchCompleted && loc != AppRoutes.welcome) {
+  if (loc == AppRoutes.appUpdate) {
+    logRedirect(null, 'mandatory app update screen');
+    return null;
+  }
+
+  if (!settings.firstLaunchCompleted &&
+      loc != AppRoutes.welcome &&
+      loc != AppRoutes.appUpdate &&
+      loc != AppRoutes.splash) {
     logRedirect(AppRoutes.welcome, 'first launch not completed');
     return AppRoutes.welcome;
   }
@@ -48,7 +56,10 @@ String? resolveProviderRedirect({
   final inRegisterWizard = AppRoutes.registerWizardPaths.contains(loc);
 
   if (auth is AuthInitial || auth is AuthLoading) {
-    if (inRegisterWizard || inAuthFlow || loc == AppRoutes.welcome) {
+    if (inRegisterWizard ||
+        inAuthFlow ||
+        loc == AppRoutes.welcome ||
+        loc == AppRoutes.appUpdate) {
       logRedirect(null, 'auth initializing/loading in allowed flow');
       return null;
     }
@@ -63,7 +74,10 @@ String? resolveProviderRedirect({
       logRedirect(AppRoutes.login, 'not authenticated while in post-login status');
       return AppRoutes.login;
     }
-    if (inRegisterWizard || inAuthFlow || loc == AppRoutes.welcome) {
+    if (inRegisterWizard ||
+        inAuthFlow ||
+        loc == AppRoutes.welcome ||
+        loc == AppRoutes.appUpdate) {
       logRedirect(null, 'unauthenticated in allowed flow');
       return null;
     }
@@ -157,7 +171,9 @@ String? resolveProviderRedirect({
       case ProviderAccountStatus.active:
         switch (onboardingGate) {
           case OnboardingGate.checking:
-            if (loc == AppRoutes.splash || loc == AppRoutes.permissions) {
+            if (loc == AppRoutes.splash ||
+                loc == AppRoutes.permissions ||
+                loc == AppRoutes.appUpdate) {
               logRedirect(null, 'active + onboarding checking in allowed route');
               return null;
             }

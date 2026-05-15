@@ -3,6 +3,7 @@ abstract final class AppRoutes {
 
   static const welcome = '/welcome';
   static const splash = '/splash';
+  static const appUpdate = '/app-update';
   static const login = '/login';
 
   static const registerKind = '/register/kind';

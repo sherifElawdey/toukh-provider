@@ -126,9 +126,13 @@ class _LoginScreenState extends State<LoginScreen> {
                               alignment: AlignmentDirectional.centerEnd,
                               child: AppTextButton(
                                 text: AppStrings.Auth.forgotPassword,
+                                size: AppButtonSize.small,
+                                alignment: MainAxisAlignment.end,
+                                underlineLabel: true,
                                 status: loading
                                     ? AppButtonStatus.disabled
                                     : AppButtonStatus.enabled,
+
                                 onTap: () => context.push(
                                   AppRoutes.forgotPassword,
                                 ),

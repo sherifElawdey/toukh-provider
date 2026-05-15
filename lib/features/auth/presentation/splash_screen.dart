@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -46,11 +48,15 @@ class _SplashScreenState extends State<SplashScreen>
   late final Animation<double> _scaleUp;
   late final Animation<double> _breathe;
 
+  /// Prevents welcome / auth redirects until Remote Config version check finishes.
+  bool _versionGateCompleted = false;
+
   void _logSplash(String message) {
     debugPrint('[AuthFlow][Splash] $message');
   }
 
   void _leaveSplashIfNeeded(BuildContext context) {
+    if (!_versionGateCompleted) return;
     final routerState = GoRouterState.of(context);
     if (routerState.matchedLocation != AppRoutes.splash) return;
 
@@ -124,8 +130,32 @@ class _SplashScreenState extends State<SplashScreen>
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _leaveSplashIfNeeded(context);
+      unawaited(_bootstrapAfterFirstFrame());
     });
+  }
+
+  Future<void> _bootstrapAfterFirstFrame() async {
+    if (!mounted) return;
+    final router = GoRouter.of(context);
+    if (router.state.matchedLocation != AppRoutes.splash) {
+      _versionGateCompleted = true;
+      return;
+    }
+    try {
+      final result = await checkAppVersionAgainstRemoteConfig(
+        minimumVersionKey: ToukhRemoteConfigKeys.toukhProviderVersion,
+      );
+      if (!mounted) return;
+      if (result.needsUpdate && result.storeUri != null) {
+        router.go(AppRoutes.appUpdate, extra: result.storeUri);
+        return;
+      }
+    } finally {
+      _versionGateCompleted = true;
+      if (mounted) {
+        _leaveSplashIfNeeded(context);
+      }
+    }
   }
 
   @override

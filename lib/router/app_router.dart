@@ -47,6 +47,7 @@ import 'package:toukh_provider/features/shell/main_shell_scaffold.dart';
 import 'package:toukh_provider/features/welcome/welcome_screen.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_provider/router/widgets/login_with_deleted_sheet.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/router/widgets/menu_or_gallery_tab_screen.dart';
 import 'package:toukh_provider/router/widgets/verify_otp_missing_args_placeholder.dart';
 
@@ -83,6 +84,26 @@ GoRouter createAppRouter({
       GoRoute(
         path: AppRoutes.splash,
         builder: (context, state) => const SplashScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.appUpdate,
+        builder: (context, state) {
+          final extra = state.extra;
+          final uri = extra is Uri ? extra : null;
+          if (uri == null) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) GoRouter.of(context).go(AppRoutes.splash);
+            });
+            return const Scaffold(body: SizedBox.shrink());
+          }
+          return AppMandatoryUpdateScreen(
+            title: 'Update required',
+            description:
+                'A newer version of the Toukh Service app is available. Please update from the store to continue.',
+            storeUri: uri,
+            updateButtonLabel: 'Open store',
+          );
+        },
       ),
       GoRoute(
         path: AppRoutes.login,
