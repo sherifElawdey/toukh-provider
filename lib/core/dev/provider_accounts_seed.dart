@@ -331,6 +331,7 @@ Future<void> _seedOneAccount({
     uid: uid,
     phone: phone,
     email: email,
+    password: kProviderSeedPassword,
     phoneVerified: true,
     serviceType: def.serviceType,
     shopCategory: def.shopCategory,

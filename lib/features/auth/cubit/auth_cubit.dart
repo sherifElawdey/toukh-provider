@@ -11,6 +11,7 @@ import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_state.dart';
 import 'package:toukh_provider/features/registration/models/registration_submit_data.dart';
 
@@ -21,14 +22,17 @@ class AuthCubit extends Cubit<AuthState> {
     required AuthRepository authRepository,
     required ProviderProfileRepository profileRepository,
     required MediaUploadService mediaUploadService,
+    required ProviderGalleryRepository galleryRepository,
   })  : _authRepository = authRepository,
         _profileRepository = profileRepository,
         _media = mediaUploadService,
+        _galleryRepository = galleryRepository,
         super(const AuthInitial());
 
   final AuthRepository _authRepository;
   final ProviderProfileRepository _profileRepository;
   final MediaUploadService _media;
+  final ProviderGalleryRepository _galleryRepository;
 
   StreamSubscription<User?>? _authSub;
   StreamSubscription<ProviderProfile?>? _profileSub;
@@ -149,6 +153,7 @@ class AuthCubit extends Cubit<AuthState> {
         uid: user.uid,
         phone: phoneDigits,
         email: email,
+        password: data.password,
         phoneVerified: false,
         serviceType: data.kind,
         shopCategory: data.shopCategory,
@@ -177,6 +182,7 @@ class AuthCubit extends Cubit<AuthState> {
         updatedAt: now,
       );
       await _profileRepository.upsertProfile(profile);
+      emit(Authenticated(user: user, profile: profile));
     } on FirebaseAuthException catch (e) {
       for (final u in uploaded) {
         await _media.deleteImage(u);
@@ -214,6 +220,7 @@ class AuthCubit extends Cubit<AuthState> {
         updatedAt: now,
       );
       await _profileRepository.upsertProfile(updated);
+      emit(Authenticated(user: user, profile: updated));
     } on FirebaseAuthException catch (e) {
       emit(AuthFailure(message: e.message ?? e.code));
     } catch (e) {
@@ -250,39 +257,34 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> submitRegistrationPortfolio(List<File> files) async {
     emit(const AuthLoading());
-    final uploaded = <UploadedMedia>[];
     try {
       final user = _authRepository.currentUser;
       if (user == null) {
         emit(const AuthFailure(message: 'Not signed in.'));
         return;
       }
+
+      if (files.isNotEmpty) {
+        await _galleryRepository.addImages(user.uid, files);
+      }
+
       final profile = await _profileRepository.getProfile(user.uid);
       if (profile == null) {
         emit(const AuthFailure(message: 'Profile not found.'));
         return;
       }
-      final urls = <String>[];
-      for (var i = 0; i < files.length; i++) {
-        final r = await _media.uploadImage(
-          source: files[i],
-          objectPath: 'providers/${user.uid}/portfolio/$i.jpg',
-        );
-        uploaded.add(r);
-        urls.add(r.url);
-      }
-      final now = DateTime.now();
-      await _profileRepository.upsertProfile(
-        profile.copyWith(
-          portfolioImageUrls: urls,
+
+      if (!profile.registrationExtrasComplete) {
+        final updated = profile.copyWith(
           registrationExtrasComplete: true,
-          updatedAt: now,
-        ),
-      );
-    } catch (e) {
-      for (final u in uploaded) {
-        await _media.deleteImage(u);
+          updatedAt: DateTime.now(),
+        );
+        await _profileRepository.upsertProfile(updated);
+        emit(Authenticated(user: user, profile: updated));
+      } else {
+        emit(Authenticated(user: user, profile: profile));
       }
+    } catch (e) {
       emit(AuthFailure(message: e.toString()));
     }
   }

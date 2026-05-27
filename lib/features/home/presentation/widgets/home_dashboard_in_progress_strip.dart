@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
+import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_in_progress_order_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -43,18 +44,9 @@ class HomeDashboardInProgressStrip extends StatelessWidget {
         SizedBox(
           height: 112,
           child: orders.isEmpty
-              ? Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceMd),
-                    child: CustomText(
-                      AppStrings.Home.dashboardInProgressEmpty.tr,
-                      style: TextStyle(
-                        color: scheme.onSurface.withValues(alpha: 0.55),
-                        fontSize: AppSizes.fontBody,
-                      ),
-                    ),
-                  ),
+              ? HomeDashboardEmptyPlaceholder(
+                  icon: Icons.receipt_long_outlined,
+                  message: AppStrings.Home.dashboardInProgressEmpty,
                 )
               : ListView.separated(
                   scrollDirection: Axis.horizontal,

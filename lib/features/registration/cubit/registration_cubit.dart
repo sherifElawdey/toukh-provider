@@ -260,6 +260,9 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
     ));
   }
 
+  void setPhoneNational(String phoneNational) =>
+      emit(state.copyWith(phoneNational: phoneNational));
+
   void setProfile({
     required String name,
     required String description,

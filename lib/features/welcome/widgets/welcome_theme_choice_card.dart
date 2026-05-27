@@ -9,7 +9,6 @@ class WelcomeThemeChoiceCard extends StatelessWidget {
     required this.label,
     required this.onTap,
   });
-
   final bool selected;
   final IconData icon;
   final String label;
@@ -42,8 +41,9 @@ class WelcomeThemeChoiceCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             vertical: AppSizes.spaceBase,
           ),
-          child: Column(
+          child: Row(
             mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
                 icon,
@@ -52,7 +52,7 @@ class WelcomeThemeChoiceCard extends StatelessWidget {
                     ? AppColors.secondColor
                     : scheme.onSurface.withValues(alpha: 0.55),
               ),
-              SizedBox(height: AppSizes.spaceSm),
+              SizedBox(width: AppSizes.spaceSm),
               CustomText(
                 label,
                 style: TextStyle(
@@ -62,7 +62,7 @@ class WelcomeThemeChoiceCard extends StatelessWidget {
                 ),
               ),
               if (selected) ...[
-                SizedBox(height: 4),
+                SizedBox(width: 4),
                 Icon(
                   Icons.check_circle_rounded,
                   size: 18,

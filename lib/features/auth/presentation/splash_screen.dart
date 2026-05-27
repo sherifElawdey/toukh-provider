@@ -9,6 +9,8 @@ import 'package:toukh_provider/core/router/provider_redirect.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -137,17 +139,12 @@ class _SplashScreenState extends State<SplashScreen>
   Future<void> _bootstrapAfterFirstFrame() async {
     if (!mounted) return;
     final router = GoRouter.of(context);
-    if (router.state.matchedLocation != AppRoutes.splash) {
-      _versionGateCompleted = true;
-      return;
-    }
     try {
-      final result = await checkAppVersionAgainstRemoteConfig(
-        minimumVersionKey: ToukhRemoteConfigKeys.toukhProviderVersion,
-      );
+      final gate = getIt<AppVersionGateService>();
+      final result = await gate.ensureChecked();
       if (!mounted) return;
-      if (result.needsUpdate && result.storeUri != null) {
-        router.go(AppRoutes.appUpdate, extra: result.storeUri);
+      if (result.needsUpdate && gate.storeUri != null) {
+        router.go(AppRoutes.appUpdate, extra: gate.storeUri);
         return;
       }
     } finally {

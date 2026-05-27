@@ -6,21 +6,29 @@ import 'package:toukh_ui/toukh_ui.dart';
 class PortfolioImageTile extends StatelessWidget {
   const PortfolioImageTile({
     super.key,
-    required this.file,
+    this.file,
+    this.url,
     required this.onRemove,
   });
 
-  final File file;
+  final File? file;
+  final String? url;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
+    final imageWidget = file != null
+        ? Image.file(file!, fit: BoxFit.cover)
+        : (url != null
+            ? Image.network(url!, fit: BoxFit.cover)
+            : const SizedBox.shrink());
+
     return Stack(
       fit: StackFit.expand,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-          child: Image.file(file, fit: BoxFit.cover),
+          child: imageWidget,
         ),
         Positioned(
           top: 4,

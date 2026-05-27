@@ -8,7 +8,6 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
-import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
@@ -18,6 +17,8 @@ import 'package:toukh_provider/features/auth/presentation/otp_delivery_snack.dar
 import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/features/registration/presentation/register_review_edit_sheet.dart';
+import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/register_review_tile.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -129,9 +130,8 @@ class RegisterReviewScreen extends StatefulWidget {
 
 class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
   final _otpRepository = getIt<OtpRepository>();
-  bool _otpRequested = false;
 
-  Future<void> _maybeSendOtp(String phoneE164) async {
+  Future<void> _navigateToPhoneVerification(String phoneE164) async {
     try {
       final result = await _otpRepository.requestOtp(phone: phoneE164);
       if (!mounted) return;
@@ -150,9 +150,9 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
         flow: VerifyOtpFlow.registerApplication,
       );
       getIt<RegistrationOtpArgsHolder>().stashForRegistration(args);
-      await context.push(AppRoutes.verifyOtp, extra: args);
+      if (!mounted) return;
+      context.pushReplacement(AppRoutes.verifyOtp, extra: args);
     } catch (e) {
-      _otpRequested = false;
       if (mounted) {
         AppSnack.show(
           context,
@@ -162,15 +162,6 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
         );
       }
     }
-  }
-
-  String? _phoneE164FromDraft(RegistrationDraft d) {
-    final raw = d.phoneNational.replaceAll(RegExp(r'\D'), '');
-    final ten =
-        raw.length >= 10 ? raw.substring(raw.length - 10) : raw;
-    if (ten.length != 10) return null;
-    final e164 = egyptMobileE164(ten);
-    return e164.isEmpty ? null : e164;
   }
 
   Future<void> _submit() async {
@@ -185,95 +176,146 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
       );
       return;
     }
+
+    final authCubit = context.read<AuthCubit>();
     await context.withAppLoading(() async {
-      await context.read<AuthCubit>().registerProviderInitial(data);
+      await authCubit.registerProviderInitial(data);
     });
+
+    if (!mounted) return;
+
+    final authState = authCubit.state;
+    if (authState is AuthFailure) {
+      AppSnack.show(
+        context,
+        message: authState.message,
+        state: AppSnackState.error,
+        icon: Icons.error_outline_rounded,
+      );
+      authCubit.dismissFailure();
+      return;
+    }
+
+    if (authState is! Authenticated) return;
+
+    if (authState.profile.phoneVerified) {
+      context.go(AppRoutes.requestSubmitted);
+      return;
+    }
+
+    final phone = phoneE164FromProfileStored(authState.profile.phone);
+    if (phone == null) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Auth.invalidPhone.tr,
+        state: AppSnackState.error,
+        icon: Icons.phone_disabled_outlined,
+      );
+      return;
+    }
+
+    await _navigateToPhoneVerification(phone);
   }
 
-  List<Widget> _reviewTiles(RegistrationDraft draft, ColorScheme scheme) {
+  void _openEdit(BuildContext context, ReviewField field) {
+    unawaited(showRegisterReviewEditSheet(context, field: field));
+  }
+
+  List<Widget> _reviewTiles(
+    BuildContext context,
+    RegistrationDraft draft,
+    ColorScheme scheme,
+  ) {
     final address = draft.formattedAddress.trim();
     final locationValue = address.isEmpty ? '—' : address;
 
-    final children = <Widget>[
-      RegisterReviewTile(
+    final rows = <({ReviewField? field, IconData icon, String titleKey, String value})>[
+      (
+        field: null,
         icon: Icons.store_mall_directory_outlined,
         titleKey: AppStrings.Registration.reviewBusinessType,
         value: draft.kind == null ? '—' : _kindKey(draft.kind!).tr,
-        scheme: scheme,
       ),
     ];
 
     final cat = _categoryEntry(draft);
     if (cat != null) {
-      children.add(
-        RegisterReviewTile(
-          icon: Icons.label_outline,
-          titleKey: cat.$1,
-          value: cat.$2,
-          scheme: scheme,
-        ),
-      );
+      rows.add((
+        field: null,
+        icon: Icons.label_outline,
+        titleKey: cat.$1,
+        value: cat.$2,
+      ));
     }
 
-    children.addAll([
-      RegisterReviewTile(
-        icon: Icons.badge_outlined,
-        titleKey: AppStrings.Registration.brandName,
-        value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
-        scheme: scheme,
-      ),
-      if (draft.description.trim().isNotEmpty)
-        RegisterReviewTile(
-          icon: Icons.notes_outlined,
-          titleKey: AppStrings.Registration.description,
-          value: draft.description.trim(),
-          scheme: scheme,
-        ),
-      RegisterReviewTile(
+    rows.add((
+      field: ReviewField.profile,
+      icon: Icons.badge_outlined,
+      titleKey: AppStrings.Registration.brandName,
+      value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
+    ));
+
+    if (draft.description.trim().isNotEmpty) {
+      rows.add((
+        field: ReviewField.profile,
+        icon: Icons.notes_outlined,
+        titleKey: AppStrings.Registration.description,
+        value: draft.description.trim(),
+      ));
+    }
+
+    rows.addAll([
+      (
+        field: ReviewField.phone,
         icon: Icons.phone_outlined,
         titleKey: AppStrings.Auth.phoneNumber,
         value: draft.phoneNational.trim().isEmpty ? '—' : draft.phoneNational,
-        scheme: scheme,
       ),
-      RegisterReviewTile(
+      (
+        field: ReviewField.location,
         icon: Icons.location_on_outlined,
         titleKey: AppStrings.Registration.mapTitle,
         value: locationValue,
-        scheme: scheme,
       ),
-      RegisterReviewTile(
+      (
+        field: ReviewField.hours,
         icon: Icons.schedule_outlined,
         titleKey: AppStrings.Registration.hoursTitle,
         value: _hoursSummary(draft),
-        scheme: scheme,
       ),
     ]);
 
     final delivery = _deliverySummary(draft);
     if (delivery != null) {
-      children.add(
-        RegisterReviewTile(
-          icon: Icons.local_shipping_outlined,
-          titleKey: AppStrings.Registration.deliveryTitle,
-          value: delivery,
-          scheme: scheme,
-        ),
-      );
+      rows.add((
+        field: ReviewField.delivery,
+        icon: Icons.local_shipping_outlined,
+        titleKey: AppStrings.Registration.deliveryTitle,
+        value: delivery,
+      ));
     }
 
     final prep = draft.avgPrepMinutes;
     if (prep != null && prep > 0) {
-      children.add(
-        RegisterReviewTile(
-          icon: Icons.timer_outlined,
-          titleKey: AppStrings.Registration.reviewPrepTime,
-          value: '$prep',
-          scheme: scheme,
-        ),
-      );
+      rows.add((
+        field: ReviewField.delivery,
+        icon: Icons.timer_outlined,
+        titleKey: AppStrings.Registration.reviewPrepTime,
+        value: '$prep',
+      ));
     }
 
-    return children;
+    return rows
+        .map(
+          (r) => RegisterReviewTile(
+            icon: r.icon,
+            titleKey: r.titleKey,
+            value: r.value,
+            scheme: scheme,
+            onTap: r.field != null ? () => _openEdit(context, r.field!) : null,
+          ),
+        )
+        .toList();
   }
 
   @override
@@ -281,41 +323,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final draft = context.watch<RegistrationCubit>().state;
     final data = draft.toSubmitData();
     final scheme = Theme.of(context).colorScheme;
-    return BlocListener<AuthCubit, AuthState>(
-      listenWhen: (p, c) {
-        if (c is AuthFailure) return true;
-        if (c is Authenticated &&
-            c.profile.status == ProviderAccountStatus.pending &&
-            !c.profile.phoneVerified &&
-            !_otpRequested) {
-          return true;
-        }
-        return false;
-      },
-      listener: (context, state) async {
-        if (state is AuthFailure) {
-          AppSnack.show(
-            context,
-            message: state.message,
-            state: AppSnackState.error,
-            icon: Icons.error_outline_rounded,
-          );
-          context.read<AuthCubit>().dismissFailure();
-          return;
-        }
-        if (state is Authenticated &&
-            state.profile.status == ProviderAccountStatus.pending &&
-            !state.profile.phoneVerified &&
-            !_otpRequested) {
-          final phone = _phoneE164FromDraft(
-            context.read<RegistrationCubit>().state,
-          );
-          if (phone == null) return;
-          _otpRequested = true;
-          await _maybeSendOtp(phone);
-        }
-      },
-      child: Scaffold(
+    return Scaffold(
         appBar: AppBar(
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_ios_new_rounded),
@@ -328,9 +336,17 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              CustomText(
+                AppStrings.Registration.reviewTapToEdit.tr,
+                style: TextStyle(
+                  fontSize: AppSizes.fontCaption,
+                  color: scheme.onSurface.withValues(alpha: 0.62),
+                ),
+              ),
+              SizedBox(height: AppSizes.spaceMd),
               Expanded(
                 child: ListView(
-                  children: _reviewTiles(draft, scheme),
+                  children: _reviewTiles(context, draft, scheme),
                 ),
               ),
               RegistrationStepNavFooter(
@@ -342,7 +358,6 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
             ],
           ),
         ),
-      ),
     );
   }
 }

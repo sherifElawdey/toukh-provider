@@ -57,7 +57,7 @@ class WelcomeLocaleChoiceCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      regionLabel,
+                      languageLabel,
                       style: TextStyle(
                         fontSize: AppSizes.fontTitle,
                         fontWeight: FontWeight.w700,
@@ -73,15 +73,15 @@ class WelcomeLocaleChoiceCard extends StatelessWidget {
                     ),
                 ],
               ),
-              SizedBox(height: AppSizes.spaceXs),
-              Text(
-                languageLabel,
-                style: TextStyle(
-                  fontSize: AppSizes.fontLabel,
-                  fontWeight: FontWeight.w500,
-                  color: scheme.onSurface.withValues(alpha: 0.62),
-                ),
-              ),
+              // SizedBox(height: AppSizes.spaceXs),
+              // Text(
+              //   languageLabel,
+              //   style: TextStyle(
+              //     fontSize: AppSizes.fontLabel,
+              //     fontWeight: FontWeight.w500,
+              //     color: scheme.onSurface.withValues(alpha: 0.62),
+              //   ),
+              // ),
             ],
           ),
         ),

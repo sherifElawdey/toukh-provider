@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/constants/legal_urls.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
@@ -7,6 +8,7 @@ import 'package:toukh_provider/core/router/go_router_auth_refresh.dart';
 import 'package:toukh_provider/core/router/go_router_refresh.dart';
 import 'package:toukh_provider/core/router/provider_redirect.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
+import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/account_status/presentation/account_phone_verification_screen.dart';
 import 'package:toukh_provider/features/account_status/presentation/blocked_screen.dart';
@@ -29,6 +31,8 @@ import 'package:toukh_provider/features/menu/presentation/menu_builder_screen.da
 import 'package:toukh_provider/features/notifications/presentation/notifications_screen.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/onboarding/presentation/permissions_screen.dart';
+import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
+import 'package:toukh_provider/features/orders/presentation/order_detail_screen.dart';
 import 'package:toukh_provider/features/orders/presentation/orders_screen.dart';
 import 'package:toukh_provider/features/pending/presentation/pending_approval_screen.dart';
 import 'package:toukh_provider/features/portfolio/presentation/portfolio_screen.dart';
@@ -69,6 +73,7 @@ GoRouter createAppRouter({
         onboardingCubit.stream,
         settingsCubit.stream,
       ]),
+      getIt<AppVersionGateService>(),
     ]),
     redirect: (context, state) => resolveProviderRedirect(
           matchedLocation: state.matchedLocation,
@@ -89,7 +94,9 @@ GoRouter createAppRouter({
         path: AppRoutes.appUpdate,
         builder: (context, state) {
           final extra = state.extra;
-          final uri = extra is Uri ? extra : null;
+          final uri = extra is Uri
+              ? extra
+              : getIt<AppVersionGateService>().storeUri;
           if (uri == null) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (context.mounted) GoRouter.of(context).go(AppRoutes.splash);
@@ -97,11 +104,12 @@ GoRouter createAppRouter({
             return const Scaffold(body: SizedBox.shrink());
           }
           return AppMandatoryUpdateScreen(
-            title: 'Update required',
-            description:
-                'A newer version of the Toukh Service app is available. Please update from the store to continue.',
+            title: AppStrings.AppUpdate.title.tr,
+            description: AppStrings.AppUpdate.description.tr,
             storeUri: uri,
-            updateButtonLabel: 'Open store',
+            updateButtonLabel: AppStrings.AppUpdate.openStore.tr,
+            imageAsset: 'assets/branding/app_icon_provider.png',
+            imagePackage: null,
           );
         },
       ),
@@ -281,11 +289,16 @@ GoRouter createAppRouter({
                 path: AppRoutes.home,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: BlocProvider(
-                    create: (_) => HomeDashboardCubit(
-                      authCubit: getIt<AuthCubit>(),
-                      dashboardRepository: getIt<ProviderDashboardRepository>(),
-                    )..start(),
+                  child: MultiBlocProvider(
+                    providers: [
+                      BlocProvider(
+                        create: (_) => HomeDashboardCubit(
+                          authCubit: getIt<AuthCubit>(),
+                          dashboardRepository: getIt<ProviderDashboardRepository>(),
+                        )..start(),
+                      ),
+                      BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
+                    ],
                     child: const HomeScreen(),
                   ),
                 ),
@@ -298,8 +311,24 @@ GoRouter createAppRouter({
                 path: AppRoutes.orders,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const OrdersScreen(),
+                  child: BlocProvider.value(
+                    value: getIt<ProviderOrdersCubit>(),
+                    child: const OrdersScreen(),
+                  ),
                 ),
+                routes: [
+                  GoRoute(
+                    path: ':orderId',
+                    parentNavigatorKey: providerRootNavigatorKey,
+                    builder: (context, state) {
+                      final orderId = state.pathParameters['orderId']!;
+                      return BlocProvider.value(
+                        value: getIt<ProviderOrdersCubit>(),
+                        child: OrderDetailScreen(orderId: orderId),
+                      );
+                    },
+                  ),
+                ],
               ),
             ],
           ),

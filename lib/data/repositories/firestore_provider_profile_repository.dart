@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class FirestoreProviderProfileRepository implements ProviderProfileRepository {
   FirestoreProviderProfileRepository(this._firestore);
@@ -44,5 +45,22 @@ class FirestoreProviderProfileRepository implements ProviderProfileRepository {
         .limit(1)
         .get();
     return q.docs.isNotEmpty;
+  }
+
+  @override
+  Future<void> addFcmToken({required String uid, required String token}) async {
+    if (token.isEmpty) return;
+    final snap = await _providers.doc(uid).get();
+    final existing =
+        (snap.data()?['fcmTokens'] as List<dynamic>?)?.cast<String>() ?? [];
+    if (existing.contains(token)) return;
+    final merged = ToukhFcmTokenSync.mergeFcmToken(existing, token);
+    await _providers.doc(uid).set(
+      {
+        'fcmTokens': merged,
+        'updatedAt': FieldValue.serverTimestamp(),
+      },
+      SetOptions(merge: true),
+    );
   }
 }

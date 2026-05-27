@@ -15,6 +15,17 @@ String egyptMobileE164(String tenNationalDigits) {
   return '+$kEgyptCallingCodeDigits$d';
 }
 
+/// E.164 for a provider profile phone field (national digits or stored E.164).
+String? phoneE164FromProfileStored(String storedPhone) {
+  final ten = egyptTenDigitsFromStored(storedPhone);
+  if (ten != null && ten.length == 10) {
+    final e164 = egyptMobileE164(ten);
+    return e164.isEmpty ? null : e164;
+  }
+  final raw = toFirebaseE164(storedPhone);
+  return raw.isEmpty ? null : raw;
+}
+
 String? egyptTenDigitsFromStored(String? storedDigits) {
   if (storedDigits == null || storedDigits.isEmpty) return null;
   var d = storedDigits.replaceAll(RegExp(r'\D'), '');

@@ -7,15 +7,11 @@ class DashboardFirestorePayload extends Equatable {
   const DashboardFirestorePayload({
     required this.orders,
     required this.reviews,
-    this.usedMockFallback = false,
   });
 
   final List<ProviderOrderDashboard> orders;
   final List<ProviderReviewSummary> reviews;
 
-  /// True when [HybridProviderDashboardRepository] substituted demo data.
-  final bool usedMockFallback;
-
   @override
-  List<Object?> get props => [orders, reviews, usedMockFallback];
+  List<Object?> get props => [orders, reviews];
 }

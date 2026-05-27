@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/portfolio/presentation/widgets/portfolio_add_placeholder.dart';
 import 'package:toukh_provider/features/portfolio/presentation/widgets/portfolio_image_tile.dart';
@@ -31,7 +33,11 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Future<void> _save() async {
-    if (_files.isEmpty) {
+    final authState = context.read<AuthCubit>().state;
+    final hasExisting = authState is Authenticated &&
+        (authState.profile.portfolioImageUrls?.isNotEmpty ?? false);
+
+    if (!hasExisting && _files.isEmpty) {
       AppSnack.show(
         context,
         message: AppStrings.Registration.portfolioMinOne.tr,
@@ -53,14 +59,26 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         icon: Icons.error_outline_rounded,
       );
       await context.read<AuthCubit>().dismissFailure();
+      return;
     }
+    setState(() => _files.clear());
+    AppSnack.show(
+      context,
+      message: AppStrings.Common.success.tr,
+      state: AppSnackState.success,
+      icon: Icons.check_circle_outline_rounded,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final showAddSlot = _files.length < PortfolioScreen.kMaxPhotos;
-    final gridCount = _files.length + (showAddSlot ? 1 : 0);
+    final authState = context.watch<AuthCubit>().state;
+    if (authState is! Authenticated) {
+      return const SizedBox.shrink();
+    }
+
+    final galleryRepo = getIt<ProviderGalleryRepository>();
 
     return Scaffold(
       appBar: AppBar(
@@ -84,27 +102,52 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
           Expanded(
-            child: GridView.builder(
-              padding: AppSizes.screenPadding.copyWith(top: 0),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: AppSizes.spaceSm,
-                mainAxisSpacing: AppSizes.spaceSm,
-                childAspectRatio: 1,
-              ),
-              itemCount: gridCount,
-              itemBuilder: (context, i) {
-                if (i < _files.length) {
-                  return PortfolioImageTile(
-                    file: _files[i],
-                    onRemove: () => setState(() => _files.removeAt(i)),
-                  );
-                }
-                return PortfolioAddPlaceholder(
-                  currentCount: _files.length,
-                  maxCount: PortfolioScreen.kMaxPhotos,
-                  scheme: scheme,
-                  onTap: _add,
+            child: StreamBuilder<List<ProviderGalleryItem>>(
+              stream: galleryRepo.watchGallery(authState.profile.uid),
+              builder: (context, snapshot) {
+                final existing = snapshot.data ?? const [];
+                final totalCount = existing.length + _files.length;
+                final showAddSlot =
+                    totalCount < PortfolioScreen.kMaxPhotos;
+                final gridCount =
+                    existing.length + _files.length + (showAddSlot ? 1 : 0);
+
+                return GridView.builder(
+                  padding: AppSizes.screenPadding.copyWith(top: 0),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: AppSizes.spaceSm,
+                    mainAxisSpacing: AppSizes.spaceSm,
+                    childAspectRatio: 1,
+                  ),
+                  itemCount: gridCount,
+                  itemBuilder: (context, i) {
+                    if (i < existing.length) {
+                      final item = existing[i];
+                      return PortfolioImageTile(
+                        url: item.url,
+                        onRemove: () => galleryRepo.deleteImage(
+                          providerId: authState.profile.uid,
+                          item: item,
+                        ),
+                      );
+                    }
+                    final localIndex = i - existing.length;
+                    if (localIndex < _files.length) {
+                      return PortfolioImageTile(
+                        file: _files[localIndex],
+                        onRemove: () =>
+                            setState(() => _files.removeAt(localIndex)),
+                      );
+                    }
+                    return PortfolioAddPlaceholder(
+                      currentCount: totalCount,
+                      maxCount: PortfolioScreen.kMaxPhotos,
+                      scheme: scheme,
+                      onTap: _add,
+                    );
+                  },
                 );
               },
             ),

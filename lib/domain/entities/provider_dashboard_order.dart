@@ -65,11 +65,13 @@ class ProviderOrderDashboard extends Equatable {
           _merchantInProgressWire(statusWire));
 
   static bool _merchantInProgressWire(String wire) {
-    final v = wire.toLowerCase();
+    final v = wire.toLowerCase().replaceAll('-', '_');
     return v == 'preparing' ||
         v == 'ready' ||
         v == 'ready_for_pickup' ||
-        v == 'pending';
+        v == 'pending' ||
+        v == 'courier_requested' ||
+        v == 'courier_assigned';
   }
 
   @override

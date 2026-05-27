@@ -2,6 +2,7 @@
 library;
 
 export 'home_dashboard_section_helpers.dart';
+export 'home_dashboard_empty_placeholder.dart';
 export 'home_dashboard_in_progress_order_card.dart';
 export 'home_dashboard_in_progress_strip.dart';
 export 'home_dashboard_wallet_card.dart';

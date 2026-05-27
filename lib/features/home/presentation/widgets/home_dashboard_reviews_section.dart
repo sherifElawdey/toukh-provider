@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/domain/entities/provider_review_summary.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/dashboard_shell.dart';
+import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -30,12 +31,9 @@ class HomeDashboardReviewsSection extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.spaceMd),
         if (reviews.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceSm),
-            child: CustomText(
-              AppStrings.Home.dashboardReviewsEmpty.tr,
-              style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.55)),
-            ),
+          HomeDashboardEmptyPlaceholder(
+            icon: Icons.rate_review_outlined,
+            message: AppStrings.Home.dashboardReviewsEmpty,
           )
         else
           ...reviews.map((r) {

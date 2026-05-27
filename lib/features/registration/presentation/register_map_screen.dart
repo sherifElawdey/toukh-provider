@@ -21,8 +21,10 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   GoogleMapController? _map;
   LatLng _target = const LatLng(30.0444, 31.2357);
   String _address = '';
-  bool _busy = true;
+  bool _locating = true;
   bool _hasLocationPermission = false;
+
+  static const _locationTimeout = Duration(seconds: 12);
 
   @override
   void initState() {
@@ -32,7 +34,6 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
 
   @override
   void dispose() {
-    _map?.dispose();
     super.dispose();
   }
 
@@ -42,10 +43,11 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       if (!serviceOn) {
         if (mounted) {
           setState(() {
-            _busy = false;
+            _locating = false;
             _hasLocationPermission = false;
           });
         }
+        await _reverseGeocode(_target);
         return;
       }
       var perm = await Geolocator.checkPermission();
@@ -56,17 +58,22 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           perm == LocationPermission.deniedForever) {
         if (mounted) {
           setState(() {
-            _busy = false;
+            _locating = false;
             _hasLocationPermission = false;
           });
         }
+        await _reverseGeocode(_target);
         return;
       }
-      final pos = await Geolocator.getCurrentPosition();
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          timeLimit: _locationTimeout,
+        ),
+      );
       if (!mounted) return;
       setState(() {
         _target = LatLng(pos.latitude, pos.longitude);
-        _busy = false;
+        _locating = false;
         _hasLocationPermission = true;
       });
       await _reverseGeocode(_target);
@@ -74,10 +81,11 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     } catch (_) {
       if (mounted) {
         setState(() {
-          _busy = false;
+          _locating = false;
           _hasLocationPermission = false;
         });
       }
+      await _reverseGeocode(_target);
     }
   }
 
@@ -158,9 +166,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
               zoomControlsEnabled: false,
               onMapCreated: (c) {
                 _map = c;
-                if (!_busy) {
-                  c.animateCamera(CameraUpdate.newLatLngZoom(_target, 14));
-                }
+                c.animateCamera(CameraUpdate.newLatLngZoom(_target, 14));
               },
               onCameraMove: (pos) => _target = pos.target,
               onCameraIdle: _onCameraIdle,
@@ -196,14 +202,21 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
                       padding: EdgeInsets.zero,
                       onBack: () => context.pop(),
                       onNext: _continue,
-                      nextEnabled: !_busy,
+                      nextEnabled: !_locating,
                     ),
                   ],
                 ),
               ),
             ),
           ),
-          if (_busy) const AppLoadingOverlay(),
+          if (_locating)
+            const Align(
+              alignment: Alignment.topCenter,
+              child: Padding(
+                padding: EdgeInsets.only(top: AppSizes.spaceMd),
+                child: AppLoadingMark(),
+              ),
+            ),
         ],
       ),
     );

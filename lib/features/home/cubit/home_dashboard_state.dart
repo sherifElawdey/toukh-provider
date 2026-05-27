@@ -67,7 +67,6 @@ class HomeDashboardState extends Equatable {
     required this.providerDisplayName,
     required this.orders,
     required this.reviews,
-    required this.usedMockFallback,
     required this.chartPeriod,
     required this.walletBalanceEgp,
     this.walletPendingEgp,
@@ -89,7 +88,6 @@ class HomeDashboardState extends Equatable {
 
   final List<ProviderOrderDashboard> orders;
   final List<ProviderReviewSummary> reviews;
-  final bool usedMockFallback;
 
   final DashboardChartPeriod chartPeriod;
 
@@ -119,7 +117,6 @@ class HomeDashboardState extends Equatable {
       providerDisplayName: '',
       orders: const [],
       reviews: const [],
-      usedMockFallback: false,
       chartPeriod: DashboardChartPeriod.week,
       walletBalanceEgp: 0,
       walletPendingEgp: null,
@@ -148,7 +145,6 @@ class HomeDashboardState extends Equatable {
     String? providerDisplayName,
     List<ProviderOrderDashboard>? orders,
     List<ProviderReviewSummary>? reviews,
-    bool? usedMockFallback,
     DashboardChartPeriod? chartPeriod,
     double? walletBalanceEgp,
     double? walletPendingEgp,
@@ -168,7 +164,6 @@ class HomeDashboardState extends Equatable {
       providerDisplayName: providerDisplayName ?? this.providerDisplayName,
       orders: orders ?? this.orders,
       reviews: reviews ?? this.reviews,
-      usedMockFallback: usedMockFallback ?? this.usedMockFallback,
       chartPeriod: chartPeriod ?? this.chartPeriod,
       walletBalanceEgp: walletBalanceEgp ?? this.walletBalanceEgp,
       walletPendingEgp: walletPendingEgp ?? this.walletPendingEgp,
@@ -190,7 +185,6 @@ class HomeDashboardState extends Equatable {
         providerDisplayName,
         orders,
         reviews,
-        usedMockFallback,
         chartPeriod,
         walletBalanceEgp,
         walletPendingEgp,

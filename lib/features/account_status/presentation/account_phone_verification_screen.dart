@@ -18,18 +18,8 @@ import 'package:toukh_ui/toukh_ui.dart';
 class AccountPhoneVerificationScreen extends StatelessWidget {
   const AccountPhoneVerificationScreen({super.key});
 
-  static String? _phoneE164FromProfile(String storedPhone) {
-    final ten = egyptTenDigitsFromStored(storedPhone);
-    if (ten != null && ten.length == 10) {
-      final e164 = egyptMobileE164(ten);
-      return e164.isEmpty ? null : e164;
-    }
-    final raw = toFirebaseE164(storedPhone);
-    return raw.isEmpty ? null : raw;
-  }
-
   Future<void> _sendOtp(BuildContext context, Authenticated auth) async {
-    final phone = _phoneE164FromProfile(auth.profile.phone);
+    final phone = phoneE164FromProfileStored(auth.profile.phone);
     if (phone == null) {
       AppSnack.show(
         context,

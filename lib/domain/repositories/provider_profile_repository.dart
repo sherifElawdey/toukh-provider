@@ -9,4 +9,6 @@ abstract class ProviderProfileRepository {
 
   /// Returns true if any document in [providers] has this national/E.164 digit string.
   Future<bool> existsByPhone(String phoneDigits);
+
+  Future<void> addFcmToken({required String uid, required String token});
 }

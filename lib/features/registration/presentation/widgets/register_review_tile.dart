@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class RegisterReviewTile extends StatelessWidget {
@@ -8,16 +9,18 @@ class RegisterReviewTile extends StatelessWidget {
     required this.titleKey,
     required this.value,
     required this.scheme,
+    this.onTap,
   });
 
   final IconData icon;
   final String titleKey;
   final String value;
   final ColorScheme scheme;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final content = Padding(
       padding: const EdgeInsets.only(bottom: AppSizes.spaceMd),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -34,7 +37,7 @@ class RegisterReviewTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 CustomText(
-                  titleKey,
+                  titleKey.tr,
                   style: TextStyle(
                     fontSize: AppSizes.fontLabel,
                     fontWeight: FontWeight.w600,
@@ -54,7 +57,25 @@ class RegisterReviewTile extends StatelessWidget {
               ],
             ),
           ),
+          if (onTap != null) ...[
+            SizedBox(width: AppSizes.spaceSm),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: scheme.onSurface.withValues(alpha: 0.45),
+            ),
+          ],
         ],
+      ),
+    );
+
+    if (onTap == null) return content;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+        child: content,
       ),
     );
   }

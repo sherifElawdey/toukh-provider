@@ -155,7 +155,6 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       providerDisplayName: _greetingName(profile),
       orders: orders,
       reviews: reviews,
-      usedMockFallback: payload.usedMockFallback,
       chartPeriod: chartPeriod,
       walletBalanceEgp: profile.walletBalanceEgp ?? 0,
       walletPendingEgp: profile.walletPendingEgp,

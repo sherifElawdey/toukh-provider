@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/dashboard_shell.dart';
+import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -27,12 +28,9 @@ class HomeDashboardBestsellersSection extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.spaceMd),
         if (rows.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceSm),
-            child: CustomText(
-              AppStrings.Home.dashboardBestsellersEmpty.tr,
-              style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.55)),
-            ),
+          HomeDashboardEmptyPlaceholder(
+            icon: Icons.local_fire_department_outlined,
+            message: AppStrings.Home.dashboardBestsellersEmpty,
           )
         else
           ...rows.asMap().entries.map((e) {

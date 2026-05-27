@@ -28,6 +28,7 @@ abstract final class AppStrings {
   static const Welcome = _Welcome();
   static const Registration = _Registration();
   static const Pending = _Pending();
+  static const AppUpdate = _AppUpdate();
 }
 
 class _App {
@@ -41,6 +42,13 @@ class _Splash {
   const _Splash();
   String get checkingAccount => 'splash.checking_account';
   String get preparingApp => 'splash.preparing_app';
+}
+
+class _AppUpdate {
+  const _AppUpdate();
+  String get title => 'app_update.title';
+  String get description => 'app_update.description';
+  String get openStore => 'app_update.open_store';
 }
 
 class _Common {
@@ -205,7 +213,6 @@ class _Home {
   String get dashboardViewOrders => 'home.dashboard_view_orders';
   String get dashboardWalletTitle => 'home.dashboard_wallet_title';
   String get dashboardWalletPending => 'home.dashboard_wallet_pending';
-  String get dashboardMockPreview => 'home.dashboard_mock_preview';
   String get dashboardStatOrders => 'home.dashboard_stat_orders';
   String get dashboardStatCompletion => 'home.dashboard_stat_completion';
   String get dashboardStatCompletionSub => 'home.dashboard_stat_completion_sub';
@@ -224,11 +231,6 @@ class _Home {
   String get dashboardStatusPreparing => 'home.dashboard_status_preparing';
   String get dashboardStatusNew => 'home.dashboard_status_new';
   String get dashboardStatusPickup => 'home.dashboard_status_pickup';
-  String get seedDemoProvidersButton => 'home.seed_demo_providers_button';
-  String get seedDemoProvidersTitle => 'home.seed_demo_providers_title';
-  String get seedDemoProvidersBody => 'home.seed_demo_providers_body';
-  String get seedDemoProvidersConfirm => 'home.seed_demo_providers_confirm';
-  String get seedDemoProvidersDone => 'home.seed_demo_providers_done';
 }
 
 class _Notifications {
@@ -247,6 +249,42 @@ class _Orders {
   String get waitingOverdueMessage => 'orders.waiting_overdue_message';
   String get waitingClientHeadline => 'orders.waiting_client_headline';
   String get emptySubtitle => 'orders.empty_subtitle';
+  String get tabIncoming => 'orders.tab_incoming';
+  String get tabInProgress => 'orders.tab_in_progress';
+  String get tabOutgoing => 'orders.tab_outgoing';
+  String get tabDelivered => 'orders.tab_delivered';
+  String get emptyIncoming => 'orders.empty_incoming';
+  String get emptyInProgress => 'orders.empty_in_progress';
+  String get emptyOutgoing => 'orders.empty_outgoing';
+  String get emptyDelivered => 'orders.empty_delivered';
+  String get filterNewest => 'orders.filter_newest';
+  String get filterOldest => 'orders.filter_oldest';
+  String get filterWithCourier => 'orders.filter_with_courier';
+  String get actionApprove => 'orders.action_approve';
+  String get actionCancel => 'orders.action_cancel';
+  String get actionRequestDelivery => 'orders.action_request_delivery';
+  String get actionReadyForPickup => 'orders.action_ready_for_pickup';
+  String get actionDeliver => 'orders.action_deliver';
+  String get actionConfirmHandoff => 'orders.action_confirm_handoff';
+  String get storeDeliveryLabel => 'orders.store_delivery_label';
+  String get courierAssignedLabel => 'orders.courier_assigned_label';
+  String get elapsedSinceDispatch => 'orders.elapsed_since_dispatch';
+  String get statusNew => 'orders.status_new';
+  String get statusPreparing => 'orders.status_preparing';
+  String get statusCourierRequested => 'orders.status_courier_requested';
+  String get statusCourierAssigned => 'orders.status_courier_assigned';
+  String get statusReadyForPickup => 'orders.status_ready_for_pickup';
+  String get statusOutForDelivery => 'orders.status_out_for_delivery';
+  String get statusPickup => 'orders.status_pickup';
+  String get statusDelivered => 'orders.status_delivered';
+  String get statusCancelled => 'orders.status_cancelled';
+  String get requestDeliveryTitle => 'orders.request_delivery_title';
+  String get requestDeliveryHint => 'orders.request_delivery_hint';
+  String get requestDeliveryConfirm => 'orders.request_delivery_confirm';
+  String get driverAssignedTitle => 'orders.driver_assigned_title';
+  String get driverAssignedBody => 'orders.driver_assigned_body';
+  String get driverAssignedDone => 'orders.driver_assigned_done';
+  String get courierLateWarning => 'orders.courier_late_warning';
   String get actionAccept => 'orders.action_accept';
   String get actionDismiss => 'orders.action_dismiss';
   String get seeDetails => 'orders.see_details';
@@ -353,6 +391,8 @@ class _Registration {
   String get deliveryModeFixed => 'registration.delivery_mode_fixed';
   String get deliveryModePerKm => 'registration.delivery_mode_per_km';
   String get reviewTitle => 'registration.review_title';
+  String get reviewEditSave => 'registration.review_edit_save';
+  String get reviewTapToEdit => 'registration.review_tap_to_edit';
   String get submit => 'registration.submit';
   String get brandName => 'registration.brand_name';
   String get description => 'registration.description';

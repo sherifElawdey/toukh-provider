@@ -17,6 +17,11 @@ class AppTranslations extends Translations {
     'splash.checking_account': 'Checking your account…',
     'splash.preparing_app': 'Preparing the app…',
 
+    'app_update.title': 'Update required',
+    'app_update.description':
+        'A newer version of the Toukh Service app is available. Please update from the store to continue.',
+    'app_update.open_store': 'Open store',
+
     'common.continue': 'Continue',
     'common.cancel': 'Cancel',
     'common.delete': 'Delete',
@@ -135,6 +140,8 @@ class AppTranslations extends Translations {
     'registration.delivery_mode_fixed': 'Fixed',
     'registration.delivery_mode_per_km': 'Per km',
     'registration.review_title': 'Review & submit',
+    'registration.review_edit_save': 'Save',
+    'registration.review_tap_to_edit': 'Tap any item to edit',
     'registration.submit': 'Submit application',
     'registration.brand_name': 'Brand name',
     'registration.description': 'Description',
@@ -283,8 +290,6 @@ class AppTranslations extends Translations {
     'home.dashboard_view_orders': 'Orders',
     'home.dashboard_wallet_title': 'Wallet balance',
     'home.dashboard_wallet_pending': 'Pending',
-    'home.dashboard_mock_preview':
-        'Preview data — connect live orders in Firestore to replace this.',
     'home.dashboard_stat_orders': 'Orders',
     'home.dashboard_stat_completion': 'Completed',
     'home.dashboard_stat_completion_sub': 'of accepted',
@@ -303,16 +308,6 @@ class AppTranslations extends Translations {
     'home.dashboard_status_preparing': 'Preparing',
     'home.dashboard_status_new': 'New',
     'home.dashboard_status_pickup': 'Pickup',
-    'home.seed_demo_providers_button': 'Seed demo provider accounts',
-    'home.seed_demo_providers_title': 'Seed demo accounts?',
-    'home.seed_demo_providers_body':
-        'This creates or updates 12 Firebase demo providers (Auth + Firestore). '
-        'When finished you will be signed out — sign in again with your account. '
-        'All seeded logins use password 1234567890 and phones 01234567891–01234567902. '
-        'Requires network and permissive dev Firestore rules.',
-    'home.seed_demo_providers_confirm': 'Start seeding',
-    'home.seed_demo_providers_done':
-        'Demo accounts updated. You were signed out — sign in again.',
 
     'notifications.title': 'Notifications',
     'notifications.show_more': 'Show more',
@@ -333,7 +328,46 @@ class AppTranslations extends Translations {
     'orders.notified_overdue_message':
         'This request has been waiting over 10 minutes. Please accept or dismiss soon.',
     'orders.empty_subtitle':
-        'Delivery requests appear here when dispatch assigns them.',
+        'Customer orders for your store appear here.',
+    'orders.tab_incoming': 'Incoming',
+    'orders.tab_in_progress': 'In progress',
+    'orders.tab_outgoing': 'Outgoing',
+    'orders.tab_delivered': 'Delivered',
+    'orders.empty_incoming': 'No pending orders to approve.',
+    'orders.empty_in_progress': 'No orders in progress right now.',
+    'orders.empty_outgoing': 'No orders out for delivery.',
+    'orders.empty_delivered': 'No delivered orders yet.',
+    'orders.filter_newest': 'Newest',
+    'orders.filter_oldest': 'Oldest',
+    'orders.filter_with_courier': 'With courier',
+    'orders.action_approve': 'Approve',
+    'orders.action_cancel': 'Cancel',
+    'orders.action_request_delivery': 'Request delivery',
+    'orders.action_ready_for_pickup': 'Ready for pickup',
+    'orders.action_deliver': 'Deliver',
+    'orders.action_confirm_handoff': 'Hand to courier',
+    'orders.store_delivery_label': 'Store delivery',
+    'orders.courier_assigned_label': 'Courier',
+    'orders.elapsed_since_dispatch': 'Out for',
+    'orders.status_new': 'New',
+    'orders.status_preparing': 'Preparing',
+    'orders.status_courier_requested': 'Finding courier',
+    'orders.status_courier_assigned': 'Courier assigned',
+    'orders.status_ready_for_pickup': 'Ready for pickup',
+    'orders.status_out_for_delivery': 'Out for delivery',
+    'orders.status_pickup': 'With courier',
+    'orders.status_delivered': 'Delivered',
+    'orders.status_cancelled': 'Cancelled',
+    'orders.request_delivery_title': 'Request a courier',
+    'orders.request_delivery_hint':
+        'Move the map to set the pickup search area. We notify online couriers within 1 km.',
+    'orders.request_delivery_confirm': 'Send request',
+    'orders.driver_assigned_title': 'Courier assigned',
+    'orders.driver_assigned_body':
+        'A courier accepted this order. You can mark it ready for pickup when prepared.',
+    'orders.driver_assigned_done': 'Back to orders',
+    'orders.courier_late_warning':
+        'Courier is late for pickup. They were notified.',
     'orders.status_running': 'Running',
     'orders.status_finished': 'Finished',
     'orders.list_order_id_label': 'Order ID',
@@ -395,13 +429,18 @@ class AppTranslations extends Translations {
   };
 
   static const Map<String, String> _ar = {
-    'app.title': 'خدمة توك',
+    'app.title': 'خدمة طوخ',
     'app.logout_confirm_title': 'تسجيل الخروج؟',
     'app.logout_confirm_body':
         'ستحتاج إلى تسجيل الدخول مرة أخرى لاستلام الرحلات.',
 
     'splash.checking_account': 'جارٍ التحقق من حسابك…',
     'splash.preparing_app': 'جارٍ تجهيز التطبيق…',
+
+    'app_update.title': 'يلزم التحديث',
+    'app_update.description':
+        'يتوفر إصدار أحدث من تطبيق Toukh Service. يُرجى التحديث من المتجر للمتابعة.',
+    'app_update.open_store': 'فتح المتجر',
 
     'common.continue': 'متابعة',
     'common.cancel': 'إلغاء',
@@ -428,7 +467,7 @@ class AppTranslations extends Translations {
     'auth.password': 'كلمة المرور',
     'auth.sign_in': 'تسجيل الدخول',
     'auth.create_account': 'إنشاء حساب',
-    'auth.create_account_title': 'انضم كمندوب توصيل في توك',
+    'auth.create_account_title': 'انضم كمندوب توصيل معنا',
     'auth.create_account_subtitle':
         'أدخل بياناتك لبدء التوصيل. سنراجع طلبك ونرد عليك قريبًا.',
     'auth.first_name': 'الاسم الأول',
@@ -480,9 +519,9 @@ class AppTranslations extends Translations {
     'auth.profile_pending_subtitle':
         'نحمّل ملف مقدّم الخدمة. إذا استغرق ذلك وقتًا طويلًا، تحقق من الاتصال أو سجّل الخروج وأعد المحاولة.',
     'auth.phone_not_registered':
-        'لا يوجد حساب في خدمة توك مسجّل بهذا الرقم.',
+        'لا يوجد حساب في خدمة طوخ مسجّل بهذا الرقم.',
 
-    'welcome.title': 'مرحبًا بك في خدمة توك',
+    'welcome.title': 'مرحبًا بك في خدمة طوخ',
     'welcome.subtitle': 'اختر لغتك وسمة العرض للبدء.',
     'welcome.choose_language': 'اللغة',
     'welcome.choose_theme': 'المظهر',
@@ -519,6 +558,8 @@ class AppTranslations extends Translations {
     'registration.delivery_mode_fixed': 'سعر ثابت',
     'registration.delivery_mode_per_km': 'لكل كم',
     'registration.review_title': 'مراجعة وإرسال',
+    'registration.review_edit_save': 'حفظ',
+    'registration.review_tap_to_edit': 'اضغط على أي عنصر للتعديل',
     'registration.submit': 'إرسال الطلب',
     'registration.brand_name': 'اسم العلامة',
     'registration.description': 'الوصف',
@@ -586,7 +627,7 @@ class AppTranslations extends Translations {
 
     'permissions.title': 'تفعيل الأذونات',
     'permissions.intro':
-        'يحتاج تطبيق خدمة توك إلى الإشعارات وموقعك أثناء استخدام التطبيق حتى يتمكّن العملاء من العثور على نشاطك وتصلك تحديثات الطلبات.',
+        'يحتاج تطبيق خدمة طوخ إلى الإشعارات وموقعك أثناء استخدام التطبيق حتى يتمكّن العملاء من العثور على نشاطك وتصلك تحديثات الطلبات.',
     'permissions.notifications': 'الإشعارات',
     'permissions.notifications_subtitle': 'تنبيهات الرحلات وتحديثات الطلب',
     'permissions.location': 'الموقع',
@@ -621,7 +662,7 @@ class AppTranslations extends Translations {
     'status.sign_out': 'تسجيل الخروج',
     'status.post_login_pending_title': 'طلبك قيد المراجعة',
     'status.post_login_pending_body':
-        'فريقنا يراجع حساب السائق. سنُبلغك عند الموافقة. هل تحتاج مساعدة؟',
+        'فريقنا يراجع حسابك. سنُبلغك عند الموافقة. هل تحتاج مساعدة؟',
     'status.post_login_contact_us': 'تواصل معنا',
     'status.post_login_verify_phone_prompt':
         'لم يُؤكَّد رقم هاتفك بعد. تابع لاستلام رمز التحقق وتفعيل حسابك.',
@@ -663,8 +704,6 @@ class AppTranslations extends Translations {
     'home.dashboard_view_orders': 'الطلبات',
     'home.dashboard_wallet_title': 'رصيد المحفظة',
     'home.dashboard_wallet_pending': 'قيد التسوية',
-    'home.dashboard_mock_preview':
-        'بيانات تجريبية — ربط الطلبات الفعلية في Firestore لاستبدال هذا العرض.',
     'home.dashboard_stat_orders': 'طلبات',
     'home.dashboard_stat_completion': 'مكتملة',
     'home.dashboard_stat_completion_sub': 'من المقبولة',
@@ -683,16 +722,6 @@ class AppTranslations extends Translations {
     'home.dashboard_status_preparing': 'قيد التحضير',
     'home.dashboard_status_new': 'جديد',
     'home.dashboard_status_pickup': 'جاهز للاستلام',
-    'home.seed_demo_providers_button': 'إنشاء حسابات تجريبية',
-    'home.seed_demo_providers_title': 'إنشاء الحسابات التجريبية؟',
-    'home.seed_demo_providers_body':
-        'سيُنشئ هذا أو يحدّث 12 حسابًا تجريبيًا لمقدّمي الخدمة في Firebase (مصادقة + Firestore). '
-        'عند الانتهاء ستُخرج من الجلسة — سجّل الدخول مجددًا بحسابك. '
-        'كل الحسابات التجريبية تستخدم كلمة المرور 1234567890 وأرقام 01234567891–01234567902. '
-        'يتطلب شبكة وقواعد Firestore مناسبة للتطوير.',
-    'home.seed_demo_providers_confirm': 'بدء الإنشاء',
-    'home.seed_demo_providers_done':
-        'تم تحديث الحسابات التجريبية. تم تسجيل الخروج — سجّل الدخول مجددًا.',
 
     'notifications.title': 'الإشعارات',
     'notifications.show_more': 'عرض المزيد',
@@ -713,7 +742,46 @@ class AppTranslations extends Translations {
     'orders.notified_overdue_message':
         'مرّ أكثر من 10 دقائق على هذا الطلب. يُرجى قبول الطلب أو تجاهله قريبًا.',
     'orders.empty_subtitle':
-        'تظهر طلبات التوصيل هنا عند تعيينها لك من الإدارة.',
+        'تظهر هنا طلبات العملاء لمتجرك.',
+    'orders.tab_incoming': 'الواردة',
+    'orders.tab_in_progress': 'قيد التنفيذ',
+    'orders.tab_outgoing': 'قيد التوصيل',
+    'orders.tab_delivered': 'تم التسليم',
+    'orders.empty_incoming': 'لا توجد طلبات بانتظار الموافقة.',
+    'orders.empty_in_progress': 'لا توجد طلبات قيد التنفيذ حاليًا.',
+    'orders.empty_outgoing': 'لا توجد طلبات قيد التوصيل للعميل.',
+    'orders.empty_delivered': 'لا توجد طلبات مُسلَّمة بعد.',
+    'orders.filter_newest': 'الأحدث',
+    'orders.filter_oldest': 'الأقدم',
+    'orders.filter_with_courier': 'مع مندوب',
+    'orders.action_approve': 'موافقة',
+    'orders.action_cancel': 'إلغاء',
+    'orders.action_request_delivery': 'طلب مندوب',
+    'orders.action_ready_for_pickup': 'جاهز للاستلام',
+    'orders.action_deliver': 'تسليم',
+    'orders.action_confirm_handoff': 'تسليم للمندوب',
+    'orders.store_delivery_label': 'توصيل المتجر',
+    'orders.courier_assigned_label': 'مندوب',
+    'orders.elapsed_since_dispatch': 'منذ',
+    'orders.status_new': 'جديد',
+    'orders.status_preparing': 'قيد التحضير',
+    'orders.status_courier_requested': 'جاري البحث عن مندوب',
+    'orders.status_courier_assigned': 'تم تعيين مندوب',
+    'orders.status_ready_for_pickup': 'جاهز للاستلام',
+    'orders.status_out_for_delivery': 'في الطريق للعميل',
+    'orders.status_pickup': 'مع المندوب',
+    'orders.status_delivered': 'تم التسليم',
+    'orders.status_cancelled': 'ملغي',
+    'orders.request_delivery_title': 'طلب مندوب توصيل',
+    'orders.request_delivery_hint':
+        'حرّك الخريطة لتحديد منطقة البحث. نُبلّغ المناديب المتصلين ضمن 1 كم.',
+    'orders.request_delivery_confirm': 'إرسال الطلب',
+    'orders.driver_assigned_title': 'تم تعيين مندوب',
+    'orders.driver_assigned_body':
+        'قبل مندوب هذا الطلب. يمكنك تحديده جاهزًا للاستلام عند الانتهاء.',
+    'orders.driver_assigned_done': 'العودة للطلبات',
+    'orders.courier_late_warning':
+        'المندوب متأخر عن الاستلام. تم إرسال تنبيه له.',
     'orders.status_running': 'جارية',
     'orders.status_finished': 'مكتملة',
     'orders.list_order_id_label': 'رقم الطلب',

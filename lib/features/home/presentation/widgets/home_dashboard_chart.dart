@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
+import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -22,14 +23,9 @@ class HomeDashboardOrderChart extends StatelessWidget {
     if (buckets.isEmpty) {
       return SizedBox(
         height: 180,
-        child: Center(
-          child: CustomText(
-            AppStrings.Home.dashboardChartEmpty.tr,
-            style: TextStyle(
-              color: scheme.onSurface.withValues(alpha: 0.55),
-              fontSize: AppSizes.fontBody,
-            ),
-          ),
+        child: HomeDashboardEmptyPlaceholder(
+          icon: Icons.show_chart_outlined,
+          message: AppStrings.Home.dashboardChartEmpty,
         ),
       );
     }
@@ -38,14 +34,9 @@ class HomeDashboardOrderChart extends StatelessWidget {
     if (totalCount == 0) {
       return SizedBox(
         height: 180,
-        child: Center(
-          child: CustomText(
-            AppStrings.Home.dashboardChartEmpty.tr,
-            style: TextStyle(
-              color: scheme.onSurface.withValues(alpha: 0.55),
-              fontSize: AppSizes.fontBody,
-            ),
-          ),
+        child: HomeDashboardEmptyPlaceholder(
+          icon: Icons.show_chart_outlined,
+          message: AppStrings.Home.dashboardChartEmpty,
         ),
       );
     }

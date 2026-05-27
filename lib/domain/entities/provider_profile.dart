@@ -13,6 +13,7 @@ class ProviderProfile extends Equatable {
     required this.uid,
     required this.phone,
     required this.email,
+    required this.password,
     required this.phoneVerified,
     required this.serviceType,
     this.shopCategory,
@@ -45,6 +46,7 @@ class ProviderProfile extends Equatable {
   final String uid;
   final String phone;
   final String email;
+  final String password;
   final bool phoneVerified;
   final ServiceType serviceType;
   final ShopCategory? shopCategory;
@@ -89,6 +91,7 @@ class ProviderProfile extends Equatable {
     String? uid,
     String? phone,
     String? email,
+    String? password,
     bool? phoneVerified,
     ServiceType? serviceType,
     ShopCategory? shopCategory,
@@ -120,6 +123,7 @@ class ProviderProfile extends Equatable {
       uid: uid ?? this.uid,
       phone: phone ?? this.phone,
       email: email ?? this.email,
+      password: password ?? this.password,
       phoneVerified: phoneVerified ?? this.phoneVerified,
       serviceType: serviceType ?? this.serviceType,
       shopCategory: shopCategory ?? this.shopCategory,
@@ -158,6 +162,7 @@ class ProviderProfile extends Equatable {
     return {
       'phone': phone,
       'email': email,
+      'password': password,
       'phoneVerified': phoneVerified,
       'serviceType': serviceType.wireValue,
       if (shopCategory != null) 'shopCategory': shopCategory!.wireValue,
@@ -183,14 +188,14 @@ class ProviderProfile extends Equatable {
       if (fcmTokens.isNotEmpty) 'fcmTokens': fcmTokens,
       if (walletBalanceEgp != null) 'walletBalanceEgp': walletBalanceEgp,
       if (walletPendingEgp != null) 'walletPendingEgp': walletPendingEgp,
-      'providerId': uid,
-      'restaurantId': uid,
+      // 'providerId': uid,
+      'id': uid,
       'createdAt': Timestamp.fromDate(createdAt),
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
 
-  static ProviderProfile fromFirestore(String uid, Map<String, dynamic> data) {
+  static ProviderProfile fromFirestore(String? uid, Map<String, dynamic> data) {
     final whRaw = data['workingHours'] as Map<String, dynamic>? ?? {};
     final wh = <Weekday, DaySchedule>{};
     for (final e in whRaw.entries) {
@@ -220,10 +225,12 @@ class ProviderProfile extends Equatable {
         : createdAt;
 
     return ProviderProfile(
-      uid: uid,
+      uid: uid ?? data['id'] as String? ?? data['providerId'] as String? ?? '',
+
       avgPrepMinutes: data['avgPrepMinutes'] as int?,
       phone: data['phone'] as String? ?? '',
       email: data['email'] as String? ?? '',
+      password: data['password'] as String? ?? '',
       phoneVerified: data['phoneVerified'] as bool? ?? false,
       serviceType: ServiceType.tryParse((data['serviceType'] as String?) ??(data['kind'] as String?) ) ?? ServiceType.restaurant,
       shopCategory: ShopCategory.tryParse(data['shopCategory'] as String?),
@@ -275,6 +282,7 @@ class ProviderProfile extends Equatable {
         uid,
         phone,
         email,
+        password,
         phoneVerified,
     serviceType,
         shopCategory,

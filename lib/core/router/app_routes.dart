@@ -35,6 +35,8 @@ abstract final class AppRoutes {
 
   static const home = '/home';
   static const orders = '/orders';
+
+  static String orderDetailPath(String orderId) => '$orders/$orderId';
   static const menu = '/menu';
   static const settings = '/settings';
   static const notifications = '/notifications';

@@ -1,5 +1,7 @@
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
+import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_state.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
@@ -39,7 +41,12 @@ String? resolveProviderRedirect({
 
   final loc = matchedLocation;
 
-  if (loc == AppRoutes.appUpdate) {
+  final versionGate = getIt<AppVersionGateService>();
+  if (versionGate.checked && versionGate.needsUpdate) {
+    if (loc != AppRoutes.appUpdate) {
+      logRedirect(AppRoutes.appUpdate, 'installed app below minimum version');
+      return AppRoutes.appUpdate;
+    }
     logRedirect(null, 'mandatory app update screen');
     return null;
   }
@@ -134,6 +141,7 @@ String? resolveProviderRedirect({
             AppRoutes.accountVerifyPhone,
             AppRoutes.verifyOtp,
             AppRoutes.postLoginStatus,
+            AppRoutes.registerReview,
           };
           if (allowed.contains(loc)) {
             logRedirect(null, 'pending/unverified phone not verified on allowed route');

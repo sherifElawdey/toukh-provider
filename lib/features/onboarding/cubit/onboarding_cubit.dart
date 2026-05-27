@@ -8,6 +8,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 enum OnboardingGate { checking, needsPermissions, ready }
 
@@ -81,6 +82,10 @@ class OnboardingCubit extends Cubit<OnboardingState> {
         return null;
       }
       emit(const OnboardingState(gate: OnboardingGate.ready));
+      await ToukhPushMessaging.instance.syncToken(
+        auth.user.uid,
+        existingFcmTokens: auth.profile.fcmTokens,
+      );
       return null;
     } catch (e, st) {
       debugPrint('OnboardingCubit.refresh error: $e\n$st');
