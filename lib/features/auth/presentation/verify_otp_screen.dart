@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
@@ -75,6 +76,20 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
     final code = _otp.text.replaceAll(RegExp(r'\D'), '');
     if (code.length != 6) return;
 
+    // Password reset verifies once on [ResetPasswordScreen.resetPassword].
+    if (widget.args.flow == VerifyOtpFlow.passwordReset) {
+      if (!mounted) return;
+      context.pushReplacement(
+        AppRoutes.resetPassword,
+        extra: ResetPasswordRouteArgs(
+          phone: widget.args.phone,
+          requestToken: _requestToken,
+          code: code,
+        ),
+      );
+      return;
+    }
+
     try {
       await context.withAppLoading(
         () => _otpRepository.verifyOtp(
@@ -86,7 +101,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
       if (mounted) {
         AppSnack.show(
           context,
-          message: '$e',
+          message: messageForOtpError(e),
           state: AppSnackState.error,
           icon: Icons.pin_outlined,
         );
@@ -97,14 +112,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
     if (!mounted) return;
     switch (widget.args.flow) {
       case VerifyOtpFlow.passwordReset:
-        context.pushReplacement(
-          AppRoutes.resetPassword,
-          extra: ResetPasswordRouteArgs(
-            phone: widget.args.phone,
-            requestToken: _requestToken,
-            code: code,
-          ),
-        );
+        break;
       case VerifyOtpFlow.registerApplication:
       case VerifyOtpFlow.providerPhoneVerification:
         final authState = context.read<AuthCubit>().state;
@@ -172,7 +180,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
       if (mounted) {
         AppSnack.show(
           context,
-          message: '$e',
+          message: messageForOtpError(e),
           state: AppSnackState.error,
           icon: Icons.error_outline_rounded,
         );

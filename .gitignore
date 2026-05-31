@@ -39,6 +39,9 @@ app.*.symbols
 # Obfuscation related
 app.*.map.json
 
+# Local Twilio run helper (copy from tool/run_with_twilio.sh.example)
+tool/run_with_twilio.sh
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile

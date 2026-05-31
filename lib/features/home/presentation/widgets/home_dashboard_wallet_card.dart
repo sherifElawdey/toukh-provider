@@ -20,13 +20,27 @@ class HomeDashboardWalletCard extends StatelessWidget {
     final accent = scheme.primaryContainer.withValues(alpha: 0.35);
     return Container(
       decoration: BoxDecoration(
-        color: accent,
-        borderRadius: BorderRadius.circular(22),
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.5),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ]
       ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       child: Row(
         children: [
-          Icon(Icons.account_balance_wallet_rounded, color: scheme.primary, size: 28),
+          Container(
+            decoration: BoxDecoration(
+              color: accent.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.all(8),
+            child: Icon(Icons.account_balance_wallet_outlined, color: scheme.primary, size: 28),
+          ),
           const SizedBox(width: 16),
           Expanded(
             child: Column(

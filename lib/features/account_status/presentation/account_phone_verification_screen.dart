@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
@@ -57,7 +58,7 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
       if (context.mounted) {
         AppSnack.show(
           context,
-          message: '$e',
+          message: messageForOtpError(e),
           state: AppSnackState.error,
           icon: Icons.error_outline_rounded,
         );

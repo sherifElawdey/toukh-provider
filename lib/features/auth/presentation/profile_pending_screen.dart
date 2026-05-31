@@ -70,10 +70,10 @@ class ProfilePendingScreen extends StatelessWidget {
                   ),
                 ),
                 const Spacer(),
-                AppFilledButton(
-                  text: AppStrings.AccountStatus.signOut,
-                  onTap: () => context.read<AuthCubit>().signOut(),
-                ),
+                // AppFilledButton(
+                //   text: AppStrings.AccountStatus.signOut,
+                //   onTap: () => context.read<AuthCubit>().signOut(),
+                // ),
               ],
             ),
           ),

@@ -126,6 +126,12 @@ class _Auth {
   String get profilePendingTitle => 'auth.profile_pending_title';
   String get profilePendingSubtitle => 'auth.profile_pending_subtitle';
   String get phoneNotRegistered => 'auth.phone_not_registered';
+  String get otpInvalidCode => 'auth.otp_invalid_code';
+  String get otpRateLimited => 'auth.otp_rate_limited';
+  String get otpSessionExpired => 'auth.otp_session_expired';
+  String get otpSendFailed => 'auth.otp_send_failed';
+  String get otpTwilioNotConfigured => 'auth.otp_twilio_not_configured';
+  String get otpTrialUnverified => 'auth.otp_trial_unverified';
 }
 
 class _Permissions {
@@ -218,6 +224,7 @@ class _Home {
   String get dashboardStatCompletionSub => 'home.dashboard_stat_completion_sub';
   String get dashboardStatRevenue => 'home.dashboard_stat_revenue';
   String get dashboardStatRevenueSub => 'home.dashboard_stat_revenue_sub';
+  String get dashboardCanceld => 'home.dashboard_canceld';
   String get dashboardChartTitle => 'home.dashboard_chart_title';
   String get dashboardPeriodWeek => 'home.dashboard_period_week';
   String get dashboardPeriodMonth => 'home.dashboard_period_month';

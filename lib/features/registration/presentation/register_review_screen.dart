@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
@@ -156,7 +157,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
       if (mounted) {
         AppSnack.show(
           context,
-          message: '$e',
+          message: messageForOtpError(e),
           state: AppSnackState.error,
           icon: Icons.sms_failed_outlined,
         );

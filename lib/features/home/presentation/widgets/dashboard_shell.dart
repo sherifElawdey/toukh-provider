@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 /// Soft rounded surface without outline borders (dashboard cards).
 Decoration dashboardSoftDecoration(BuildContext context) {
   final scheme = Theme.of(context).colorScheme;
   return BoxDecoration(
     color: Theme.of(context).cardColor,
-    border: Border.all(
-      color: scheme.onSurface.withValues(alpha: 0.12),
-      width: 0.6,
-    ),
-    borderRadius: BorderRadius.circular(16),
+    // border: Border.all(
+    //   color: scheme.onSurface.withValues(alpha: 0.12),
+    //   width: 0.6,
+    // ),
+    boxShadow: [
+      BoxShadow(
+        color: AppColors.appColor.withValues(alpha: 0.1),
+        blurRadius: 2,
+        offset: const Offset(0, 8),
+      ),
+    ],
+    borderRadius: BorderRadius.circular(12),
   );
 }

@@ -198,12 +198,14 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     final ratio = denom == 0 ? 0.0 : completed / denom;
     final revenue =
         window.where((o) => o.isDelivered).fold<double>(0, (a, o) => a + o.totalEgp);
+    final canceled = window.where((o) => o.isCancelled).length;
     return DashboardPeriodMetrics(
       ordersPlaced: placed,
       completionRatio: ratio,
       revenueEgp: revenue,
       denominatorForCompletion: denom,
       completedCount: completed,
+      ordersCanceled: canceled,
     );
   }
 

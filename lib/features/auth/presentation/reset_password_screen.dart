@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
@@ -64,7 +65,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       if (!mounted) return;
       AppSnack.show(
         context,
-        message: '$e',
+        message: messageForOtpError(e),
         state: AppSnackState.error,
         icon: Icons.error_outline_rounded,
       );

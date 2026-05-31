@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/core/utils/phone_auth_helpers.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
@@ -76,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
       AppSnack.show(
         context,
-        message: '$e',
+        message: messageForOtpError(e),
         state: AppSnackState.error,
         icon: Icons.error_outline_rounded,
       );

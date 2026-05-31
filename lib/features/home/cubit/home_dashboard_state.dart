@@ -22,6 +22,7 @@ class DashboardPeriodMetrics extends Equatable {
     required this.revenueEgp,
     required this.denominatorForCompletion,
     required this.completedCount,
+    required this.ordersCanceled,
   });
 
   final int ordersPlaced;
@@ -32,6 +33,9 @@ class DashboardPeriodMetrics extends Equatable {
   final int denominatorForCompletion;
   final int completedCount;
 
+  /// Orders with [OrderStatus.cancelled] in the selected period window.
+  final int ordersCanceled;
+
   @override
   List<Object?> get props => [
         ordersPlaced,
@@ -39,6 +43,7 @@ class DashboardPeriodMetrics extends Equatable {
         revenueEgp,
         denominatorForCompletion,
         completedCount,
+        ordersCanceled,
       ];
 }
 
@@ -136,6 +141,7 @@ class HomeDashboardState extends Equatable {
     revenueEgp: 0,
     denominatorForCompletion: 0,
     completedCount: 0,
+    ordersCanceled: 0,
   );
 
   HomeDashboardState copyWith({

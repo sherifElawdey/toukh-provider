@@ -23,47 +23,73 @@ class HomeDashboardChartSection extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: dashboardSoftDecoration(context),
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Row(
             children: [
+              CustomText(
+                AppStrings.Home.dashboardChartTitle.tr,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  fontSize: AppSizes.fontTitle,
+                  color: scheme.onSurface,
+                ),
+              ),
+              const SizedBox(width: 12),
               Expanded(
-                child: CustomText(
-                  AppStrings.Home.dashboardChartTitle.tr,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: AppSizes.fontTitle,
-                    color: scheme.onSurface,
+                child: SegmentedButton<DashboardChartPeriod>(
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(
+                      value: DashboardChartPeriod.week,
+                      label: Text(
+                        AppStrings.Home.dashboardPeriodWeek.tr,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: DashboardChartPeriod.month,
+                      label: Text(
+                        AppStrings.Home.dashboardPeriodMonth.tr,
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ],
+                  selected: {period},
+                  onSelectionChanged: (s) {
+                    if (s.isNotEmpty) onPeriodChanged(s.first);
+                  },
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    padding: WidgetStateProperty.all(
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                    shape: WidgetStateProperty.all(
+                      RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    foregroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return Colors.white;
+                      }
+                      return scheme.onSurface.withValues(alpha: 0.65);
+                    }),
+                    backgroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return AppColors.appColor;
+                      }
+                      return Colors.transparent;
+                    }),
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          SegmentedButton<DashboardChartPeriod>(
-            segments: [
-              ButtonSegment(
-                value: DashboardChartPeriod.week,
-                label: CustomText(AppStrings.Home.dashboardPeriodWeek.tr),
-              ),
-              ButtonSegment(
-                value: DashboardChartPeriod.month,
-                label: CustomText(AppStrings.Home.dashboardPeriodMonth.tr),
-              ),
-            ],
-            selected: {period},
-            onSelectionChanged: (s) {
-              if (s.isNotEmpty) onPeriodChanged(s.first);
-            },
-            style: ButtonStyle(
-              visualDensity: VisualDensity.compact,
-              padding: WidgetStateProperty.all(
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              ),
-            ),
-          ),
+
           HomeDashboardOrderChart(buckets: buckets, period: period),
         ],
       ),

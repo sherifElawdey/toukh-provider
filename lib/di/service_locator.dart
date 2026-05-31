@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
@@ -15,6 +16,7 @@ import 'package:toukh_provider/data/repositories/firestore_notification_inbox_re
 import 'package:toukh_provider/data/repositories/firestore_provider_profile_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
 import 'package:toukh_provider/data/services/otp_service_stub.dart';
+import 'package:toukh_provider/data/services/release_misconfigured_otp_repository.dart';
 import 'package:toukh_provider/data/services/twilio_verify_otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
@@ -84,6 +86,17 @@ Future<void> configureDependencies() async {
         TwilioVerifyClient(config: twilioConfig),
       );
     }
+    if (kReleaseMode) {
+      debugPrint(
+        '[toukh_provider] Twilio Verify dart-defines missing in release build. '
+        'OTP will fail until TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and '
+        'TWILIO_VERIFY_SERVICE_SID are set at build time.',
+      );
+      return ReleaseMisconfiguredOtpRepository();
+    }
+    debugPrint(
+      '[toukh_provider] Twilio not configured — using OtpServiceStub (code 123456).',
+    );
     return OtpServiceStub();
   });
 
