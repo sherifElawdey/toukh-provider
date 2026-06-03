@@ -15,6 +15,7 @@ import 'package:toukh_provider/data/repositories/firestore_provider_orders_repos
 import 'package:toukh_provider/data/repositories/firestore_notification_inbox_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_profile_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
 import 'package:toukh_provider/data/services/otp_service_stub.dart';
 import 'package:toukh_provider/data/services/release_misconfigured_otp_repository.dart';
 import 'package:toukh_provider/data/services/twilio_verify_otp_repository.dart';
@@ -24,6 +25,7 @@ import 'package:toukh_provider/domain/repositories/home_service_categories_repos
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/domain/services/order_qr_service.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
@@ -66,6 +68,9 @@ Future<void> configureDependencies() async {
       getIt<FirebaseFirestore>(),
       getIt<MediaUploadService>(),
     ),
+  );
+  getIt.registerLazySingleton<ProviderMenuRepository>(
+    () => FirestoreProviderMenuRepository(getIt<FirebaseFirestore>()),
   );
   getIt.registerLazySingleton<FirestoreProviderDashboardRepository>(
     () => FirestoreProviderDashboardRepository(getIt<FirebaseFirestore>()),

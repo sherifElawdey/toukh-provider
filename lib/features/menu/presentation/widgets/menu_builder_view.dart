@@ -18,50 +18,6 @@ import 'package:toukh_ui/toukh_ui.dart';
 class MenuBuilderView extends StatelessWidget {
   const MenuBuilderView({super.key});
 
-  Future<void> _persistMenu(
-    BuildContext context, {
-    bool auto = false,
-    bool showEmptyCategoriesWarning = true,
-  }) async {
-    final cubit = context.read<MenuBuilderCubit>();
-    final empty = cubit.state.emptyCategories();
-    if (showEmptyCategoriesWarning &&
-        empty.isNotEmpty &&
-        context.mounted) {
-      AppSnack.show(
-        context,
-        message:
-            '${AppStrings.Registration.emptyCategoriesWarning.tr}: ${empty.join(', ')}',
-        state: AppSnackState.warning,
-        icon: Icons.info_outline_rounded,
-      );
-    }
-    try {
-      await context.withAppLoading(() => cubit.saveMenu(auto: auto));
-    } on MenuSaveMinimumItemsException {
-      if (!auto && context.mounted) {
-        AppSnack.show(
-          context,
-          message: AppStrings.Registration.menuMinimumItems.tr,
-          state: AppSnackState.warning,
-          icon: Icons.restaurant_menu_outlined,
-        );
-      }
-      return;
-    }
-    if (!context.mounted) return;
-    final s = context.read<AuthCubit>().state;
-    if (s is AuthFailure) {
-      AppSnack.show(
-        context,
-        message: s.message,
-        state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
-      );
-      await context.read<AuthCubit>().dismissFailure();
-    }
-  }
-
   Future<void> _showAddCategorySheet(BuildContext context) async {
     final cubit = context.read<MenuBuilderCubit>();
     final name = await showModalBottomSheet<String>(
@@ -85,8 +41,16 @@ class MenuBuilderView extends StatelessWidget {
       );
       return;
     }
-    cubit.addCategory(t);
-    await _persistMenu(context, auto: true, showEmptyCategoriesWarning: false);
+    final err = await context.withAppLoading(() => cubit.addCategory(t));
+    if (!context.mounted) return;
+    if (err != null) {
+      AppSnack.show(
+        context,
+        message: err,
+        state: AppSnackState.error,
+        icon: Icons.error_outline_rounded,
+      );
+    }
   }
 
   Future<void> _renameCategory(BuildContext context, String oldName) async {
@@ -131,8 +95,18 @@ class MenuBuilderView extends StatelessWidget {
     );
     ctrl.dispose();
     if (!context.mounted || newName == null || newName == oldName) return;
-    cubit.renameCategory(oldName, newName);
-    await _persistMenu(context, auto: true, showEmptyCategoriesWarning: false);
+    final err = await context.withAppLoading(
+      () => cubit.renameCategory(oldName, newName),
+    );
+    if (!context.mounted) return;
+    if (err != null) {
+      AppSnack.show(
+        context,
+        message: err,
+        state: AppSnackState.error,
+        icon: Icons.error_outline_rounded,
+      );
+    }
   }
 
   Future<void> _deleteCategory(BuildContext context, String name) async {
@@ -166,8 +140,16 @@ class MenuBuilderView extends StatelessWidget {
       ),
     );
     if (ok != true || !context.mounted) return;
-    cubit.deleteCategory(name);
-    await _persistMenu(context, auto: true, showEmptyCategoriesWarning: false);
+    final err = await context.withAppLoading(() => cubit.deleteCategory(name));
+    if (!context.mounted) return;
+    if (err != null) {
+      AppSnack.show(
+        context,
+        message: err,
+        state: AppSnackState.error,
+        icon: Icons.error_outline_rounded,
+      );
+    }
   }
 
   Future<void> _showItemSheet(
@@ -258,8 +240,16 @@ class MenuBuilderView extends StatelessWidget {
       ),
     );
     if (ok != true || !context.mounted) return;
-    cubit.removeItem(item.id);
-    await _persistMenu(context, auto: true, showEmptyCategoriesWarning: false);
+    final err = await context.withAppLoading(() => cubit.removeItem(item.id));
+    if (!context.mounted) return;
+    if (err != null) {
+      AppSnack.show(
+        context,
+        message: err,
+        state: AppSnackState.error,
+        icon: Icons.error_outline_rounded,
+      );
+    }
   }
 
   @override

@@ -25,6 +25,7 @@ import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.
 import 'package:toukh_provider/features/auth/presentation/verify_otp_screen.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/home_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/menu_builder_screen.dart';
@@ -295,6 +296,7 @@ GoRouter createAppRouter({
                         create: (_) => HomeDashboardCubit(
                           authCubit: getIt<AuthCubit>(),
                           dashboardRepository: getIt<ProviderDashboardRepository>(),
+                          menuRepository: getIt<ProviderMenuRepository>(),
                         )..start(),
                       ),
                       BlocProvider.value(value: getIt<ProviderOrdersCubit>()),

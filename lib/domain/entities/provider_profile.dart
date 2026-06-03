@@ -178,8 +178,7 @@ class ProviderProfile extends Equatable {
       'workingHours': wh,
       if (deliveryConfig != null) 'deliveryConfig': deliveryConfig!.toFirestore(),
       if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
-      if (menuItems != null)
-        'menuItems': menuItems!.map((e) => e.toFirestore()).toList(),
+      // Menu items live under providers/{id}/Menu/{category}/items/{itemId}.
       if (portfolioImageUrls != null) 'portfolioImageUrls': portfolioImageUrls,
       'status': status.wireValue,
       if (blockInfo != null) 'blockInfo': blockInfo!.toFirestore(),

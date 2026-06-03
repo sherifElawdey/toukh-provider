@@ -6,7 +6,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/core/utils/phone_auth_helpers.dart';
-import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
@@ -228,7 +227,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> submitRegistrationMenu(List<MenuItemEntity> items) async {
+  Future<void> markMenuRegistrationComplete() async {
     try {
       final user = _authRepository.currentUser;
       if (user == null) {
@@ -242,13 +241,11 @@ class AuthCubit extends Cubit<AuthState> {
       }
       final now = DateTime.now();
       final updated = profile.copyWith(
-        menuItems: items,
         registrationExtrasComplete: true,
         updatedAt: now,
       );
       await _profileRepository.upsertProfile(updated);
 
-      // Keep user on current shell tab; avoid transient AuthLoading redirect.
       emit(Authenticated(user: user, profile: updated));
     } catch (e) {
       emit(AuthFailure(message: e.toString()));

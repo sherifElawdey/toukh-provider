@@ -5,6 +5,7 @@ import 'package:toukh_provider/domain/entities/dashboard_firestore_payload.dart'
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 
@@ -12,18 +13,23 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
   HomeDashboardCubit({
     required AuthCubit authCubit,
     required ProviderDashboardRepository dashboardRepository,
+    required ProviderMenuRepository menuRepository,
   })  : _authCubit = authCubit,
         _dashboardRepository = dashboardRepository,
+        _menuRepository = menuRepository,
         super(HomeDashboardState.initial());
 
   final AuthCubit _authCubit;
   final ProviderDashboardRepository _dashboardRepository;
+  final ProviderMenuRepository _menuRepository;
 
   StreamSubscription<AuthState>? _authSub;
   StreamSubscription<DashboardFirestorePayload>? _dashSub;
+  StreamSubscription<ProviderMenuSnapshot>? _menuSub;
 
   DashboardFirestorePayload? _lastPayload;
   String? _boundDashboardUid;
+  bool _hasMenuItems = false;
 
   void start() {
     _authSub?.cancel();
@@ -36,7 +42,10 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _boundDashboardUid = null;
       _dashSub?.cancel();
       _dashSub = null;
+      _menuSub?.cancel();
+      _menuSub = null;
       _lastPayload = null;
+      _hasMenuItems = false;
       emit(HomeDashboardState.initial().copyWith(loading: false, authenticated: false));
       return;
     }
@@ -47,7 +56,12 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _boundDashboardUid = uid;
       _dashSub?.cancel();
       _dashSub = null;
+      _menuSub?.cancel();
+      _menuSub = null;
       _lastPayload = null;
+      _hasMenuItems = false;
+
+      _bindMenuStream(uid, auth.profile.isRestaurantShop);
 
       emit(
         HomeDashboardState.initial().copyWith(
@@ -55,8 +69,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
           providerDisplayName: _greetingName(auth.profile),
           walletBalanceEgp: auth.profile.walletBalanceEgp ?? 0,
           walletPendingEgp: auth.profile.walletPendingEgp,
-          showMenuInsights:
-              auth.profile.isRestaurantShop && (auth.profile.menuItems?.isNotEmpty ?? false),
+          showMenuInsights: auth.profile.isRestaurantShop && _hasMenuItems,
           loading: true,
           clearError: true,
         ),
@@ -89,8 +102,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
             providerDisplayName: _greetingName(auth.profile),
             walletBalanceEgp: auth.profile.walletBalanceEgp ?? 0,
             walletPendingEgp: auth.profile.walletPendingEgp,
-            showMenuInsights:
-                auth.profile.isRestaurantShop && (auth.profile.menuItems?.isNotEmpty ?? false),
+            showMenuInsights: auth.profile.isRestaurantShop && _hasMenuItems,
             clearError: true,
           ),
         );
@@ -143,7 +155,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _ordersInRollingWindow(orders, periodDays),
     );
 
-    final bestsellers = profile.isRestaurantShop && (profile.menuItems?.isNotEmpty ?? false)
+    final bestsellers = profile.isRestaurantShop && _hasMenuItems
         ? _bestsellers(orders, 30)
         : <BestsellerRow>[];
 
@@ -158,8 +170,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       chartPeriod: chartPeriod,
       walletBalanceEgp: profile.walletBalanceEgp ?? 0,
       walletPendingEgp: profile.walletPendingEgp,
-      showMenuInsights:
-          profile.isRestaurantShop && (profile.menuItems?.isNotEmpty ?? false),
+      showMenuInsights: profile.isRestaurantShop && _hasMenuItems,
       inProgressOrders: inProgress,
       weekMetrics: weekMetrics,
       monthMetrics: monthMetrics,
@@ -269,10 +280,34 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     return rows.take(10).toList();
   }
 
+  void _bindMenuStream(String uid, bool isRestaurantShop) {
+    _menuSub?.cancel();
+    _menuSub = null;
+    if (!isRestaurantShop) {
+      _hasMenuItems = false;
+      return;
+    }
+    _menuSub = _menuRepository.watchMenu(uid).listen((snapshot) {
+      _hasMenuItems = snapshot.items.isNotEmpty;
+      final payload = _lastPayload;
+      final auth = _authCubit.state;
+      if (payload != null && auth is Authenticated) {
+        emit(_compute(auth.profile, payload, state.chartPeriod));
+      } else if (auth is Authenticated) {
+        emit(
+          state.copyWith(
+            showMenuInsights: auth.profile.isRestaurantShop && _hasMenuItems,
+          ),
+        );
+      }
+    });
+  }
+
   @override
   Future<void> close() {
     _authSub?.cancel();
     _dashSub?.cancel();
+    _menuSub?.cancel();
     return super.close();
   }
 }

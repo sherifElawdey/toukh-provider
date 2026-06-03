@@ -1,7 +1,10 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_state.dart';
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
@@ -11,61 +14,68 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     required AuthCubit authCubit,
     required AuthRepository authRepository,
     required MediaUploadService mediaUploadService,
+    required ProviderMenuRepository menuRepository,
   })  : _authCubit = authCubit,
         _authRepository = authRepository,
         _media = mediaUploadService,
+        _menuRepository = menuRepository,
         super(MenuBuilderState.empty);
 
   final AuthCubit _authCubit;
   final AuthRepository _authRepository;
   final MediaUploadService _media;
+  final ProviderMenuRepository _menuRepository;
+
+  StreamSubscription<ProviderMenuSnapshot>? _menuSub;
+
+  String? get _uid {
+    final auth = _authCubit.state;
+    if (auth is! Authenticated) return null;
+    return auth.user.uid;
+  }
 
   void seedFromAuthOnce() {
     if (state.seededFromProfile) return;
     final auth = _authCubit.state;
     if (auth is! Authenticated) return;
 
-    final menu = auth.profile.menuItems ?? const <MenuItemEntity>[];
-    if (menu.isEmpty) {
-      emit(state.copyWith(seededFromProfile: true));
-      return;
+    final uid = auth.user.uid;
+
+    unawaited(_startMenuStream(uid, auth.profile.menuItems));
+  }
+
+  Future<void> _startMenuStream(
+    String uid,
+    List<MenuItemEntity>? legacyItems,
+  ) async {
+    try {
+      await _menuRepository.migrateFromProfileArrayIfNeeded(uid, legacyItems);
+    } catch (_) {
+      // Stream will reflect partial state; UI can retry saves.
     }
 
-    final categories = <String>[];
-    for (final item in menu) {
-      final c = item.category?.trim();
-      if (c != null && c.isNotEmpty && !categories.contains(c)) {
-        categories.add(c);
-      }
-    }
-    if (categories.isEmpty) categories.add('General');
-
-    final items = <MenuItemEntity>[];
-    for (final item in menu) {
-      final c = item.category?.trim();
-      if (c == null || c.isEmpty) {
-        items.add(
-          MenuItemEntity(
-            id: item.id,
-            name: item.name,
-            description: item.description,
-            imageUrl: item.imageUrl,
-            category: categories.first,
-            sizes: item.sizes,
+    await _menuSub?.cancel();
+    _menuSub = _menuRepository.watchMenu(uid).listen(
+      (snapshot) {
+        if (isClosed) return;
+        final selected = state.selectedCategory;
+        final nextSelected = selected != null && snapshot.categories.contains(selected)
+            ? selected
+            : (snapshot.categories.isEmpty ? null : snapshot.categories.first);
+        emit(
+          MenuBuilderState(
+            categories: snapshot.categories,
+            items: snapshot.items,
+            selectedCategory: nextSelected,
+            seededFromProfile: true,
           ),
         );
-      } else {
-        items.add(item);
-      }
-    }
-
-    emit(
-      MenuBuilderState(
-        categories: categories,
-        items: items,
-        selectedCategory: categories.isEmpty ? null : categories.first,
-        seededFromProfile: true,
-      ),
+      },
+      onError: (_) {
+        if (!isClosed) {
+          emit(state.copyWith(seededFromProfile: true));
+        }
+      },
     );
   }
 
@@ -83,89 +93,64 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     );
   }
 
-  void addCategory(String name) {
-    final categories = List<String>.from(state.categories)..add(name);
-    emit(
-      state.copyWith(
-        categories: categories,
-        updateSelectedCategory: true,
-        selectedCategory: name,
-      ),
-    );
-  }
-
-  void renameCategory(String oldName, String newName) {
-    final categories = List<String>.from(state.categories);
-    final i = categories.indexOf(oldName);
-    if (i >= 0) categories[i] = newName;
-
-    var selected = state.selectedCategory;
-    if (selected == oldName) selected = newName;
-
-    final items = state.items.map((e) {
-      if (e.category == oldName) {
-        return MenuItemEntity(
-          id: e.id,
-          name: e.name,
-          description: e.description,
-          imageUrl: e.imageUrl,
-          category: newName,
-          sizes: e.sizes,
-        );
-      }
-      return e;
-    }).toList();
-
-    emit(
-      state.copyWith(
-        categories: categories,
-        items: items,
-        updateSelectedCategory: true,
-        selectedCategory: selected,
-      ),
-    );
-  }
-
-  void deleteCategory(String name) {
-    final categories = List<String>.from(state.categories)..remove(name);
-    final items = state.items.where((e) => e.category != name).toList();
-    final selected = state.selectedCategory == name
-        ? (categories.isEmpty ? null : categories.first)
-        : state.selectedCategory;
-    emit(
-      state.copyWith(
-        categories: categories,
-        items: items,
-        updateSelectedCategory: true,
-        selectedCategory: selected,
-      ),
-    );
-  }
-
-  void upsertItem(MenuItemEntity entity) {
-    final items = List<MenuItemEntity>.from(state.items);
-    final idx = items.indexWhere((e) => e.id == entity.id);
-    if (idx >= 0) {
-      items[idx] = entity;
-    } else {
-      items.add(entity);
+  Future<String?> addCategory(String name) async {
+    final uid = _uid;
+    if (uid == null) return 'Not signed in.';
+    try {
+      await _menuRepository.upsertCategory(uid, name);
+      emit(
+        state.copyWith(
+          updateSelectedCategory: true,
+          selectedCategory: name,
+        ),
+      );
+      return null;
+    } catch (e) {
+      return e.toString();
     }
-    final selected = state.selectedCategory ?? entity.category;
-    emit(
-      state.copyWith(
-        items: items,
-        updateSelectedCategory: true,
-        selectedCategory: selected,
-      ),
-    );
   }
 
-  void removeItem(String id) {
-    final items = state.items.where((e) => e.id != id).toList();
-    emit(state.copyWith(items: items));
+  Future<String?> renameCategory(String oldName, String newName) async {
+    final uid = _uid;
+    if (uid == null) return 'Not signed in.';
+    try {
+      await _menuRepository.renameCategory(uid, oldName, newName);
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
   }
 
-  /// Returns an error message if upload fails; null on success (list updated + saved).
+  Future<String?> deleteCategory(String name) async {
+    final uid = _uid;
+    if (uid == null) return 'Not signed in.';
+    try {
+      await _menuRepository.deleteCategory(uid, name);
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<String?> removeItem(String id) async {
+    final uid = _uid;
+    if (uid == null) return 'Not signed in.';
+    MenuItemEntity? item;
+    for (final e in state.items) {
+      if (e.id == id) {
+        item = e;
+        break;
+      }
+    }
+    if (item == null) return null;
+    try {
+      await _menuRepository.deleteItem(uid, item);
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
   Future<String?> commitItemEditorResult(MenuItemEditorResult result) async {
     var entity = result.entity;
 
@@ -201,17 +186,44 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
       }
     }
 
-    upsertItem(entity);
-    await saveMenu(auto: true);
-    return null;
+    final uid = _uid;
+    if (uid == null) return 'Not signed in.';
+    try {
+      await _menuRepository.upsertItem(uid, entity);
+      await _maybeCompleteRegistration();
+      return null;
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  Future<void> _maybeCompleteRegistration() async {
+    final auth = _authCubit.state;
+    if (auth is! Authenticated) return;
+    if (auth.profile.registrationExtrasComplete) return;
+    final uid = auth.user.uid;
+    if (!await _menuRepository.hasAnyItems(uid)) return;
+    await _authCubit.markMenuRegistrationComplete();
   }
 
   Future<void> saveMenu({bool auto = false}) async {
-    if (state.items.isEmpty) {
+    final uid = _uid;
+    if (uid == null) {
+      if (!auto) throw const MenuSaveNotSignedInException();
+      return;
+    }
+    final hasItems = await _menuRepository.hasAnyItems(uid);
+    if (!hasItems) {
       if (auto) return;
       throw const MenuSaveMinimumItemsException();
     }
-    await _authCubit.submitRegistrationMenu(state.items);
+    await _authCubit.markMenuRegistrationComplete();
+  }
+
+  @override
+  Future<void> close() {
+    unawaited(_menuSub?.cancel());
+    return super.close();
   }
 }
 
@@ -220,4 +232,11 @@ class MenuSaveMinimumItemsException implements Exception {
 
   @override
   String toString() => 'MenuSaveMinimumItemsException';
+}
+
+class MenuSaveNotSignedInException implements Exception {
+  const MenuSaveNotSignedInException();
+
+  @override
+  String toString() => 'MenuSaveNotSignedInException';
 }

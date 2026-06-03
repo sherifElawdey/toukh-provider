@@ -9,6 +9,7 @@ import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
+import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
 
 /// Password for all seeded provider accounts (matches CLI seed tool).
 const String kProviderSeedPassword = '1234567890';
@@ -347,7 +348,6 @@ Future<void> _seedOneAccount({
     workingHours: def.workingHours,
     deliveryConfig: def.deliveryConfig,
     avgPrepMinutes: def.avgPrepMinutes,
-    menuItems: def.menuItems,
     portfolioImageUrls: def.portfolioImageUrls,
     status: ProviderAccountStatus.active,
     registrationExtrasComplete: true,
@@ -360,8 +360,47 @@ Future<void> _seedOneAccount({
       .doc(uid)
       .set(profile.toFirestore(), SetOptions(merge: true));
 
+  if (def.menuItems != null && def.menuItems!.isNotEmpty) {
+    await _seedMenuSubcollection(
+      firestore: firestore,
+      providerId: uid,
+      items: def.menuItems!,
+    );
+  }
+
   onProgress?.call('${def.label} ok');
   await auth.signOut();
+}
+
+Future<void> _seedMenuSubcollection({
+  required FirebaseFirestore firestore,
+  required String providerId,
+  required List<MenuItemEntity> items,
+}) async {
+  final menuCol =
+      firestore.collection(AppConstants.providersCollection).doc(providerId).collection('Menu');
+  final existing = await menuCol.get();
+  for (final cat in existing.docs) {
+    final itemDocs = await cat.reference.collection('items').get();
+    for (final doc in itemDocs.docs) {
+      await doc.reference.delete();
+    }
+    await cat.reference.delete();
+  }
+
+  final menuRepo = FirestoreProviderMenuRepository(firestore);
+  final categories = <String>{};
+  for (final item in items) {
+    final c = item.category?.trim();
+    if (c != null && c.isNotEmpty) categories.add(c);
+  }
+  if (categories.isEmpty) categories.add('General');
+  for (final c in categories) {
+    await menuRepo.upsertCategory(providerId, c);
+  }
+  for (final item in items) {
+    await menuRepo.upsertItem(providerId, item);
+  }
 }
 
 class SeedAccountDefinition {
