@@ -42,7 +42,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         context,
         message: AppStrings.Registration.portfolioMinOne.tr,
         state: AppSnackState.warning,
-        icon: Icons.photo_library_outlined,
+        icon: ToukhIcons.gallery,
       );
       return;
     }
@@ -56,7 +56,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
         context,
         message: s.message,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
       await context.read<AuthCubit>().dismissFailure();
       return;
@@ -66,7 +66,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       context,
       message: AppStrings.Common.success.tr,
       state: AppSnackState.success,
-      icon: Icons.check_circle_outline_rounded,
+      icon: ToukhIcons.success,
     );
   }
 

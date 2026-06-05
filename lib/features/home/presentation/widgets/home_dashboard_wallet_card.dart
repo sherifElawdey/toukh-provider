@@ -39,7 +39,7 @@ class HomeDashboardWalletCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             padding: const EdgeInsets.all(8),
-            child: Icon(Icons.account_balance_wallet_outlined, color: scheme.primary, size: 28),
+            child: Icon(ToukhIcons.wallet, color: scheme.primary, size: 28),
           ),
           const SizedBox(width: 16),
           Expanded(

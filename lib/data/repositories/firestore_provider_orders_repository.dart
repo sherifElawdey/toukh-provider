@@ -4,13 +4,25 @@ import 'package:toukh_provider/data/mappers/provider_order_mapper.dart';
 import 'package:toukh_provider/domain/entities/provider_fulfillment_mode.dart';
 import 'package:toukh_provider/domain/entities/provider_order.dart';
 import 'package:toukh_provider/domain/entities/provider_order_status_wire.dart';
+import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
-  FirestoreProviderOrdersRepository(this._firestore);
+  FirestoreProviderOrdersRepository(
+    this._firestore, {
+    CustomerOrderNotifyService? customerNotify,
+  }) : _customerNotify = customerNotify;
 
   final FirebaseFirestore _firestore;
+  final CustomerOrderNotifyService? _customerNotify;
+
+  Future<void> _notifyCustomer(String providerId, String orderId) async {
+    await _customerNotify?.notifyCustomer(
+      providerId: providerId,
+      orderId: orderId,
+    );
+  }
 
   static const deliveryRequestsCollection = 'deliveryRequests';
 
@@ -54,6 +66,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       'acceptedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -62,13 +75,95 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String orderId,
     String? reason,
   }) async {
+    final cancelReason = reason ?? 'unavailable';
     await _orderRef(providerId, orderId).update({
       'status': ProviderOrderStatusWire.cancelled,
       'providerState': 'rejected',
-      'cancelReason': reason ?? 'unavailable',
+      'cancelReason': cancelReason,
       'cancelledAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await _syncCancelledProviderToMaster(
+      providerId: providerId,
+      orderId: orderId,
+      cancelReason: cancelReason,
+    );
+    await _notifyCustomer(providerId, orderId);
+  }
+
+  /// Client fallback when Cloud Functions are not deployed.
+  Future<void> _syncCancelledProviderToMaster({
+    required String providerId,
+    required String orderId,
+    required String cancelReason,
+  }) async {
+    try {
+      final orderSnap = await _orderRef(providerId, orderId).get();
+      final masterOrderId = orderSnap.data()?['masterOrderId'] as String?;
+      if (masterOrderId == null || masterOrderId.isEmpty) return;
+
+      final masterRef = _firestore.collection('masterOrders').doc(masterOrderId);
+      String? providerName;
+      String? timelineId;
+
+      await _firestore.runTransaction((tx) async {
+        final masterSnap = await tx.get(masterRef);
+        if (!masterSnap.exists) return;
+
+        final master = masterSnap.data()!;
+        timelineId = master['timelineId'] as String? ?? masterOrderId;
+        final statusMap = Map<String, dynamic>.from(
+          master['providerStatusMap'] as Map? ?? {},
+        );
+        statusMap[providerId] = 'rejected';
+
+        final refsRaw = master['providerOrderRefs'] as List? ?? [];
+        final refs = refsRaw.map((e) {
+          final ref = Map<String, dynamic>.from(e as Map);
+          if (ref['providerId'] == providerId) {
+            ref['providerOrderId'] = orderId;
+            ref['providerState'] = 'rejected';
+            ref['cancelledAt'] = FieldValue.serverTimestamp();
+            ref['cancelReason'] = cancelReason;
+            providerName = ref['providerName'] as String? ?? providerId;
+          }
+          return ref;
+        }).toList();
+
+        final updates = <String, dynamic>{
+          'providerStatusMap': statusMap,
+          'providerOrderRefs': refs,
+          'updatedAt': FieldValue.serverTimestamp(),
+        };
+        final allRejected =
+            statusMap.values.isNotEmpty &&
+            statusMap.values.every((s) => s == 'rejected');
+        if (allRejected) {
+          updates['globalStatus'] = 'cancelled';
+        }
+
+        tx.update(masterRef, updates);
+      });
+
+      final resolvedTimelineId = timelineId ?? masterOrderId;
+      await _firestore
+          .collection('orderTimelines')
+          .doc(resolvedTimelineId)
+          .collection('events')
+          .add({
+        'masterOrderId': masterOrderId,
+        'type': 'provider_cancelled',
+        'at': FieldValue.serverTimestamp(),
+        'actorRole': 'provider',
+        'actorId': providerId,
+        'payload': {
+          'providerName': providerName ?? providerId,
+          'cancelReason': cancelReason,
+        },
+      });
+    } catch (_) {
+      // CF may handle sync when deployed; ignore duplicate updates.
+    }
   }
 
   @override
@@ -113,6 +208,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       });
     });
 
+    await _notifyCustomer(providerId, orderId);
     return requestRef.id;
   }
 
@@ -126,6 +222,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       'readyForPickupAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -138,6 +235,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       'dispatchedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -151,5 +249,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       'handedToCourierAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
+    await _notifyCustomer(providerId, orderId);
   }
 }

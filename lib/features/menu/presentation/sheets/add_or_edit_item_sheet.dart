@@ -160,7 +160,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
           context,
           message: AppStrings.Registration.sizes.tr,
           state: AppSnackState.warning,
-          icon: Icons.straighten_rounded,
+          icon: PhosphorIconsRegular.ruler,
         );
         return null;
       }
@@ -181,7 +181,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
         context,
         message: AppStrings.Registration.selectCategory.tr,
         state: AppSnackState.warning,
-        icon: Icons.category_outlined,
+        icon: ToukhIcons.category,
       );
       return;
     }
@@ -192,7 +192,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
         context,
         message: AppStrings.Registration.sizes.tr,
         state: AppSnackState.warning,
-        icon: Icons.straighten_rounded,
+        icon: PhosphorIconsRegular.ruler,
       );
       return;
     }
@@ -304,7 +304,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                 },
                                 errorBuilder: (_, _, _) => Center(
                                   child: Icon(
-                                    Icons.broken_image_outlined,
+                                    PhosphorIconsRegular.imageBroken,
                                     color: scheme.onSurface
                                         .withValues(alpha: 0.4),
                                   ),
@@ -315,7 +315,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(
-                                  Icons.add_photo_alternate_outlined,
+                                  ToukhIcons.image,
                                   color: scheme.onSurface
                                       .withValues(alpha: 0.45),
                                 ),
@@ -348,13 +348,13 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                 children: [
                   AppTextButton(
                     text: AppStrings.Registration.menuItemPhoto,
-                    icon: Icons.photo_library_outlined,
+                    icon: ToukhIcons.gallery,
                     onTap: _pickImage,
                   ),
                   if (_pickedImage != null || hasRemote)
                     AppTextButton(
                       text: AppStrings.Registration.menuRemoveItemPhoto,
-                      icon: Icons.hide_image_outlined,
+                      icon: PhosphorIconsRegular.eyeSlash,
                       onTap: _clearImage,
                     ),
                 ],
@@ -416,7 +416,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                         ),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.close_rounded),
+                          icon: Icon(ToukhIcons.close),
                         ),
                       ],
                     ),
@@ -433,7 +433,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                           AppTextField(
                             controller: _titleCtrl,
                             labelText: AppStrings.Registration.itemTitle,
-                            leadingIcon: Icons.fastfood_outlined,
+                            leadingIcon: ToukhIcons.restaurant,
                             textInputAction: TextInputAction.next,
                             validator: (v) {
                               if (v == null || v.trim().isEmpty) {
@@ -447,7 +447,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                             controller: _descCtrl,
                             labelText: AppStrings.Registration.itemDescription,
                             maxLines: 3,
-                            leadingIcon: Icons.list_alt_outlined,
+                            leadingIcon: ToukhIcons.qaima,
                             textInputAction: TextInputAction.next,
                           ),
                           SizedBox(height: AppSizes.spaceMd),
@@ -484,7 +484,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                               ),
                               AppTextButton(
                                 text: AppStrings.Registration.addSize,
-                                icon: Icons.add,
+                                icon: ToukhIcons.add,
                                 size: AppButtonSize.small,
                                 onTap: _addSizeRow,
                               ),
@@ -525,7 +525,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                             top: 12,
                                           ),
                                           child: Icon(
-                                            Icons.drag_handle_rounded,
+                                            PhosphorIconsRegular.dotsSixVertical,
                                             color: scheme.onSurface
                                                 .withValues(alpha: 0.45),
                                           ),
@@ -565,8 +565,8 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                         onPressed: _rows.length > 1
                                             ? () => _removeRow(index)
                                             : null,
-                                        icon: const Icon(
-                                          Icons.delete_outline,
+                                        icon: Icon(
+                                          ToukhIcons.delete,
                                         ),
                                       ),
                                     ],

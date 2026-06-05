@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -12,6 +13,7 @@ import 'package:toukh_provider/data/repositories/firebase_auth_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_home_service_categories_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_dashboard_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_orders_repository.dart';
+import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/data/repositories/firestore_notification_inbox_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_profile_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
@@ -44,6 +46,15 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   getIt.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,
+  );
+  getIt.registerLazySingleton<FirebaseFunctions>(
+    () => FirebaseFunctions.instance,
+  );
+  getIt.registerLazySingleton<CustomerOrderNotifyService>(
+    () => CustomerOrderNotifyService(
+      getIt<FirebaseFunctions>(),
+      getIt<FirebaseFirestore>(),
+    ),
   );
   getIt.registerLazySingleton<FirebaseMessaging>(
     () => FirebaseMessaging.instance,
@@ -79,7 +90,10 @@ Future<void> configureDependencies() async {
     () => getIt<FirestoreProviderDashboardRepository>(),
   );
   getIt.registerLazySingleton<FirestoreProviderOrdersRepository>(
-    () => FirestoreProviderOrdersRepository(getIt<FirebaseFirestore>()),
+    () => FirestoreProviderOrdersRepository(
+      getIt<FirebaseFirestore>(),
+      customerNotify: getIt<CustomerOrderNotifyService>(),
+    ),
   );
   getIt.registerLazySingleton<ProviderOrdersRepository>(
     () => getIt<FirestoreProviderOrdersRepository>(),

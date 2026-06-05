@@ -61,7 +61,7 @@ class MenuCategoryFilterChips extends StatelessWidget {
           }
           if (index == categories.length + 1) {
             return ActionChip(
-              avatar: const Icon(Icons.add, size: 18),
+              avatar: Icon(ToukhIcons.add, size: 18),
               label: CustomText(AppStrings.Registration.addCategory),
               onPressed: onAddCategory,
               side: BorderSide.none,

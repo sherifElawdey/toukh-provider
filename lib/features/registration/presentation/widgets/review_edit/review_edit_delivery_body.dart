@@ -81,7 +81,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
           context,
           message: AppStrings.Registration.deliveryPriceRequired.tr,
           state: AppSnackState.warning,
-          icon: Icons.payments_outlined,
+          icon: PhosphorIconsRegular.creditCard,
         );
         return false;
       }

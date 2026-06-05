@@ -98,7 +98,7 @@ class _RegisterHoursScreenState extends State<RegisterHoursScreen> {
         context,
         message: AppStrings.Registration.hoursSelectOneDay.tr,
         state: AppSnackState.warning,
-        icon: Icons.event_busy_outlined,
+        icon: PhosphorIconsRegular.calendarX,
       );
       return;
     }
@@ -107,7 +107,7 @@ class _RegisterHoursScreenState extends State<RegisterHoursScreen> {
         context,
         message: AppStrings.Registration.hoursEndAfterStart.tr,
         state: AppSnackState.warning,
-        icon: Icons.schedule_outlined,
+        icon: ToukhIcons.clock,
       );
       return;
     }
@@ -128,7 +128,7 @@ class _RegisterHoursScreenState extends State<RegisterHoursScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
         title: CustomText(AppStrings.Registration.hoursTitle),

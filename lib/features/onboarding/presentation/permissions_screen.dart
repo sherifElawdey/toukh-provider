@@ -62,7 +62,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           context,
           message: '$e',
           state: AppSnackState.error,
-          icon: Icons.error_outline,
+          icon: ToukhIcons.error,
         );
       }
     } finally {
@@ -83,7 +83,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           context,
           message: err,
           state: AppSnackState.error,
-          icon: Icons.settings_suggest_outlined,
+          icon: ToukhIcons.settings,
         );
       }
     } catch (e, st) {
@@ -93,7 +93,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           context,
           message: '$e',
           state: AppSnackState.error,
-          icon: Icons.error_outline,
+          icon: ToukhIcons.error,
         );
       }
     } finally {
@@ -138,7 +138,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
                 granted: _status.notification,
                 title: AppStrings.Permissions.notifications,
                 subtitle: AppStrings.Permissions.notificationsSubtitle,
-                icon: Icons.notifications_active_outlined,
+                icon: ToukhIcons.notificationPermission,
                 busy: _loading,
                 onEnable: () => _wrap(
                   context.read<OnboardingCubit>().requestNotificationPermission,
@@ -149,7 +149,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
                 granted: _status.foregroundLocation,
                 title: AppStrings.Permissions.location,
                 subtitle: AppStrings.Permissions.locationSubtitle,
-                icon: Icons.location_on_outlined,
+                icon: ToukhIcons.location,
                 busy: _loading,
                 onEnable: () => _wrap(
                   context

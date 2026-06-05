@@ -139,7 +139,7 @@ class WelcomeScreen extends StatelessWidget {
                     Expanded(
                       child: WelcomeThemeChoiceCard(
                         selected: settings.themeMode == ThemeMode.light,
-                        icon: Icons.wb_sunny_rounded,
+                        icon: ToukhIcons.lightMode,
                         label: AppStrings.Common.light.tr,
                         onTap: () => context
                             .read<SettingsCubit>()
@@ -150,7 +150,7 @@ class WelcomeScreen extends StatelessWidget {
                     Expanded(
                       child: WelcomeThemeChoiceCard(
                         selected: settings.themeMode == ThemeMode.dark,
-                        icon: Icons.dark_mode_rounded,
+                        icon: ToukhIcons.darkMode,
                         label: AppStrings.Common.dark.tr,
                         onTap: () => context
                             .read<SettingsCubit>()
@@ -173,7 +173,7 @@ class WelcomeScreen extends StatelessWidget {
                         context,
                         message: AppStrings.Common.unknownError.tr,
                         state: AppSnackState.error,
-                        icon: Icons.error_outline_rounded,
+                        icon: ToukhIcons.error,
                       );
                       return;
                     }

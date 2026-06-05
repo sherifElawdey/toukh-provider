@@ -17,7 +17,7 @@ void showOtpSentChannelSnack(
     message: key.trParams({'phone': phoneDisplay}),
     state: AppSnackState.success,
     icon: channel == OtpDeliveryChannel.whatsapp
-        ? Icons.chat_outlined
-        : Icons.sms_outlined,
+        ? ToukhIcons.chat
+        : PhosphorIconsRegular.chatTeardrop,
   );
 }

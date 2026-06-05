@@ -32,7 +32,7 @@ class HomeDashboardReviewsSection extends StatelessWidget {
         const SizedBox(height: AppSizes.spaceMd),
         if (reviews.isEmpty)
           HomeDashboardEmptyPlaceholder(
-            icon: Icons.rate_review_outlined,
+            icon: PhosphorIconsRegular.chatTeardropText,
             message: AppStrings.Home.dashboardReviewsEmpty,
           )
         else
@@ -70,7 +70,7 @@ class HomeDashboardReviewsSection extends StatelessWidget {
                                 children: List.generate(
                                   5,
                                   (i) => Icon(
-                                    i < r.rating ? Icons.star_rounded : Icons.star_outline_rounded,
+                                    i < r.rating ? ToukhIcons.starFilled : ToukhIcons.star,
                                     size: 16,
                                     color: AppColors.appColor.withValues(alpha: i < r.rating ? 1 : 0.28),
                                   ),

@@ -67,7 +67,7 @@ class WelcomeLocaleChoiceCard extends StatelessWidget {
                   ),
                   if (selected)
                     Icon(
-                      Icons.check_circle_rounded,
+                      PhosphorIconsFill.checkCircle,
                       size: 22,
                       color: AppColors.secondColor,
                     ),

@@ -159,7 +159,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
           context,
           message: messageForOtpError(e),
           state: AppSnackState.error,
-          icon: Icons.sms_failed_outlined,
+          icon: PhosphorIconsRegular.chatCircleDots,
         );
       }
     }
@@ -173,7 +173,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
         context,
         message: AppStrings.Auth.registrationDataMissing.tr,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
       return;
     }
@@ -191,7 +191,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
         context,
         message: authState.message,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
       authCubit.dismissFailure();
       return;
@@ -210,7 +210,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
         context,
         message: AppStrings.Auth.invalidPhone.tr,
         state: AppSnackState.error,
-        icon: Icons.phone_disabled_outlined,
+        icon: PhosphorIconsRegular.phoneSlash,
       );
       return;
     }
@@ -233,7 +233,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final rows = <({ReviewField? field, IconData icon, String titleKey, String value})>[
       (
         field: null,
-        icon: Icons.store_mall_directory_outlined,
+        icon: ToukhIcons.store,
         titleKey: AppStrings.Registration.reviewBusinessType,
         value: draft.kind == null ? '—' : _kindKey(draft.kind!).tr,
       ),
@@ -243,7 +243,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     if (cat != null) {
       rows.add((
         field: null,
-        icon: Icons.label_outline,
+        icon: PhosphorIconsRegular.tag,
         titleKey: cat.$1,
         value: cat.$2,
       ));
@@ -251,7 +251,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
 
     rows.add((
       field: ReviewField.profile,
-      icon: Icons.badge_outlined,
+      icon: PhosphorIconsRegular.identificationBadge,
       titleKey: AppStrings.Registration.brandName,
       value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
     ));
@@ -259,7 +259,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     if (draft.description.trim().isNotEmpty) {
       rows.add((
         field: ReviewField.profile,
-        icon: Icons.notes_outlined,
+        icon: PhosphorIconsRegular.notepad,
         titleKey: AppStrings.Registration.description,
         value: draft.description.trim(),
       ));
@@ -268,19 +268,19 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     rows.addAll([
       (
         field: ReviewField.phone,
-        icon: Icons.phone_outlined,
+        icon: ToukhIcons.phone,
         titleKey: AppStrings.Auth.phoneNumber,
         value: draft.phoneNational.trim().isEmpty ? '—' : draft.phoneNational,
       ),
       (
         field: ReviewField.location,
-        icon: Icons.location_on_outlined,
+        icon: ToukhIcons.location,
         titleKey: AppStrings.Registration.mapTitle,
         value: locationValue,
       ),
       (
         field: ReviewField.hours,
-        icon: Icons.schedule_outlined,
+        icon: ToukhIcons.clock,
         titleKey: AppStrings.Registration.hoursTitle,
         value: _hoursSummary(draft),
       ),
@@ -290,7 +290,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     if (delivery != null) {
       rows.add((
         field: ReviewField.delivery,
-        icon: Icons.local_shipping_outlined,
+        icon: ToukhIcons.delivery,
         titleKey: AppStrings.Registration.deliveryTitle,
         value: delivery,
       ));
@@ -300,7 +300,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     if (prep != null && prep > 0) {
       rows.add((
         field: ReviewField.delivery,
-        icon: Icons.timer_outlined,
+        icon: ToukhIcons.clock,
         titleKey: AppStrings.Registration.reviewPrepTime,
         value: '$prep',
       ));
@@ -327,7 +327,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     return Scaffold(
         appBar: AppBar(
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new_rounded),
+            icon: Icon(ToukhIcons.back),
             onPressed: () => context.pop(),
           ),
           title: CustomText(AppStrings.Registration.reviewTitle),

@@ -27,8 +27,8 @@ class RegistrationStepNavFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final rtl = Directionality.of(context) == TextDirection.rtl;
-    final backIcon = rtl ? Icons.arrow_forward_rounded : Icons.arrow_back_rounded;
-    final forwardIcon = rtl ? Icons.arrow_back_rounded : Icons.arrow_forward_rounded;
+    final backIcon = rtl ? ToukhIcons.forward : ToukhIcons.back;
+    final forwardIcon = rtl ? ToukhIcons.back : ToukhIcons.forward;
 
     final row = Row(
       crossAxisAlignment: CrossAxisAlignment.center,

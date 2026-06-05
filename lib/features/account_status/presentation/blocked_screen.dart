@@ -98,7 +98,7 @@ class _BlockedScreenState extends State<BlockedScreen> {
                         color: AppColors.error.withValues(alpha: 0.12),
                       ),
                       child: Icon(
-                        Icons.block_rounded,
+                        PhosphorIconsRegular.prohibit,
                         size: 56,
                         color: AppColors.error,
                       ),
@@ -118,7 +118,7 @@ class _BlockedScreenState extends State<BlockedScreen> {
                     BlockedInfoCard(
                       label: AppStrings.AccountStatus.blockedReason,
                       value: info.reason,
-                      icon: Icons.warning_amber_rounded,
+                      icon: ToukhIcons.warning,
                     ),
                     SizedBox(height: AppSizes.spaceMd),
                     BlockedInfoCard(
@@ -127,11 +127,11 @@ class _BlockedScreenState extends State<BlockedScreen> {
                       }),
                       value: dateFormat.format(info.blockedAt),
                       showLabelOnly: true,
-                      icon: Icons.event_outlined,
+                      icon: ToukhIcons.calendar,
                     ),
                     SizedBox(height: AppSizes.spaceMd),
                     BlockedInfoCard(
-                      icon: Icons.timer_outlined,
+                      icon: ToukhIcons.clock,
                       showLabelOnly: true,
                       label: info.isIndefinite
                           ? AppStrings.AccountStatus.blockedIndefinite.tr

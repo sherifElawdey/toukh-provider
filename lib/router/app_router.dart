@@ -48,6 +48,7 @@ import 'package:toukh_provider/features/registration/presentation/register_profi
 import 'package:toukh_provider/features/registration/presentation/register_review_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/legal_document_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/settings_screen.dart';
+import 'package:toukh_provider/core/notifications/provider_order_alert_overlay.dart';
 import 'package:toukh_provider/features/shell/main_shell_scaffold.dart';
 import 'package:toukh_provider/features/welcome/welcome_screen.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -281,7 +282,9 @@ GoRouter createAppRouter({
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return MainShellScaffold(navigationShell: navigationShell);
+          return ProviderOrderAlertOverlay(
+            child: MainShellScaffold(navigationShell: navigationShell),
+          );
         },
         branches: [
           StatefulShellBranch(

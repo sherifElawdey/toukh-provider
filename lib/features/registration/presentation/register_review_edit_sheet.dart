@@ -103,7 +103,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
           sheetContext,
           message: AppStrings.Auth.registrationDataMissing.tr,
           state: AppSnackState.warning,
-          icon: Icons.category_outlined,
+          icon: ToukhIcons.category,
         );
         return false;
       case ReviewField.profile:

@@ -45,7 +45,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         context,
         message: AppStrings.Auth.phoneNotRegistered.tr,
         state: AppSnackState.error,
-        icon: Icons.person_off_outlined,
+        icon: PhosphorIconsRegular.userMinus,
       );
       return;
     }
@@ -79,7 +79,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         context,
         message: messageForOtpError(e),
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
     }
   }
@@ -90,7 +90,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
       ),

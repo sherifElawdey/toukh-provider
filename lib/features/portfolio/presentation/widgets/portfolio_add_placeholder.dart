@@ -37,7 +37,7 @@ class PortfolioAddPlaceholder extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
-                Icons.add_photo_alternate_outlined,
+                ToukhIcons.image,
                 size: 40,
                 color: AppColors.secondColor,
               ),

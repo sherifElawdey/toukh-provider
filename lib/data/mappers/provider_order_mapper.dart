@@ -70,13 +70,15 @@ abstract final class ProviderOrderMapper {
       };
 
   static ProviderOrderLineItem? _mapLine(Map<String, dynamic> m) {
-    final name = _string(m['name']) ?? _string(m['itemName']);
+    final name =
+        _string(m['title']) ?? _string(m['name']) ?? _string(m['itemName']);
     if (name == null || name.isEmpty) return null;
     final qty = _int(m['quantity']) ?? 1;
+    final unitPrice = _double(m['unitPrice']) ?? 0.0;
     final line = _double(m['lineTotalEgp']) ??
         _double(m['lineTotal']) ??
         _double(m['priceEgp']) ??
-        0.0;
+        (unitPrice > 0 ? unitPrice * qty : 0.0);
     return ProviderOrderLineItem(
       itemId: _string(m['itemId']) ?? _string(m['menuItemId']),
       name: name,

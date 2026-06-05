@@ -37,7 +37,7 @@ class PortfolioImageTile extends StatelessWidget {
             style: IconButton.styleFrom(
               backgroundColor: Colors.black54,
             ),
-            icon: const Icon(Icons.close, color: Colors.white, size: 20),
+            icon: Icon(ToukhIcons.close, color: Colors.white, size: 20),
             onPressed: onRemove,
           ),
         ),

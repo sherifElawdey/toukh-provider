@@ -58,7 +58,7 @@ class SettingsThemeToggle extends StatelessWidget {
             children: [
               Expanded(
                 child: SettingsThemeModeOption(
-                  icon: Icons.light_mode_rounded,
+                  icon: ToukhIcons.lightMode,
                   labelKey: AppStrings.Common.light,
                   selected: !isDark,
                   onTap: () => onChanged(ThemeMode.light),
@@ -66,7 +66,7 @@ class SettingsThemeToggle extends StatelessWidget {
               ),
               Expanded(
                 child: SettingsThemeModeOption(
-                  icon: Icons.dark_mode_rounded,
+                  icon: ToukhIcons.darkMode,
                   labelKey: AppStrings.Common.dark,
                   selected: isDark,
                   onTap: () => onChanged(ThemeMode.dark),

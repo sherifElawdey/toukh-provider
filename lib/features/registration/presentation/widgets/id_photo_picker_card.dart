@@ -68,7 +68,7 @@ class IdPhotoPickerCard extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.add_a_photo_outlined,
+                            ToukhIcons.camera,
                             size: compactPlaceholderIcon ? 28 : 40,
                             color: scheme.onSurface.withValues(alpha: 0.38),
                           ),
@@ -98,7 +98,7 @@ class IdPhotoPickerCard extends StatelessWidget {
                           filterQuality: FilterQuality.medium,
                           errorBuilder: (context, error, stackTrace) => Center(
                             child: Icon(
-                              Icons.broken_image_outlined,
+                              PhosphorIconsRegular.imageBroken,
                               size: 48,
                               color: scheme.onSurface.withValues(alpha: 0.35),
                             ),
@@ -128,7 +128,7 @@ class IdPhotoPickerCard extends StatelessWidget {
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
-                                    Icons.edit_outlined,
+                                    ToukhIcons.edit,
                                     size: 18,
                                     color: Colors.white.withValues(alpha: 0.95),
                                   ),

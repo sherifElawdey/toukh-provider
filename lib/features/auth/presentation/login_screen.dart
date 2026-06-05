@@ -38,7 +38,7 @@ class _LoginScreenState extends State<LoginScreen> {
             context,
             message: state.message,
             state: AppSnackState.error,
-            icon: Icons.error_outline_rounded,
+            icon: ToukhIcons.error,
           );
           await context.read<AuthCubit>().dismissFailure();
           return;

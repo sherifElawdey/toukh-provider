@@ -37,7 +37,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: AppStrings.Registration.duplicateCategory.tr,
         state: AppSnackState.warning,
-        icon: Icons.category_outlined,
+        icon: ToukhIcons.category,
       );
       return;
     }
@@ -48,7 +48,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: err,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
     }
   }
@@ -83,7 +83,7 @@ class MenuBuilderView extends StatelessWidget {
                   ctx,
                   message: AppStrings.Registration.duplicateCategory.tr,
                   state: AppSnackState.warning,
-                  icon: Icons.category_outlined,
+                  icon: ToukhIcons.category,
                 );
                 return;
               }
@@ -104,7 +104,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: err,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
     }
   }
@@ -147,7 +147,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: err,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
     }
   }
@@ -163,7 +163,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: AppStrings.Registration.addFirstCategoryHint.tr,
         state: AppSnackState.warning,
-        icon: Icons.category_outlined,
+        icon: ToukhIcons.category,
       );
       return;
     }
@@ -200,7 +200,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: err,
         state: AppSnackState.error,
-        icon: Icons.cloud_upload_outlined,
+        icon: ToukhIcons.upload,
       );
       return;
     }
@@ -210,7 +210,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: s.message,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
       await context.read<AuthCubit>().dismissFailure();
     }
@@ -247,7 +247,7 @@ class MenuBuilderView extends StatelessWidget {
         context,
         message: err,
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
     }
   }

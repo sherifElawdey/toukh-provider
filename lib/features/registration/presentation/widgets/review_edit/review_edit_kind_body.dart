@@ -36,17 +36,17 @@ String reviewEditKindLabelKey(ServiceType t) {
 IconData reviewEditKindIcon(ServiceType t) {
   switch (t) {
     case ServiceType.restaurant:
-      return Icons.restaurant_outlined;
+      return ToukhIcons.restaurant;
     case ServiceType.homeService:
-      return Icons.home_repair_service_outlined;
+      return PhosphorIconsRegular.wrench;
     case ServiceType.supermarket:
-      return Icons.storefront_outlined;
+      return ToukhIcons.store;
     case ServiceType.grocery:
-      return Icons.local_grocery_store_outlined;
+      return PhosphorIconsRegular.shoppingCart;
     case ServiceType.homeBrands:
-      return Icons.branding_watermark_outlined;
+      return PhosphorIconsRegular.seal;
     case ServiceType.pharmacy:
-      return Icons.local_pharmacy_outlined;
+      return PhosphorIconsRegular.firstAid;
   }
 }
 

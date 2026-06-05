@@ -20,7 +20,7 @@ class MenuEmptyCategoriesPlaceholder extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
-              Icons.restaurant_menu_rounded,
+              ToukhIcons.menuSelected,
               size: 56,
               color: scheme.onSurface.withValues(alpha: 0.35),
             ),
@@ -45,7 +45,7 @@ class MenuEmptyCategoriesPlaceholder extends StatelessWidget {
             SizedBox(height: AppSizes.spaceLg),
             AppFilledButton(
               text: AppStrings.Registration.addCategory,
-              icon: Icons.add_rounded,
+              icon: ToukhIcons.add,
               onTap: onAddCategory,
             ),
           ],

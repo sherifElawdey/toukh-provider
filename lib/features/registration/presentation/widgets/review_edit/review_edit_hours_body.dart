@@ -93,7 +93,7 @@ class ReviewEditHoursBodyState extends State<ReviewEditHoursBody> {
         context,
         message: AppStrings.Registration.hoursSelectOneDay.tr,
         state: AppSnackState.warning,
-        icon: Icons.event_busy_outlined,
+        icon: PhosphorIconsRegular.calendarX,
       );
       return false;
     }
@@ -102,7 +102,7 @@ class ReviewEditHoursBodyState extends State<ReviewEditHoursBody> {
         context,
         message: AppStrings.Registration.hoursEndAfterStart.tr,
         state: AppSnackState.warning,
-        icon: Icons.schedule_outlined,
+        icon: ToukhIcons.clock,
       );
       return false;
     }

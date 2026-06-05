@@ -57,7 +57,7 @@ class HomeServiceCategoryCard extends StatelessWidget {
                                 filterQuality: FilterQuality.medium,
                                 errorBuilder: (_, _, _) => Center(
                                   child: Icon(
-                                    Icons.home_repair_service_outlined,
+                                    PhosphorIconsRegular.wrench,
                                     size: 40,
                                     color: AppColors.secondColor,
                                   ),
@@ -65,7 +65,7 @@ class HomeServiceCategoryCard extends StatelessWidget {
                               )
                             : Center(
                                 child: Icon(
-                                  Icons.home_repair_service_outlined,
+                                  PhosphorIconsRegular.wrench,
                                   size: 40,
                                   color: AppColors.secondColor,
                                 ),
@@ -84,7 +84,7 @@ class HomeServiceCategoryCard extends StatelessWidget {
                           child: const Padding(
                             padding: EdgeInsets.all(2),
                             child: Icon(
-                              Icons.check_circle_rounded,
+                              PhosphorIconsFill.checkCircle,
                               color: AppColors.success,
                               size: 22,
                             ),

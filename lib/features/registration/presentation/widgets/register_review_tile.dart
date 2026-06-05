@@ -60,7 +60,7 @@ class RegisterReviewTile extends StatelessWidget {
           if (onTap != null) ...[
             SizedBox(width: AppSizes.spaceSm),
             Icon(
-              Icons.chevron_right_rounded,
+              ToukhIcons.chevronRight,
               color: scheme.onSurface.withValues(alpha: 0.45),
             ),
           ],

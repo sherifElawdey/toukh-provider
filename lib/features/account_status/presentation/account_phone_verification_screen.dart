@@ -26,7 +26,7 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
         context,
         message: AppStrings.AccountStatus.verifyPhoneInvalidStoredPhone.tr,
         state: AppSnackState.error,
-        icon: Icons.phone_disabled_rounded,
+        icon: PhosphorIconsRegular.phoneSlash,
       );
       return;
     }
@@ -60,7 +60,7 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
           context,
           message: messageForOtpError(e),
           state: AppSnackState.error,
-          icon: Icons.error_outline_rounded,
+          icon: ToukhIcons.error,
         );
       }
     }

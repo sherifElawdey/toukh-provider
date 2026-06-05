@@ -20,7 +20,7 @@ class LegalDocumentScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
         title: CustomText(
@@ -47,7 +47,7 @@ class LegalDocumentScreen extends StatelessWidget {
             SizedBox(height: AppSizes.spaceLg),
             AppFilledButton(
               text: AppStrings.Settings.legalOpenInBrowser,
-              icon: Icons.open_in_new_rounded,
+              icon: PhosphorIconsRegular.arrowSquareOut,
               color: AppColors.secondColor,
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(
@@ -66,7 +66,7 @@ class LegalDocumentScreen extends StatelessWidget {
                     context,
                     message: AppStrings.Settings.legalLaunchFailed,
                     state: AppSnackState.error,
-                    icon: Icons.error_outline_rounded,
+                    icon: ToukhIcons.error,
                   );
                 }
               },

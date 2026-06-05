@@ -7,10 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
 import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
 import 'package:toukh_provider/app.dart';
-import 'package:toukh_provider/core/notifications/push_bootstrap.dart';
+import 'package:toukh_provider/core/notifications/background_message_handler.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/firebase_options.dart';
-import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:get/get.dart';
@@ -18,7 +17,6 @@ import 'package:get/get.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Improves GoogleMap rendering on many Android devices (TextureView vs hybrid).
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     final mapsImpl = GoogleMapsFlutterPlatform.instance;
     if (mapsImpl is GoogleMapsFlutterAndroid) {
@@ -38,9 +36,7 @@ Future<void> main() async {
     rethrow;
   }
 
-  FirebaseMessaging.onBackgroundMessage(
-    ToukhPushMessaging.firebaseMessagingBackgroundHandler,
-  );
+  FirebaseMessaging.onBackgroundMessage(providerBackgroundMessageHandler);
 
   try {
     await configureDependencies();
@@ -56,9 +52,8 @@ Future<void> main() async {
   Get.updateLocale(hydrated.locale);
   Get.changeThemeMode(hydrated.themeMode);
 
-  await configureProviderPush();
-
   unawaited(getIt<AppVersionGateService>().ensureChecked());
 
+  // Push init runs after first frame in [ToukhProviderApp] so iOS never blocks on FCM/APNS.
   runApp(const ToukhProviderApp());
 }

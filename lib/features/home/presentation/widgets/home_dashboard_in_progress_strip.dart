@@ -45,7 +45,7 @@ class HomeDashboardInProgressStrip extends StatelessWidget {
           height: 112,
           child: orders.isEmpty
               ? HomeDashboardEmptyPlaceholder(
-                  icon: Icons.receipt_long_outlined,
+                  icon: ToukhIcons.orders,
                   message: AppStrings.Home.dashboardInProgressEmpty,
                 )
               : ListView.separated(

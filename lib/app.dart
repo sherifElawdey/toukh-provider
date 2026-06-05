@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/core/notifications/push_bootstrap.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/core/notifications/notification_router_holder.dart';
@@ -24,13 +26,15 @@ class ToukhProviderApp extends StatefulWidget {
   State<ToukhProviderApp> createState() => _ToukhProviderAppState();
 }
 
-class _ToukhProviderAppState extends State<ToukhProviderApp> {
+class _ToukhProviderAppState extends State<ToukhProviderApp>
+    with WidgetsBindingObserver {
   late final GoRouter _router;
   StreamSubscription<AuthState>? _authSub;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     final authCubit = getIt<AuthCubit>();
     final onboardingCubit = getIt<OnboardingCubit>();
     final settingsCubit = getIt<SettingsCubit>();
@@ -47,12 +51,7 @@ class _ToukhProviderAppState extends State<ToukhProviderApp> {
       if (state is Authenticated &&
           state.profile.status == ProviderAccountStatus.active) {
         notificationsCubit.bindUser(state.user.uid);
-        unawaited(
-          ToukhPushMessaging.instance.syncToken(
-            state.user.uid,
-            existingFcmTokens: state.profile.fcmTokens,
-          ),
-        );
+        unawaited(_syncFcmForActiveProvider(state.user.uid));
       } else {
         notificationsCubit.bindUser(null);
       }
@@ -60,12 +59,42 @@ class _ToukhProviderAppState extends State<ToukhProviderApp> {
 
     onAuth(authCubit.state);
     _authSub = authCubit.stream.listen(onAuth);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(configureProviderPush());
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _authSub?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_onAppResumed());
+    }
+  }
+
+  Future<void> _onAppResumed() async {
+    final auth = getIt<AuthCubit>().state;
+    if (auth is! Authenticated ||
+        auth.profile.status != ProviderAccountStatus.active) {
+      return;
+    }
+    await ToukhPushMessaging.instance.requestPermission();
+    await _syncFcmForActiveProvider(auth.user.uid);
+  }
+
+  Future<void> _syncFcmForActiveProvider(String uid) async {
+    await ToukhFcmTokenSync.syncOnAppOpen(
+      uid: uid,
+      firestore: FirebaseFirestore.instance,
+      recipient: ToukhNotificationRecipient.provider,
+    );
   }
 
   @override

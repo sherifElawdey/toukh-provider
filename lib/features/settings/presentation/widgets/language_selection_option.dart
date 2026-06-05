@@ -51,7 +51,7 @@ class LanguageSelectionOption extends StatelessWidget {
                 ),
                 if (selected)
                   Icon(
-                    Icons.check_circle_rounded,
+                    PhosphorIconsFill.checkCircle,
                     color: AppColors.secondColor,
                     size: 22,
                   ),

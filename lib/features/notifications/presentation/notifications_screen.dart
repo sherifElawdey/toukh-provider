@@ -15,7 +15,7 @@ class NotificationsScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
         title: CustomText(
@@ -40,7 +40,7 @@ class NotificationsScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.notifications_none_rounded,
+                      ToukhIcons.notifications,
                       size: 56,
                       color: scheme.onSurface.withValues(alpha: 0.28),
                     ),

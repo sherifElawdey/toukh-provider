@@ -195,7 +195,7 @@ class _RequestDeliverySheetState extends State<_RequestDeliverySheet> {
                   myLocationButtonEnabled: true,
                   myLocationEnabled: true,
                 ),
-                const Icon(Icons.location_pin, size: 48, color: AppColors.appColor),
+                Icon(ToukhIcons.location, size: 48, color: AppColors.appColor),
                 if (_locating)
                   const Align(
                     alignment: Alignment.topCenter,
@@ -223,7 +223,7 @@ class _RequestDeliverySheetState extends State<_RequestDeliverySheet> {
                 itemBuilder: (context, i) {
                   final d = _nearby[i];
                   return Chip(
-                    avatar: const Icon(Icons.delivery_dining, size: 18),
+                    avatar: Icon(ToukhIcons.delivery, size: 18),
                     label: Text('${d.name} · ${d.distanceMeters}m'),
                   );
                 },

@@ -29,7 +29,7 @@ class HomeDashboardBestsellersSection extends StatelessWidget {
         const SizedBox(height: AppSizes.spaceMd),
         if (rows.isEmpty)
           HomeDashboardEmptyPlaceholder(
-            icon: Icons.local_fire_department_outlined,
+            icon: PhosphorIconsRegular.fire,
             message: AppStrings.Home.dashboardBestsellersEmpty,
           )
         else

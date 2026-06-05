@@ -144,8 +144,8 @@ class _OutgoingMeta extends StatelessWidget {
       children: [
         Icon(
           order.isStoreDelivery
-              ? Icons.storefront_outlined
-              : Icons.delivery_dining_outlined,
+              ? ToukhIcons.store
+              : ToukhIcons.delivery,
           size: 18,
           color: scheme.onSurface.withValues(alpha: 0.55),
         ),
@@ -197,7 +197,7 @@ class _DriverChip extends StatelessWidget {
               ? NetworkImage(order.driverPhotoUrl!)
               : null,
           child: order.driverPhotoUrl == null
-              ? Icon(Icons.person, size: 18, color: scheme.primary)
+              ? Icon(ToukhIcons.profile, size: 18, color: scheme.primary)
               : null,
         ),
         const SizedBox(width: 8),

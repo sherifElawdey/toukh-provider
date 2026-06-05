@@ -135,11 +135,11 @@ class _PostLoginSheetBodyState extends State<PostLoginSheetBody> {
               SizedBox(height: AppSizes.spaceMd),
               Icon(
                 switch (status) {
-                  ProviderAccountStatus.blocked => Icons.block_rounded,
-                  ProviderAccountStatus.pending => Icons.hourglass_top_rounded,
+                  ProviderAccountStatus.blocked => PhosphorIconsRegular.prohibit,
+                  ProviderAccountStatus.pending => PhosphorIconsRegular.hourglass,
                   ProviderAccountStatus.unverified =>
-                    Icons.phone_android_rounded,
-                  _ => Icons.info_outline_rounded,
+                    ToukhIcons.phone,
+                  _ => ToukhIcons.info,
                 },
                 size: 56,
                 color: status == ProviderAccountStatus.blocked
@@ -175,14 +175,14 @@ class _PostLoginSheetBodyState extends State<PostLoginSheetBody> {
                 SizedBox(height: AppSizes.spaceXl),
                 _detailTile(
                   scheme,
-                  Icons.warning_amber_rounded,
+                  ToukhIcons.warning,
                   AppStrings.AccountStatus.blockedReason.tr,
                   info.reason,
                 ),
                 SizedBox(height: AppSizes.spaceMd),
                 _detailTile(
                   scheme,
-                  Icons.event_outlined,
+                  ToukhIcons.calendar,
                   AppStrings.AccountStatus.blockedSince.trParams({
                     'date': dateFormat.format(info.blockedAt),
                   }),
@@ -191,7 +191,7 @@ class _PostLoginSheetBodyState extends State<PostLoginSheetBody> {
                 SizedBox(height: AppSizes.spaceMd),
                 _detailTile(
                   scheme,
-                  Icons.timer_outlined,
+                  ToukhIcons.clock,
                   info.isIndefinite
                       ? AppStrings.AccountStatus.blockedIndefinite.tr
                       : AppStrings.AccountStatus.blockedTimeRemaining.trParams({
@@ -207,7 +207,7 @@ class _PostLoginSheetBodyState extends State<PostLoginSheetBody> {
                 SizedBox(height: AppSizes.spaceXl),
                 AppTextButton(
                   text: AppStrings.AccountStatus.postLoginContactUs,
-                  icon: Icons.mail_outline_rounded,
+                  icon: ToukhIcons.email,
                   onTap: widget.onContactSupport,
                 ),
               ],

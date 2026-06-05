@@ -168,9 +168,9 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
                 onCameraMove: (pos) => _target = pos.target,
                 onCameraIdle: _onCameraIdle,
               ),
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 32),
-                child: Icon(Icons.location_pin, size: 48, color: AppColors.error),
+                child: Icon(ToukhIcons.location, size: 48, color: AppColors.error),
               ),
               if (_locating)
                 const Align(

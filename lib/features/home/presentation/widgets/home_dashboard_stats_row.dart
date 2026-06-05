@@ -36,14 +36,14 @@ class HomeDashboardStatsRow extends StatelessWidget {
                 value: '${metrics.ordersPlaced}',
                 caption: periodLabel,
                 color: AppColors.appColor,
-                icon: Icons.shopping_bag_outlined,
+                icon: PhosphorIconsRegular.shoppingBag,
               ),
               HomeDashboardStatCell(
                 label: AppStrings.Home.dashboardStatCompletion.tr,
                 value: pct,
                 caption: AppStrings.Home.dashboardStatCompletionSub.tr,
                 color: AppColors.success,
-                icon: Icons.check_circle_outline,
+                icon: ToukhIcons.success,
               ),
             ],
           ),
@@ -58,14 +58,14 @@ class HomeDashboardStatsRow extends StatelessWidget {
                   value: formatDashboardEgp(context, metrics.revenueEgp),
                   caption: AppStrings.Home.dashboardStatRevenueSub.tr,
                   color: AppColors.secondColor,
-                  icon: Icons.attach_money_outlined
+                  icon: PhosphorIconsRegular.currencyDollar
               ),
               HomeDashboardStatCell(
                 label: AppStrings.Home.dashboardCanceld.tr,
                 value: '${metrics.ordersCanceled}',
                 caption: periodLabel,
                 color: AppColors.error,
-                icon: Icons.cancel_outlined,
+                icon: PhosphorIconsRegular.xCircle,
               ),
             ],
           ),

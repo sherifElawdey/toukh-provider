@@ -64,7 +64,7 @@ class WelcomeThemeChoiceCard extends StatelessWidget {
               if (selected) ...[
                 SizedBox(width: 4),
                 Icon(
-                  Icons.check_circle_rounded,
+                  PhosphorIconsFill.checkCircle,
                   size: 18,
                   color: AppColors.secondColor,
                 ),

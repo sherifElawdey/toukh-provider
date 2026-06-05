@@ -62,7 +62,7 @@ class MenuItemTile extends StatelessWidget {
                           errorBuilder: (_, _, _) => ColoredBox(
                             color: scheme.surfaceContainerHighest,
                             child: Icon(
-                              Icons.fastfood_outlined,
+                              ToukhIcons.restaurant,
                               color: scheme.onSurface.withValues(alpha: 0.35),
                             ),
                           ),
@@ -70,7 +70,7 @@ class MenuItemTile extends StatelessWidget {
                       : ColoredBox(
                           color: scheme.surfaceContainerHighest,
                           child: Icon(
-                            Icons.fastfood_outlined,
+                            ToukhIcons.restaurant,
                             color: scheme.onSurface.withValues(alpha: 0.35),
                           ),
                         ),
@@ -125,7 +125,7 @@ class MenuItemTile extends StatelessWidget {
                 ),
               ),
               IconButton(
-                icon: const Icon(Icons.delete_outline),
+                icon: Icon(ToukhIcons.delete),
                 onPressed: onDelete,
                 color: scheme.error.withValues(alpha: 0.85),
               ),

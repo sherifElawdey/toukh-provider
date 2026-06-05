@@ -14,7 +14,9 @@ dependencies:
     sdk: flutter
 
   toukh_ui:
-    path: ../packages/toukh_ui
+    git:
+      url: https://github.com/sherifElawdey/toukh-ui-constants.git
+
 
   cupertino_icons: ^1.0.8
   bloc: ^9.0.0

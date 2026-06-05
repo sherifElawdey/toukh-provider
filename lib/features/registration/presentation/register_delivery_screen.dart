@@ -66,7 +66,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
           context,
           message: AppStrings.Registration.deliveryPriceRequired.tr,
           state: AppSnackState.warning,
-          icon: Icons.payments_outlined,
+          icon: PhosphorIconsRegular.creditCard,
         );
         return;
       }
@@ -95,7 +95,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
         title: CustomText(AppStrings.Registration.deliveryTitle),

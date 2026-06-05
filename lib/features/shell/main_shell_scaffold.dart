@@ -18,27 +18,24 @@ class MainShellScaffold extends StatelessWidget {
   static List<ShellNavItem> _navItems({required bool isRestaurant}) => [
         ShellNavItem(
           label: AppStrings.Shell.home,
-          icon: Icons.home_outlined,
-          selectedIcon: Icons.home_rounded,
+          icon: ToukhIcons.home,
+          selectedIcon: ToukhIcons.homeSelected,
         ),
         ShellNavItem(
           label: AppStrings.Shell.orders,
-          icon: Icons.receipt_long_outlined,
-          selectedIcon: Icons.receipt_long_rounded,
+          icon: ToukhIcons.orders,
+          selectedIcon: ToukhIcons.ordersSelected,
         ),
         ShellNavItem(
           label: isRestaurant ? AppStrings.Shell.menu : AppStrings.Shell.gallery,
-          icon: isRestaurant
-              ? Icons.restaurant_menu_outlined
-              : Icons.photo_library_outlined,
-          selectedIcon: isRestaurant
-              ? Icons.restaurant_menu_rounded
-              : Icons.photo_library_rounded,
+          icon: isRestaurant ? ToukhIcons.menu : ToukhIcons.gallery,
+          selectedIcon:
+              isRestaurant ? ToukhIcons.menuSelected : ToukhIcons.gallerySelected,
         ),
         ShellNavItem(
           label: AppStrings.Shell.settings,
-          icon: Icons.settings_outlined,
-          selectedIcon: Icons.settings_rounded,
+          icon: ToukhIcons.settings,
+          selectedIcon: ToukhIcons.settingsSelected,
         ),
       ];
 
@@ -81,7 +78,7 @@ class MainShellScaffold extends StatelessWidget {
             tooltip: AppStrings.Notifications.title.tr,
             onPressed: () => context.push(AppRoutes.notifications),
             icon: Icon(
-              Icons.notifications_none_rounded,
+              ToukhIcons.notifications,
               size: 26,
               color: AppColors.secondColor,
             ),

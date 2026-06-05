@@ -40,7 +40,7 @@ class PermissionItemCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
-              granted ? Icons.check_circle_rounded : icon,
+              granted ? PhosphorIconsFill.checkCircle : icon,
               size: AppSizes.iconLg + 4,
               color: granted ? AppColors.success : AppColors.secondColor,
             ),

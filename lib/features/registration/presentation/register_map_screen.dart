@@ -144,7 +144,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
         title: CustomText(AppStrings.Registration.mapTitle),
@@ -175,7 +175,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           Center(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 40),
-              child: Icon(Icons.location_pin, size: 48, color: AppColors.error),
+              child: Icon(ToukhIcons.location, size: 48, color: AppColors.error),
             ),
           ),
           Positioned(

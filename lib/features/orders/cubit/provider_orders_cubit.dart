@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
 import 'package:toukh_provider/domain/entities/provider_order.dart';
+import 'package:toukh_provider/domain/entities/provider_order_status_wire.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_state.dart';
@@ -23,6 +25,8 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
 
   StreamSubscription<List<ProviderOrder>>? _ordersSub;
   String? _boundUid;
+  final Set<String> _alertedIncomingOrderIds = {};
+  bool _ordersStreamPrimed = false;
 
   void start() {
     _authCubit.stream.listen(_onAuth);
@@ -32,6 +36,8 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
   void _onAuth(AuthState auth) {
     if (auth is! Authenticated) {
       _boundUid = null;
+      _alertedIncomingOrderIds.clear();
+      _ordersStreamPrimed = false;
       _ordersSub?.cancel();
       _ordersSub = null;
       emit(const ProviderOrdersState(loading: false, orders: []));
@@ -43,10 +49,13 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
 
     _boundUid = uid;
     _ordersSub?.cancel();
+    _alertedIncomingOrderIds.clear();
+    _ordersStreamPrimed = false;
     emit(state.copyWith(loading: true, clearError: true));
 
     _ordersSub = _ordersRepository.watchOrders(uid).listen(
       (orders) {
+        _maybeShowIncomingOrderAlerts(uid, orders);
         emit(state.copyWith(loading: false, orders: orders, clearError: true));
       },
       onError: (Object e) {
@@ -157,6 +166,51 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
         errorMessage: e.toString(),
       ));
     }
+  }
+
+  void _maybeShowIncomingOrderAlerts(String providerId, List<ProviderOrder> orders) {
+    if (!_ordersStreamPrimed) {
+      _ordersStreamPrimed = true;
+      for (final order in orders) {
+        if (ProviderOrderStatusWire.isIncoming(order.statusWire)) {
+          _alertedIncomingOrderIds.add(order.id);
+        }
+      }
+      return;
+    }
+
+    for (final order in orders) {
+      if (!ProviderOrderStatusWire.isIncoming(order.statusWire)) continue;
+      if (_alertedIncomingOrderIds.contains(order.id)) continue;
+      _alertedIncomingOrderIds.add(order.id);
+
+      final notification = ToukhOrderNotificationTemplates.notificationFromProviderOrder(
+        notificationId: order.id,
+        order: _orderToNotificationMap(order),
+        providerId: providerId,
+        orderId: order.id,
+      );
+      ProviderOrderAlertController.instance.show(notification);
+    }
+  }
+
+  Map<String, dynamic> _orderToNotificationMap(ProviderOrder order) {
+    return {
+      'customerId': order.customerId,
+      'customerName': order.customerName,
+      'masterOrderId': order.masterOrderId,
+      'orderPrice': order.orderPrice,
+      'deliveryPrice': order.deliveryPrice,
+      'totalEgp': order.totalEgp,
+      'items': [
+        for (final item in order.items)
+          {
+            'title': item.name,
+            'quantity': item.quantity,
+            'lineTotalEgp': item.lineTotalEgp,
+          },
+      ],
+    };
   }
 
   @override

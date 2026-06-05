@@ -48,7 +48,7 @@ class SquareBrandImageBlock extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            Icons.add_a_photo_outlined,
+                            ToukhIcons.camera,
                             size: 36,
                             color: scheme.onSurface.withValues(alpha: 0.38),
                           ),
@@ -80,7 +80,7 @@ class SquareBrandImageBlock extends StatelessWidget {
                             filterQuality: FilterQuality.medium,
                             errorBuilder: (context, error, stackTrace) => Center(
                               child: Icon(
-                                Icons.broken_image_outlined,
+                                PhosphorIconsRegular.imageBroken,
                                 size: 40,
                                 color: scheme.onSurface.withValues(alpha: 0.35),
                               ),
@@ -111,7 +111,7 @@ class SquareBrandImageBlock extends StatelessWidget {
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Icon(
-                                      Icons.edit_outlined,
+                                      ToukhIcons.edit,
                                       size: 14,
                                       color: Colors.white.withValues(alpha: 0.95),
                                     ),

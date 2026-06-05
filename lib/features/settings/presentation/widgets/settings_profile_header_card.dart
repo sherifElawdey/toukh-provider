@@ -92,12 +92,12 @@ class SettingsProfileHeaderCard extends StatelessWidget {
                           height: 64,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) => Icon(
-                            Icons.storefront_rounded,
+                            PhosphorIconsRegular.storefront,
                             color: scheme.onSurface.withValues(alpha: 0.45),
                           ),
                         )
                       : Icon(
-                          Icons.storefront_rounded,
+                          PhosphorIconsRegular.storefront,
                           color: scheme.onSurface.withValues(alpha: 0.45),
                         ),
                 ),
@@ -136,7 +136,7 @@ class SettingsProfileHeaderCard extends StatelessWidget {
                 ),
               ),
               Icon(
-                Icons.chevron_right_rounded,
+                ToukhIcons.chevronRight,
                 color: scheme.onSurface.withValues(alpha: 0.45),
               ),
             ],

@@ -48,7 +48,7 @@ class UnverifiedScreen extends StatelessWidget {
                     color: AppColors.warning.withValues(alpha: 0.12),
                   ),
                   child: Icon(
-                    Icons.hourglass_empty_rounded,
+                    PhosphorIconsRegular.hourglass,
                     size: 64,
                     color: AppColors.warning,
                   ),

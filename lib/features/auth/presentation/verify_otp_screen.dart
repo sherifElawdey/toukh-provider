@@ -103,7 +103,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           context,
           message: messageForOtpError(e),
           state: AppSnackState.error,
-          icon: Icons.pin_outlined,
+          icon: PhosphorIconsRegular.password,
         );
       }
       return;
@@ -121,7 +121,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
             context,
             message: AppStrings.Auth.registrationDataMissing.tr,
             state: AppSnackState.error,
-            icon: Icons.error_outline_rounded,
+            icon: ToukhIcons.error,
           );
           context.go(
             widget.args.flow == VerifyOtpFlow.providerPhoneVerification
@@ -182,7 +182,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           context,
           message: messageForOtpError(e),
           state: AppSnackState.error,
-          icon: Icons.error_outline_rounded,
+          icon: ToukhIcons.error,
         );
       }
     }
@@ -216,7 +216,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
             context,
             message: state.message,
             state: AppSnackState.error,
-            icon: Icons.error_outline_rounded,
+            icon: ToukhIcons.error,
           );
           context.read<AuthCubit>().dismissFailure();
           return;
@@ -237,7 +237,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           return Scaffold(
             appBar: AppBar(
               leading: IconButton(
-                icon: const Icon(Icons.arrow_back_ios_new_rounded),
+                icon:  Icon(ToukhIcons.back),
                 onPressed: busy ? null : () => context.pop(),
               ),
             ),

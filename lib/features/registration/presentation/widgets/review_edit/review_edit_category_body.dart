@@ -80,7 +80,7 @@ class ReviewEditCategoryBodyState extends State<ReviewEditCategoryBody> {
                     : scheme.surfaceContainerHighest.withValues(alpha: 0.35),
                 title: CustomText(_shopLabel(c)),
                 trailing: _shopCategory == c
-                    ? const Icon(Icons.check_circle_rounded,
+                    ? const Icon(PhosphorIconsFill.checkCircle,
                         color: AppColors.success)
                     : null,
                 onTap: () => setState(() => _shopCategory = c),

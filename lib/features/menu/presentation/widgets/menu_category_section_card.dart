@@ -64,7 +64,7 @@ class MenuCategorySectionCard extends StatelessWidget {
                 ),
                 IconButton(
                   tooltip: AppStrings.Registration.addItem.tr,
-                  icon: const Icon(Icons.add_rounded),
+                  icon: Icon(ToukhIcons.add),
                   onPressed: onAddItem,
                 ),
                 PopupMenuButton<String>(
@@ -76,7 +76,7 @@ class MenuCategorySectionCard extends StatelessWidget {
                     PopupMenuItem(
                       value: 'rename',
                       child: ListTile(
-                        leading: const Icon(Icons.edit_outlined),
+                        leading: Icon(ToukhIcons.edit),
                         title: CustomText(AppStrings.Registration.renameCategory),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -85,7 +85,7 @@ class MenuCategorySectionCard extends StatelessWidget {
                       value: 'delete',
                       child: ListTile(
                         leading: Icon(
-                          Icons.delete_outline,
+                          ToukhIcons.delete,
                           color: scheme.error,
                         ),
                         title: CustomText(AppStrings.Common.delete),

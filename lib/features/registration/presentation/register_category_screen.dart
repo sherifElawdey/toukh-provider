@@ -44,7 +44,7 @@ class RegisterCategoryScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
         title: CustomText(
@@ -78,7 +78,7 @@ class RegisterCategoryScreen extends StatelessWidget {
                               .withValues(alpha: 0.35),
                       title: CustomText(_shopLabel(c)),
                       trailing: draft.shopCategory == c
-                          ? const Icon(Icons.check_circle_rounded,
+                          ? const Icon(PhosphorIconsFill.checkCircle,
                               color: AppColors.success)
                           : null,
                       onTap: () {

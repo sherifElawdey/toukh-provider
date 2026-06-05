@@ -65,7 +65,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
         context,
         message: '$e',
         state: AppSnackState.error,
-        icon: Icons.image_not_supported_outlined,
+        icon: PhosphorIconsRegular.imageBroken,
       );
       return null;
     }
@@ -79,12 +79,12 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
+              leading: Icon(ToukhIcons.camera),
               title: const Text('Camera'),
               onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library_outlined),
+              leading: Icon(ToukhIcons.gallery),
               title: const Text('Gallery'),
               onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
             ),
@@ -104,7 +104,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
         context,
         message: AppStrings.Registration.brandImageRequired.tr,
         state: AppSnackState.warning,
-        icon: Icons.image_outlined,
+        icon: ToukhIcons.image,
       );
       return;
     }
@@ -113,7 +113,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
         context,
         message: AppStrings.Auth.idPhotosRequired.tr,
         state: AppSnackState.warning,
-        icon: Icons.badge_outlined,
+        icon: PhosphorIconsRegular.identificationBadge,
       );
       return;
     }
@@ -133,7 +133,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
       ),

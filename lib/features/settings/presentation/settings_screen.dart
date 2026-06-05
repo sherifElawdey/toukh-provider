@@ -66,16 +66,16 @@ class SettingsScreen extends StatelessWidget {
                       context,
                       message: AppStrings.Settings.editProfileComingSoon,
                       state: AppSnackState.alert,
-                      icon: Icons.person_outline_rounded,
+                      icon: ToukhIcons.person,
                     ),
                   ),
                   SizedBox(height: AppSizes.spaceLg),
                 ],
                 SettingsTile(
-                  icon: Icons.history_rounded,
+                  icon: ToukhIcons.history,
                   titleKey: AppStrings.Settings.ordersHistory,
                   trailing: Icon(
-                    Icons.chevron_right_rounded,
+                    ToukhIcons.chevronRight,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -84,10 +84,10 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => context.go(AppRoutes.orders),
                 ),
                 SettingsTile(
-                  icon: Icons.account_balance_wallet_outlined,
+                  icon: ToukhIcons.wallet,
                   titleKey: AppStrings.Settings.wallet,
                   trailing: Icon(
-                    Icons.chevron_right_rounded,
+                    ToukhIcons.chevronRight,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -97,7 +97,7 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     message: AppStrings.Settings.walletComingSoon,
                     state: AppSnackState.alert,
-                    icon: Icons.account_balance_wallet_outlined,
+                    icon: ToukhIcons.wallet,
                   ),
                 ),
                 SizedBox(height: AppSizes.spaceLg),
@@ -111,7 +111,7 @@ class SettingsScreen extends StatelessWidget {
                 SettingsSectionTitle(labelKey: AppStrings.Settings.language),
                 SizedBox(height: AppSizes.spaceSm),
                 SettingsTile(
-                  icon: Icons.translate_rounded,
+                  icon: ToukhIcons.language,
                   titleKey: AppStrings.Settings.language,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -136,7 +136,7 @@ class SettingsScreen extends StatelessWidget {
                       ),
                       SizedBox(width: AppSizes.spaceXs),
                       Icon(
-                        Icons.keyboard_arrow_down_rounded,
+                        ToukhIcons.chevronDown,
                         color: Theme.of(context)
                             .colorScheme
                             .onSurface
@@ -153,10 +153,10 @@ class SettingsScreen extends StatelessWidget {
                 SettingsSectionTitle(labelKey: AppStrings.Settings.legal),
                 SizedBox(height: AppSizes.spaceSm),
                 SettingsTile(
-                  icon: Icons.description_outlined,
+                  icon: ToukhIcons.document,
                   titleKey: AppStrings.Settings.termsAndConditions,
                   trailing: Icon(
-                    Icons.chevron_right_rounded,
+                    ToukhIcons.chevronRight,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -165,10 +165,10 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => context.push(AppRoutes.legalTerms),
                 ),
                 SettingsTile(
-                  icon: Icons.privacy_tip_outlined,
+                  icon: ToukhIcons.privacy,
                   titleKey: AppStrings.Settings.privacyPolicy,
                   trailing: Icon(
-                    Icons.chevron_right_rounded,
+                    ToukhIcons.chevronRight,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -177,10 +177,10 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => context.push(AppRoutes.legalPrivacy),
                 ),
                 SettingsTile(
-                  icon: Icons.article_outlined,
+                  icon: ToukhIcons.article,
                   titleKey: AppStrings.Settings.declaration,
                   trailing: Icon(
-                    Icons.chevron_right_rounded,
+                    ToukhIcons.chevronRight,
                     color: Theme.of(context)
                         .colorScheme
                         .onSurface
@@ -202,7 +202,7 @@ class SettingsScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.logout_rounded,
+                            ToukhIcons.logout,
                             color: AppColors.error,
                             size: AppSizes.iconLg,
                           ),

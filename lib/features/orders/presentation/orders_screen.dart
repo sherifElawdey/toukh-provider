@@ -51,22 +51,22 @@ class OrdersScreen extends StatelessWidget {
                     OrdersTabView(
                       tab: ProviderOrdersTab.incoming,
                       emptyMessageKey: AppStrings.Orders.emptyIncoming,
-                      emptyIcon: Icons.inbox_outlined,
+                      emptyIcon: ToukhIcons.empty,
                     ),
                     OrdersTabView(
                       tab: ProviderOrdersTab.inProgress,
                       emptyMessageKey: AppStrings.Orders.emptyInProgress,
-                      emptyIcon: Icons.receipt_long_outlined,
+                      emptyIcon: ToukhIcons.orders,
                     ),
                     OrdersTabView(
                       tab: ProviderOrdersTab.outgoing,
                       emptyMessageKey: AppStrings.Orders.emptyOutgoing,
-                      emptyIcon: Icons.local_shipping_outlined,
+                      emptyIcon: ToukhIcons.delivery,
                     ),
                     OrdersTabView(
                       tab: ProviderOrdersTab.delivered,
                       emptyMessageKey: AppStrings.Orders.emptyDelivered,
-                      emptyIcon: Icons.check_circle_outline,
+                      emptyIcon: ToukhIcons.success,
                     ),
                   ],
                 ),

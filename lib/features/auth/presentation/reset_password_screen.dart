@@ -58,7 +58,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         context,
         message: AppStrings.Common.success,
         state: AppSnackState.success,
-        icon: Icons.check_circle_outline,
+        icon: ToukhIcons.success,
       );
       context.go(AppRoutes.login);
     } catch (e) {
@@ -67,7 +67,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         context,
         message: messageForOtpError(e),
         state: AppSnackState.error,
-        icon: Icons.error_outline_rounded,
+        icon: ToukhIcons.error,
       );
     }
   }
@@ -78,7 +78,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          icon: Icon(ToukhIcons.back),
           onPressed: () => context.pop(),
         ),
       ),

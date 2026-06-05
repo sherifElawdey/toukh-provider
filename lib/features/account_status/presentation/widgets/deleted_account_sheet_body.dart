@@ -24,7 +24,7 @@ class DeletedAccountSheetBody extends StatelessWidget {
         context,
         message: 'Could not open mail client.'.tr,
         state: AppSnackState.error,
-        icon: Icons.mail_outline_rounded,
+        icon: ToukhIcons.email,
       );
     }
   }
@@ -67,7 +67,7 @@ class DeletedAccountSheetBody extends StatelessWidget {
                 color: AppColors.error.withValues(alpha: 0.12),
               ),
               child: Icon(
-                Icons.delete_forever_rounded,
+                ToukhIcons.delete,
                 size: 56,
                 color: AppColors.error,
               ),
@@ -95,7 +95,7 @@ class DeletedAccountSheetBody extends StatelessWidget {
             SizedBox(height: AppSizes.space2xl),
             AppFilledButton(
               text: AppStrings.AccountStatus.deletedAction,
-              icon: Icons.mail_outline_rounded,
+              icon: ToukhIcons.email,
               height: 52,
               onTap: () => _emailSupport(context),
             ),
