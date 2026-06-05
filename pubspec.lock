@@ -1229,11 +1229,9 @@ packages:
   toukh_ui:
     dependency: "direct main"
     description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "001f741cc8338eaa40ef4bb7c6709ea0c02d0ba2"
-      url: "https://github.com/sherifElawdey/toukh-ui-constants.git"
-    source: git
+      path: "../packages/toukh_ui"
+      relative: true
+    source: path
     version: "0.2.0"
   typed_data:
     dependency: transitive

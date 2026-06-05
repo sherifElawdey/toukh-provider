@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
@@ -42,13 +43,18 @@ import 'package:toukh_ui/toukh_ui.dart';
 
 final getIt = GetIt.instance;
 
+const toukhFunctionsRegion = 'us-central1';
+
 Future<void> configureDependencies() async {
   getIt.registerLazySingleton<FirebaseAuth>(() => FirebaseAuth.instance);
   getIt.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,
   );
   getIt.registerLazySingleton<FirebaseFunctions>(
-    () => FirebaseFunctions.instance,
+    () => FirebaseFunctions.instanceFor(
+      app: Firebase.app(),
+      region: toukhFunctionsRegion,
+    ),
   );
   getIt.registerLazySingleton<CustomerOrderNotifyService>(
     () => CustomerOrderNotifyService(

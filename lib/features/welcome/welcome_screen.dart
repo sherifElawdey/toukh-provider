@@ -1,4 +1,3 @@
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -18,16 +17,11 @@ class WelcomeScreen extends StatelessWidget {
   static const _flagUk = '🇬🇧';
   static const _flagEg = '🇪🇬';
 
-  getToken() async {
-    String? token = await FirebaseMessaging.instance.getToken();
-    print('Firebase Messaging Token: $token');
-  }
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final settings = context.watch<SettingsCubit>().state;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    getToken();
     return Scaffold(
       body: DecoratedBox(
         decoration: BoxDecoration(

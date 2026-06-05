@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -90,10 +89,12 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
   }
 
   Future<void> _syncFcmForActiveProvider(String uid) async {
-    await ToukhFcmTokenSync.syncOnAppOpen(
-      uid: uid,
-      firestore: FirebaseFirestore.instance,
-      recipient: ToukhNotificationRecipient.provider,
+    final auth = getIt<AuthCubit>().state;
+    final tokens =
+        auth is Authenticated ? auth.profile.fcmTokens : const <String>[];
+    await ToukhPushMessaging.instance.syncToken(
+      uid,
+      existingFcmTokens: tokens,
     );
   }
 
