@@ -175,12 +175,30 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: AppSizes.spaceXl),
                       BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
                         builder: (context, ordersState) {
+                          final pendingCount = ordersState.orders
+                              .where((o) => o.isIncoming)
+                              .length;
+                          return HomeDashboardPendingOrdersBanner(
+                            pendingCount: pendingCount,
+                          );
+                        },
+                      ),
+                      BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
+                        builder: (context, ordersState) {
                           final inProgress = ProviderOrderTabFilters.homeInProgress(
                             ordersState.orders,
                           )
                               .map((o) => o.toDashboard())
                               .toList();
-                          return HomeDashboardInProgressStrip(orders: inProgress);
+                          return Column(
+                            children: [
+                              if (ordersState.orders
+                                  .where((o) => o.isIncoming)
+                                  .isNotEmpty)
+                                const SizedBox(height: AppSizes.spaceXl),
+                              HomeDashboardInProgressStrip(orders: inProgress),
+                            ],
+                          );
                         },
                       ),
                       const SizedBox(height: AppSizes.spaceXl),
@@ -189,10 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         pendingEgp: state.walletPendingEgp,
                       ),
                       const SizedBox(height: AppSizes.spaceXl),
-                      HomeDashboardStatsRow(
-                        metrics: state.metricsForSelectedPeriod,
-                        period: state.chartPeriod,
-                      ),
+                      HomeDashboardStatsRow(metrics: state.todayMetrics),
                       const SizedBox(height: AppSizes.spaceXl),
                       HomeDashboardChartSection(
                         period: state.chartPeriod,

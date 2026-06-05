@@ -12,12 +12,10 @@ class OrdersTabView extends StatelessWidget {
     super.key,
     required this.tab,
     required this.emptyMessageKey,
-    required this.emptyIcon,
   });
 
   final ProviderOrdersTab tab;
   final String emptyMessageKey;
-  final IconData emptyIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +31,6 @@ class OrdersTabView extends StatelessWidget {
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
               HomeDashboardEmptyPlaceholder(
-                icon: emptyIcon,
                 message: emptyMessageKey,
               ),
             ],

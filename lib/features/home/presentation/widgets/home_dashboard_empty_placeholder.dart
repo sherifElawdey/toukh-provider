@@ -1,44 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class HomeDashboardEmptyPlaceholder extends StatelessWidget {
   const HomeDashboardEmptyPlaceholder({
     super.key,
-    required this.icon,
     required this.message,
+    this.category,
+    this.compact = false,
   });
 
-  final IconData icon;
   final String message;
+  final ToukhServiceCategory? category;
+  final bool compact;
+
+  ToukhServiceCategory _resolveCategory(BuildContext context) {
+    if (category != null) return category!;
+    final auth = context.read<AuthCubit>().state;
+    if (auth is Authenticated) {
+      return ToukhServiceCategory.fromProviderServiceType(
+            auth.profile.serviceType.wireValue,
+          ) ??
+          ToukhServiceCategory.restaurants;
+    }
+    return ToukhServiceCategory.restaurants;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceMd),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 40,
-              color: scheme.onSurface.withValues(alpha: 0.35),
-            ),
-            const SizedBox(height: AppSizes.spaceSm),
-            CustomText(
-              message.tr,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: AppSizes.fontBody,
-                color: scheme.onSurface.withValues(alpha: 0.55),
-                height: 1.35,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return ToukhSectionEmptyState(
+      category: _resolveCategory(context),
+      message: message,
+      illustrationSize: compact ? 72 : 100,
+      padding: compact
+          ? const EdgeInsets.symmetric(vertical: AppSizes.spaceSm)
+          : const EdgeInsets.symmetric(vertical: AppSizes.spaceMd),
     );
   }
 }

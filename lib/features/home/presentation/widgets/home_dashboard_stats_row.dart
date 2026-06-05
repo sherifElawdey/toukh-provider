@@ -10,21 +10,13 @@ class HomeDashboardStatsRow extends StatelessWidget {
   const HomeDashboardStatsRow({
     super.key,
     required this.metrics,
-    required this.period,
   });
 
   final DashboardPeriodMetrics metrics;
-  final DashboardChartPeriod period;
 
   @override
   Widget build(BuildContext context) {
-    final pct = metrics.denominatorForCompletion == 0
-        ? '0'
-        : '${(metrics.completionRatio * 100).round()}%';
-
-    final periodLabel = period == DashboardChartPeriod.week
-        ? AppStrings.Home.dashboardPeriodWeek.tr
-        : AppStrings.Home.dashboardPeriodMonth.tr;
+    final todayLabel = AppStrings.Home.dashboardStatTodayCaption.tr;
 
     return Row(
       children: [
@@ -34,36 +26,34 @@ class HomeDashboardStatsRow extends StatelessWidget {
               HomeDashboardStatCell(
                 label: AppStrings.Home.dashboardStatOrders.tr,
                 value: '${metrics.ordersPlaced}',
-                caption: periodLabel,
+                caption: todayLabel,
                 color: AppColors.appColor,
                 icon: PhosphorIconsRegular.shoppingBag,
               ),
               HomeDashboardStatCell(
                 label: AppStrings.Home.dashboardStatCompletion.tr,
-                value: pct,
-                caption: AppStrings.Home.dashboardStatCompletionSub.tr,
+                value: '${metrics.completedCount}',
+                caption: todayLabel,
                 color: AppColors.success,
                 icon: ToukhIcons.success,
               ),
             ],
           ),
         ),
-
-        // const SizedBox(width: 10),
         Expanded(
           child: Column(
             children: [
               HomeDashboardStatCell(
-                  label: AppStrings.Home.dashboardStatRevenue.tr,
-                  value: formatDashboardEgp(context, metrics.revenueEgp),
-                  caption: AppStrings.Home.dashboardStatRevenueSub.tr,
-                  color: AppColors.secondColor,
-                  icon: PhosphorIconsRegular.currencyDollar
+                label: AppStrings.Home.dashboardStatRevenue.tr,
+                value: formatDashboardEgp(context, metrics.revenueEgp),
+                caption: AppStrings.Home.dashboardStatRevenueSub.tr,
+                color: AppColors.secondColor,
+                icon: PhosphorIconsRegular.currencyDollar,
               ),
               HomeDashboardStatCell(
                 label: AppStrings.Home.dashboardCanceld.tr,
                 value: '${metrics.ordersCanceled}',
-                caption: periodLabel,
+                caption: todayLabel,
                 color: AppColors.error,
                 icon: PhosphorIconsRegular.xCircle,
               ),

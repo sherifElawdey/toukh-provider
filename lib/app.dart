@@ -12,6 +12,7 @@ import 'package:toukh_provider/core/notifications/notification_router_holder.dar
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/notifications/cubit/notifications_cubit.dart';
+import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -46,13 +47,18 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
     NotificationRouterHolder.router = _router;
 
     final notificationsCubit = getIt<NotificationsCubit>();
+    final badgeCubit = getIt<ProviderNotificationBadgeCubit>();
     void onAuth(AuthState state) {
       if (state is Authenticated &&
           state.profile.status == ProviderAccountStatus.active) {
         notificationsCubit.bindUser(state.user.uid);
         unawaited(_syncFcmForActiveProvider(state.user.uid));
+        final unread =
+            notificationsCubit.state.items.where((n) => !n.opened).length;
+        badgeCubit.setNotificationCount(unread);
       } else {
         notificationsCubit.bindUser(null);
+        badgeCubit.setNotificationCount(0);
       }
     }
 
@@ -108,33 +114,42 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
         BlocProvider<NotificationsCubit>.value(
           value: getIt<NotificationsCubit>(),
         ),
+        BlocProvider<ProviderNotificationBadgeCubit>.value(
+          value: getIt<ProviderNotificationBadgeCubit>(),
+        ),
       ],
-      child: BlocConsumer<SettingsCubit, SettingsState>(
-        listener: (context, settings) {
-          Get.updateLocale(settings.locale);
-          Get.changeThemeMode(settings.themeMode);
+      child: BlocListener<NotificationsCubit, NotificationsState>(
+        listener: (context, state) {
+          final unread = state.items.where((n) => !n.opened).length;
+          getIt<ProviderNotificationBadgeCubit>().setNotificationCount(unread);
         },
-        builder: (context, settings) {
-          return GetMaterialApp.router(
-            title: AppStrings.App.title.tr,
-            debugShowCheckedModeBanner: false,
-            translations: AppTranslations(),
-            fallbackLocale: const Locale('en'),
-            theme: ToukhTheme.light(),
-            darkTheme: ToukhTheme.dark(),
-            themeMode: settings.themeMode,
-            locale: settings.locale,
-            localizationsDelegates: const [
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: const [Locale('en'), Locale('ar')],
-            routeInformationProvider: _router.routeInformationProvider,
-            routeInformationParser: _router.routeInformationParser,
-            routerDelegate: _router.routerDelegate,
-          );
-        },
+        child: BlocConsumer<SettingsCubit, SettingsState>(
+          listener: (context, settings) {
+            Get.updateLocale(settings.locale);
+            Get.changeThemeMode(settings.themeMode);
+          },
+          builder: (context, settings) {
+            return GetMaterialApp.router(
+              title: AppStrings.App.title.tr,
+              debugShowCheckedModeBanner: false,
+              translations: AppTranslations(),
+              fallbackLocale: const Locale('en'),
+              theme: ToukhTheme.light(),
+              darkTheme: ToukhTheme.dark(),
+              themeMode: settings.themeMode,
+              locale: settings.locale,
+              localizationsDelegates: const [
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: const [Locale('en'), Locale('ar')],
+              routeInformationProvider: _router.routeInformationProvider,
+              routeInformationParser: _router.routeInformationParser,
+              routerDelegate: _router.routerDelegate,
+            );
+          },
+        ),
       ),
     );
   }

@@ -148,6 +148,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
 
     final weekMetrics = _metrics(weekOrders);
     final monthMetrics = _metrics(monthOrders);
+    final todayMetrics = _metrics(_ordersToday(orders));
 
     final periodDays = chartPeriod == DashboardChartPeriod.week ? 7 : 30;
     final chartBuckets = _buildBucketsFilled(
@@ -174,6 +175,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       inProgressOrders: inProgress,
       weekMetrics: weekMetrics,
       monthMetrics: monthMetrics,
+      todayMetrics: todayMetrics,
       chartBuckets: chartBuckets,
       bestsellers: bestsellers,
       visibleReviews: visibleReviews,
@@ -197,6 +199,19 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       final c = o.createdAt;
       if (c == null) return false;
       return !c.isBefore(start);
+    }).toList();
+  }
+
+  static List<ProviderOrderDashboard> _ordersToday(
+    List<ProviderOrderDashboard> all,
+  ) {
+    final now = DateTime.now();
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final tomorrowStart = todayStart.add(const Duration(days: 1));
+    return all.where((o) {
+      final c = o.createdAt;
+      if (c == null) return false;
+      return !c.isBefore(todayStart) && c.isBefore(tomorrowStart);
     }).toList();
   }
 

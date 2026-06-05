@@ -36,6 +36,7 @@ class ProviderOrder extends Equatable {
     this.masterOrderId,
     this.isAggregated = false,
     this.providerState,
+    this.masterProviderCount = 1,
   });
 
   final String id;
@@ -73,6 +74,9 @@ class ProviderOrder extends Equatable {
   final String? masterOrderId;
   final bool isAggregated;
   final String? providerState;
+  final int masterProviderCount;
+
+  bool get isGroupOrder => masterProviderCount > 1;
 
   bool get isStoreDelivery => fulfillmentMode == ProviderFulfillmentMode.store;
   bool get hasAssignedDriver =>
@@ -174,7 +178,16 @@ class ProviderOrder extends Equatable {
         masterOrderId,
         isAggregated,
         providerState,
+        masterProviderCount,
       ];
+}
+
+/// Incoming orders waiting more than five minutes since placement.
+bool providerOrderIsOverdueIncoming(ProviderOrder order) {
+  if (!order.isIncoming) return false;
+  final created = order.createdAt;
+  if (created == null) return false;
+  return DateTime.now().difference(created) > const Duration(minutes: 5);
 }
 
 /// Tab filters for the provider orders screen.
@@ -208,6 +221,19 @@ abstract final class ProviderOrderTabFilters {
   }) {
     final copy = List<ProviderOrder>.from(orders);
     final epoch = DateTime.fromMillisecondsSinceEpoch(0);
+
+    if (tab == ProviderOrdersTab.incoming) {
+      copy.sort((a, b) {
+        final aOver = providerOrderIsOverdueIncoming(a);
+        final bOver = providerOrderIsOverdueIncoming(b);
+        if (aOver != bOver) return aOver ? -1 : 1;
+        final at = a.createdAt ?? epoch;
+        final bt = b.createdAt ?? epoch;
+        return at.compareTo(bt);
+      });
+      return copy;
+    }
+
     copy.sort((a, b) {
       final DateTime at;
       final DateTime bt;

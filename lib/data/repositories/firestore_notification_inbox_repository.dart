@@ -8,6 +8,7 @@ class FirestoreNotificationInboxRepository implements NotificationInboxRepositor
   final FirebaseFirestore _firestore;
 
   static const _recipient = ToukhNotificationRecipient.provider;
+  static const _batchLimit = 500;
 
   CollectionReference<Map<String, dynamic>> _inbox(String uid) {
     return _firestore
@@ -34,6 +35,48 @@ class FirestoreNotificationInboxRepository implements NotificationInboxRepositor
       'opened': true,
       'openedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  @override
+  Future<void> deleteNotification({
+    required String uid,
+    required String notificationId,
+  }) async {
+    await _inbox(uid).doc(notificationId).delete();
+  }
+
+  @override
+  Future<void> markAllOpened({required String uid}) async {
+    final snap = await _inbox(uid).where('opened', isEqualTo: false).get();
+    if (snap.docs.isEmpty) return;
+
+    for (var i = 0; i < snap.docs.length; i += _batchLimit) {
+      final batch = _firestore.batch();
+      final chunk = snap.docs.skip(i).take(_batchLimit);
+      for (final doc in chunk) {
+        batch.update(doc.reference, {
+          'opened': true,
+          'openedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      await batch.commit();
+    }
+  }
+
+  @override
+  Future<void> clearInbox({required String uid}) async {
+    while (true) {
+      final snap = await _inbox(uid).limit(_batchLimit).get();
+      if (snap.docs.isEmpty) return;
+
+      final batch = _firestore.batch();
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+
+      if (snap.docs.length < _batchLimit) return;
+    }
   }
 
   @override

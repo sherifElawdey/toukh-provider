@@ -58,6 +58,7 @@ abstract final class ProviderOrderMapper {
       masterOrderId: _string(data['masterOrderId']),
       isAggregated: data['isAggregated'] == true,
       providerState: _string(data['providerState']),
+      masterProviderCount: _int(data['masterProviderCount']) ?? 1,
     );
   }
 

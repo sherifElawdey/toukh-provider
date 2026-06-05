@@ -7,6 +7,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/shell/widgets/shell_nav_destination.dart';
 import 'package:toukh_provider/features/shell/widgets/shell_nav_item.dart';
+import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -74,14 +75,22 @@ class MainShellScaffold extends StatelessWidget {
                 ),
               ),
         actions: [
-          IconButton(
-            tooltip: AppStrings.Notifications.title.tr,
-            onPressed: () => context.push(AppRoutes.notifications),
-            icon: Icon(
-              ToukhIcons.notifications,
-              size: 26,
-              color: AppColors.secondColor,
-            ),
+          BlocBuilder<ProviderNotificationBadgeCubit, ProviderNotificationBadgeState>(
+            builder: (context, badge) {
+              return IconButton(
+                tooltip: AppStrings.Notifications.title.tr,
+                onPressed: () => context.push(AppRoutes.notifications),
+                icon: Badge(
+                  isLabelVisible: badge.notificationCount > 0,
+                  label: CustomText('${badge.notificationCount}'),
+                  child: Icon(
+                    ToukhIcons.notifications,
+                    size: 26,
+                    color: AppColors.secondColor,
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(width: 4),
         ],

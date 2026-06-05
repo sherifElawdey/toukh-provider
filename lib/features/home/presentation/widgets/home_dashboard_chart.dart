@@ -24,8 +24,8 @@ class HomeDashboardOrderChart extends StatelessWidget {
       return SizedBox(
         height: 180,
         child: HomeDashboardEmptyPlaceholder(
-          icon: PhosphorIconsRegular.chartLine,
           message: AppStrings.Home.dashboardChartEmpty,
+          compact: true,
         ),
       );
     }
@@ -35,8 +35,8 @@ class HomeDashboardOrderChart extends StatelessWidget {
       return SizedBox(
         height: 180,
         child: HomeDashboardEmptyPlaceholder(
-          icon: PhosphorIconsRegular.chartLine,
           message: AppStrings.Home.dashboardChartEmpty,
+          compact: true,
         ),
       );
     }

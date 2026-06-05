@@ -5,5 +5,14 @@ abstract class NotificationInboxRepository {
 
   Future<void> markOpened({required String uid, required String notificationId});
 
+  Future<void> deleteNotification({
+    required String uid,
+    required String notificationId,
+  });
+
+  Future<void> markAllOpened({required String uid});
+
+  Future<void> clearInbox({required String uid});
+
   Future<int> unreadCount(String uid);
 }

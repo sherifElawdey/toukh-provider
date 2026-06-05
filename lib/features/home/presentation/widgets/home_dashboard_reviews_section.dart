@@ -32,7 +32,6 @@ class HomeDashboardReviewsSection extends StatelessWidget {
         const SizedBox(height: AppSizes.spaceMd),
         if (reviews.isEmpty)
           HomeDashboardEmptyPlaceholder(
-            icon: PhosphorIconsRegular.chatTeardropText,
             message: AppStrings.Home.dashboardReviewsEmpty,
           )
         else

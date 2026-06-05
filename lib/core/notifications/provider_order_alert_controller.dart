@@ -8,10 +8,19 @@ class ProviderOrderAlertController extends ChangeNotifier {
       ProviderOrderAlertController._();
 
   ToukhNotification? _active;
+  final Set<String> _shownOrderIds = {};
 
   ToukhNotification? get active => _active;
 
   void show(ToukhNotification notification) {
+    final orderId = notification.orderId ??
+        notification.payload['orderId']?.toString() ??
+        '';
+    if (orderId.isNotEmpty) {
+      if (_shownOrderIds.contains(orderId)) return;
+      _shownOrderIds.add(orderId);
+    }
+
     _active = notification;
     notifyListeners();
   }

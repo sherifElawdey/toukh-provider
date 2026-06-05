@@ -79,6 +79,7 @@ class HomeDashboardState extends Equatable {
     required this.inProgressOrders,
     required this.weekMetrics,
     required this.monthMetrics,
+    required this.todayMetrics,
     required this.chartBuckets,
     required this.bestsellers,
     required this.visibleReviews,
@@ -105,6 +106,7 @@ class HomeDashboardState extends Equatable {
 
   final DashboardPeriodMetrics weekMetrics;
   final DashboardPeriodMetrics monthMetrics;
+  final DashboardPeriodMetrics todayMetrics;
 
   final List<OrderRateBucket> chartBuckets;
 
@@ -129,6 +131,7 @@ class HomeDashboardState extends Equatable {
       inProgressOrders: const [],
       weekMetrics: _emptyMetrics,
       monthMetrics: _emptyMetrics,
+      todayMetrics: _emptyMetrics,
       chartBuckets: const [],
       bestsellers: const [],
       visibleReviews: const [],
@@ -158,6 +161,7 @@ class HomeDashboardState extends Equatable {
     List<ProviderOrderDashboard>? inProgressOrders,
     DashboardPeriodMetrics? weekMetrics,
     DashboardPeriodMetrics? monthMetrics,
+    DashboardPeriodMetrics? todayMetrics,
     List<OrderRateBucket>? chartBuckets,
     List<BestsellerRow>? bestsellers,
     List<ProviderReviewSummary>? visibleReviews,
@@ -177,6 +181,7 @@ class HomeDashboardState extends Equatable {
       inProgressOrders: inProgressOrders ?? this.inProgressOrders,
       weekMetrics: weekMetrics ?? this.weekMetrics,
       monthMetrics: monthMetrics ?? this.monthMetrics,
+      todayMetrics: todayMetrics ?? this.todayMetrics,
       chartBuckets: chartBuckets ?? this.chartBuckets,
       bestsellers: bestsellers ?? this.bestsellers,
       visibleReviews: visibleReviews ?? this.visibleReviews,
@@ -198,6 +203,7 @@ class HomeDashboardState extends Equatable {
         inProgressOrders,
         weekMetrics,
         monthMetrics,
+        todayMetrics,
         chartBuckets,
         bestsellers,
         visibleReviews,

@@ -10,11 +10,13 @@ class NotificationsState extends Equatable {
     this.loading = true,
     this.items = const [],
     this.errorMessage,
+    this.showUnreadOnly = false,
   });
 
   final bool loading;
   final List<ToukhNotification> items;
   final String? errorMessage;
+  final bool showUnreadOnly;
 
   List<ToukhNotification> get newestFirst =>
       List<ToukhNotification>.from(items)
@@ -24,13 +26,33 @@ class NotificationsState extends Equatable {
           return bt.compareTo(at);
         });
 
+  List<ToukhNotification> get visibleItems {
+    if (!showUnreadOnly) return newestFirst;
+    return newestFirst.where((n) => n.isUnread).toList();
+  }
+
   static const homePreviewLimit = 5;
 
   List<ToukhNotification> get homePreview =>
       newestFirst.take(homePreviewLimit).toList();
 
+  NotificationsState copyWith({
+    bool? loading,
+    List<ToukhNotification>? items,
+    String? errorMessage,
+    bool? showUnreadOnly,
+    bool clearError = false,
+  }) {
+    return NotificationsState(
+      loading: loading ?? this.loading,
+      items: items ?? this.items,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      showUnreadOnly: showUnreadOnly ?? this.showUnreadOnly,
+    );
+  }
+
   @override
-  List<Object?> get props => [loading, items, errorMessage];
+  List<Object?> get props => [loading, items, errorMessage, showUnreadOnly];
 }
 
 class NotificationsCubit extends Cubit<NotificationsState> {
@@ -49,19 +71,48 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       emit(const NotificationsState(loading: false, items: []));
       return;
     }
-    emit(const NotificationsState(loading: true));
+    emit(state.copyWith(loading: true, clearError: true));
     _sub = _repository.watchInbox(uid).listen(
-      (items) => emit(NotificationsState(loading: false, items: items)),
-      onError: (e) => emit(
-        NotificationsState(loading: false, errorMessage: e.toString()),
+      (items) => emit(
+        NotificationsState(
+          loading: false,
+          items: items,
+          showUnreadOnly: state.showUnreadOnly,
+        ),
       ),
+      onError: (e) => emit(state.copyWith(loading: false, errorMessage: e.toString())),
     );
+  }
+
+  void toggleUnreadOnly() {
+    emit(state.copyWith(showUnreadOnly: !state.showUnreadOnly));
   }
 
   Future<void> markOpened(ToukhNotification notification) async {
     final uid = _uid;
     if (uid == null || notification.opened) return;
     await _repository.markOpened(uid: uid, notificationId: notification.id);
+  }
+
+  Future<void> markAllRead() async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repository.markAllOpened(uid: uid);
+  }
+
+  Future<void> deleteNotification(ToukhNotification notification) async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repository.deleteNotification(
+      uid: uid,
+      notificationId: notification.id,
+    );
+  }
+
+  Future<void> clearAll() async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _repository.clearInbox(uid: uid);
   }
 
   @override

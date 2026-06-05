@@ -238,6 +238,10 @@ class _Home {
   String get dashboardStatusPreparing => 'home.dashboard_status_preparing';
   String get dashboardStatusNew => 'home.dashboard_status_new';
   String get dashboardStatusPickup => 'home.dashboard_status_pickup';
+  String get dashboardStatTodayCaption => 'home.dashboard_stat_today_caption';
+  String get dashboardPendingOrdersTitle => 'home.dashboard_pending_orders_title';
+  String get dashboardPendingOrdersSubtitle =>
+      'home.dashboard_pending_orders_subtitle';
 }
 
 class _Notifications {
@@ -246,6 +250,26 @@ class _Notifications {
   String get showMore => 'notifications.show_more';
   String get emptyTitle => 'notifications.empty_title';
   String get emptySubtitle => 'notifications.empty_subtitle';
+  String get inboxTitle => 'notifications.inbox.title';
+  String get inboxMarkAllRead => 'notifications.inbox.mark_all_read';
+  String get inboxClearAll => 'notifications.inbox.clear_all';
+  String get inboxClearAllConfirm => 'notifications.inbox.clear_all_confirm';
+  String get inboxShowUnreadOnly => 'notifications.inbox.show_unread_only';
+  String get inboxEmptyTitle => 'notifications.inbox.empty_title';
+  String get inboxEmptySubtitle => 'notifications.inbox.empty_subtitle';
+  String get inboxNoUnread => 'notifications.inbox.no_unread';
+  String get categoryMessage => 'notifications.category.message';
+  String get categoryOrder => 'notifications.category.order';
+  String get categorySupport => 'notifications.category.support';
+  String get categorySystem => 'notifications.category.system';
+  String get statusPlaced => 'notifications.status.placed';
+  String get statusPreparing => 'notifications.status.preparing';
+  String get statusDriverAssigned => 'notifications.status.driver_assigned';
+  String get statusReadyForPickup => 'notifications.status.ready_for_pickup';
+  String get statusOnTheWay => 'notifications.status.on_the_way';
+  String get statusPickedUp => 'notifications.status.picked_up';
+  String get statusDelivered => 'notifications.status.delivered';
+  String get statusCancelled => 'notifications.status.cancelled';
 }
 
 class _Orders {
@@ -295,6 +319,11 @@ class _Orders {
   String get actionAccept => 'orders.action_accept';
   String get actionDismiss => 'orders.action_dismiss';
   String get seeDetails => 'orders.see_details';
+  String get orderTypeGroup => 'orders.order_type_group';
+  String get orderTypeIndividual => 'orders.order_type_individual';
+  String get itemsMore => 'orders.items_more';
+  String get placedAtLabel => 'orders.placed_at_label';
+  String get waitingElapsedLabel => 'orders.waiting_elapsed_label';
   String get notifiedElapsedLabel => 'orders.notified_elapsed_label';
   String get notifiedOverdueMessage => 'orders.notified_overdue_message';
   String get statusRunning => 'orders.status_running';

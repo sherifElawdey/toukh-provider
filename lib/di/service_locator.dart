@@ -38,6 +38,7 @@ import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/notifications/cubit/notifications_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
+import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
 
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -162,5 +163,9 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<NotificationsCubit>(
     () => NotificationsCubit(getIt<NotificationInboxRepository>()),
+  );
+
+  getIt.registerLazySingleton<ProviderNotificationBadgeCubit>(
+    ProviderNotificationBadgeCubit.new,
   );
 }
