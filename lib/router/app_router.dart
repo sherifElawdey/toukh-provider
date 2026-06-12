@@ -46,8 +46,20 @@ import 'package:toukh_provider/features/registration/presentation/register_kind_
 import 'package:toukh_provider/features/registration/presentation/register_map_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_profile_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_review_screen.dart';
+import 'package:toukh_provider/features/settings/presentation/about_app_screen.dart';
+import 'package:toukh_provider/features/settings/presentation/account_details_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/legal_document_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/settings_screen.dart';
+import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
+import 'package:toukh_provider/features/wallet/cubit/wallet_cubit.dart';
+import 'package:toukh_provider/features/wallet/presentation/wallet_screen.dart';
+import 'package:toukh_provider/domain/repositories/provider_drivers_repository.dart';
+import 'package:toukh_provider/features/drivers/cubit/manage_drivers_cubit.dart';
+import 'package:toukh_provider/features/drivers/presentation/manage_drivers_screen.dart';
+import 'package:toukh_provider/features/reviews/cubit/provider_reviews_cubit.dart';
+import 'package:toukh_provider/features/reviews/presentation/provider_reviews_screen.dart';
+import 'package:toukh_provider/domain/repositories/provider_reviews_repository.dart';
+import 'package:toukh_provider/features/wallet/presentation/wallet_transactions_screen.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_overlay.dart';
 import 'package:toukh_provider/features/shell/main_shell_scaffold.dart';
 import 'package:toukh_provider/features/welcome/welcome_screen.dart';
@@ -236,9 +248,111 @@ GoRouter createAppRouter({
         ),
       ),
       GoRoute(
+        path: AppRoutes.accountDetails,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = context.read<AuthCubit>().state;
+          if (auth is! Authenticated) {
+            return Scaffold(
+              appBar: AppBar(title: CustomText(AppStrings.Settings.accountDetails)),
+              body: const Center(child: CustomText('Sign in required')),
+            );
+          }
+          return BlocProvider(
+            create: (_) => RegistrationCubit()..seedFromProfile(auth.profile),
+            child: const AccountDetailsScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.aboutApp,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) => const AboutAppScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.notifications,
         parentNavigatorKey: providerRootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.wallet,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = authCubit.state;
+          if (auth is! Authenticated) {
+            return Scaffold(
+              body: Center(child: CustomText(AppStrings.Common.error.tr)),
+            );
+          }
+          return BlocProvider(
+            create: (_) => WalletCubit(
+              getIt<ProviderWalletRepository>(),
+              auth.user.uid,
+            ),
+            child: const WalletScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.walletTransactions,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = authCubit.state;
+          if (auth is! Authenticated) {
+            return Scaffold(
+              body: Center(child: CustomText(AppStrings.Common.error.tr)),
+            );
+          }
+          return BlocProvider(
+            create: (_) {
+              final c = WalletHistoryCubit(
+                getIt<ProviderWalletRepository>(),
+                auth.user.uid,
+              );
+              c.loadInitial();
+              return c;
+            },
+            child: const WalletTransactionsScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.reviews,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = authCubit.state;
+          if (auth is! Authenticated) {
+            return Scaffold(
+              body: Center(child: CustomText(AppStrings.Common.error.tr)),
+            );
+          }
+          return BlocProvider(
+            create: (_) => ProviderReviewsCubit(
+              getIt<ProviderReviewsRepository>(),
+              auth.user.uid,
+            ),
+            child: const ProviderReviewsScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.manageDrivers,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = authCubit.state;
+          if (auth is! Authenticated) {
+            return Scaffold(
+              body: Center(child: CustomText(AppStrings.Common.error.tr)),
+            );
+          }
+          return BlocProvider(
+            create: (_) => ManageDriversCubit(
+              getIt<ProviderDriversRepository>(),
+              auth.user.uid,
+            ),
+            child: const ManageDriversScreen(),
+          );
+        },
       ),
       ShellRoute(
         builder: (context, state, child) => BlocProvider(

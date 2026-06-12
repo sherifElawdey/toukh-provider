@@ -17,6 +17,7 @@ import 'package:toukh_ui/toukh_ui.dart';
 Future<void> showRegisterReviewEditSheet(
   BuildContext context, {
   required ReviewField field,
+  Future<void> Function(RegistrationDraft draft)? onPersist,
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -30,15 +31,19 @@ Future<void> showRegisterReviewEditSheet(
     ),
     builder: (sheetContext) => BlocProvider.value(
       value: context.read<RegistrationCubit>(),
-      child: _RegisterReviewEditSheet(field: field),
+      child: _RegisterReviewEditSheet(field: field, onPersist: onPersist),
     ),
   );
 }
 
 class _RegisterReviewEditSheet extends StatefulWidget {
-  const _RegisterReviewEditSheet({required this.field});
+  const _RegisterReviewEditSheet({
+    required this.field,
+    this.onPersist,
+  });
 
   final ReviewField field;
+  final Future<void> Function(RegistrationDraft draft)? onPersist;
 
   @override
   State<_RegisterReviewEditSheet> createState() =>
@@ -198,8 +203,14 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
                 Expanded(
                   child: AppFilledButton(
                     text: AppStrings.Registration.reviewEditSave,
-                    onTap: () {
-                      if (_onSave(context)) {
+                    onTap: () async {
+                      if (!_onSave(context)) return;
+                      final draft = context.read<RegistrationCubit>().state;
+                      final persist = widget.onPersist;
+                      if (persist != null) {
+                        await context.withAppLoading(() => persist(draft));
+                      }
+                      if (context.mounted) {
                         Navigator.pop(context);
                       }
                     },

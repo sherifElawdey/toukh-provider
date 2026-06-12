@@ -3,9 +3,8 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
-import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/incoming_order_wait_counter.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_label.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -13,7 +12,7 @@ import 'package:toukh_ui/toukh_ui.dart';
 class ProviderOrderCard extends StatelessWidget {
   const ProviderOrderCard({
     super.key,
-    required this.order,
+    required this.row,
     required this.tab,
     this.busy = false,
     this.onApprove,
@@ -24,7 +23,7 @@ class ProviderOrderCard extends StatelessWidget {
     this.onConfirmHandoff,
   });
 
-  final ProviderOrder order;
+  final ProviderMasterOrderRow row;
   final ProviderOrdersTab tab;
   final bool busy;
   final VoidCallback? onApprove;
@@ -34,29 +33,52 @@ class ProviderOrderCard extends StatelessWidget {
   final VoidCallback? onDeliver;
   final VoidCallback? onConfirmHandoff;
 
-  static const _compactButtonHeight = 40.0;
+  ProviderOrderSlice get _slice => row.slice;
+
+  static const _compactButtonHeight = 45.0;
 
   @override
   Widget build(BuildContext context) {
+    if (tab == ProviderOrdersTab.incoming) {
+      return IncomingOrderTimedBuilder(
+        key: ValueKey(row.id),
+        row: row,
+        builder: (context, elapsed, urgency, hasPlacementTime) => _buildCard(
+          context,
+          urgency: urgency,
+          elapsed: elapsed,
+          hasPlacementTime: hasPlacementTime,
+        ),
+      );
+    }
+    return _buildCard(context);
+  }
+
+  Widget _buildCard(
+    BuildContext context, {
+    IncomingOrderUrgency urgency = IncomingOrderUrgency.normal,
+    Duration elapsed = Duration.zero,
+    bool hasPlacementTime = true,
+  }) {
     final scheme = Theme.of(context).colorScheme;
-    final overdue = tab == ProviderOrdersTab.incoming &&
-        providerOrderIsOverdueIncoming(order);
-    final cardColor = overdue
-        ? scheme.errorContainer.withValues(alpha: 0.35)
-        : scheme.surfaceContainerHighest.withValues(alpha: 0.45);
-    final borderColor = overdue ? scheme.error : Colors.transparent;
+    final decoration = tab == ProviderOrdersTab.incoming
+        ? incomingOrderUrgencyDecoration(urgency, scheme)
+        : incomingOrderUrgencyDecoration(IncomingOrderUrgency.normal, scheme);
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 0,
-      color: cardColor,
+      color: decoration.background,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: borderColor, width: overdue ? 1.5 : 0),
+        side: BorderSide(
+          color: decoration.border,
+          width: decoration.borderWidth,
+        ),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () => context.push(AppRoutes.orderDetailPath(order.id)),
+        onTap: () => context.push(AppRoutes.orderDetailPath(row.id)),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
@@ -66,7 +88,7 @@ class ProviderOrderCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: CustomText(
-                      order.customerName ?? AppStrings.Orders.detailCustomer.tr,
+                      _slice.customerName ?? AppStrings.Orders.detailCustomer.tr,
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: AppSizes.fontTitle,
@@ -74,23 +96,28 @@ class ProviderOrderCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  _HeaderChip(order: order, tab: tab),
+                  _HeaderChip(row: row, tab: tab),
                 ],
               ),
               if (tab == ProviderOrdersTab.incoming) ...[
-                const SizedBox(height: 10),
-                _IncomingMeta(order: order),
+                const SizedBox(height: 8),
+                _IncomingMeta(
+                  row: row,
+                  elapsed: elapsed,
+                  urgency: urgency,
+                  hasPlacementTime: hasPlacementTime,
+                ),
               ] else ...[
                 const SizedBox(height: 6),
                 CustomText(
-                  formatDashboardEgp(context, order.totalEgp),
+                  formatDashboardEgp(context, _slice.totalEgp),
                   style: TextStyle(
                     color: scheme.onSurface.withValues(alpha: 0.62),
                     fontSize: AppSizes.fontBody,
                   ),
                 ),
               ],
-              if (order.courierLateWarningAt != null) ...[
+              if (_slice.courierLateWarningAt != null) ...[
                 const SizedBox(height: 8),
                 CustomText(
                   AppStrings.Orders.courierLateWarning.tr,
@@ -103,16 +130,15 @@ class ProviderOrderCard extends StatelessWidget {
               ],
               if (tab == ProviderOrdersTab.outgoing) ...[
                 const SizedBox(height: 8),
-                _OutgoingMeta(order: order),
+                _OutgoingMeta(row: row),
               ],
-              if (tab == ProviderOrdersTab.inProgress &&
-                  order.hasAssignedDriver) ...[
+              if (tab == ProviderOrdersTab.inProgress && _slice.hasAssignedDriver) ...[
                 const SizedBox(height: 8),
-                _DriverChip(order: order),
+                _DriverChip(row: row),
               ],
               const SizedBox(height: 10),
               _Actions(
-                order: order,
+                row: row,
                 tab: tab,
                 busy: busy,
                 onApprove: onApprove,
@@ -131,18 +157,18 @@ class ProviderOrderCard extends StatelessWidget {
 }
 
 class _HeaderChip extends StatelessWidget {
-  const _HeaderChip({required this.order, required this.tab});
+  const _HeaderChip({required this.row, required this.tab});
 
-  final ProviderOrder order;
+  final ProviderMasterOrderRow row;
   final ProviderOrdersTab tab;
 
   @override
   Widget build(BuildContext context) {
     final label = tab == ProviderOrdersTab.incoming
-        ? (order.isGroupOrder
+        ? (row.slice.isGroupOrder
             ? AppStrings.Orders.orderTypeGroup.tr
             : AppStrings.Orders.orderTypeIndividual.tr)
-        : providerOrderStatusLabel(order);
+        : providerOrderStatusLabel(row);
     final color = tab == ProviderOrdersTab.incoming
         ? AppColors.secondColor
         : AppColors.appColor;
@@ -166,42 +192,63 @@ class _HeaderChip extends StatelessWidget {
 }
 
 class _IncomingMeta extends StatelessWidget {
-  const _IncomingMeta({required this.order});
+  const _IncomingMeta({
+    required this.row,
+    required this.elapsed,
+    required this.urgency,
+    required this.hasPlacementTime,
+  });
 
-  final ProviderOrder order;
+  final ProviderMasterOrderRow row;
+  final Duration elapsed;
+  final IncomingOrderUrgency urgency;
+  final bool hasPlacementTime;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final locale = Localizations.localeOf(context).toString();
-    final placedAt = order.createdAt;
+    final placedAt = row.slice.createdAt;
     final placedLabel = placedAt == null
         ? '—'
-        : DateFormat.yMMMd(locale).add_Hm().format(placedAt);
-    final elapsed = _formatElapsed(placedAt);
-    final itemsLabel = _formatItemNames(order.items);
+        : formatDateLabel(placedAt,locale: locale);
+    final itemsLabel = _formatItemNames(row.slice.items);
+    final metaColor = scheme.onSurface.withValues(alpha: 0.72);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _MetaLine(
-          icon: ToukhIcons.clock,
-          text:
-              '${AppStrings.Orders.placedAtLabel.tr}: $placedLabel',
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(
+              ToukhIcons.clock,
+              size: 16,
+              color: metaColor.withValues(alpha: 0.85),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: CustomText(
+                '${AppStrings.Orders.placedAtLabel.tr}: $placedLabel',
+                style: TextStyle(
+                  color: metaColor,
+                  fontSize: AppSizes.fontBody,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IncomingOrderWaitCounter(
+              elapsed: elapsed,
+              urgency: urgency,
+              hasPlacementTime: hasPlacementTime,
+            ),
+          ],
         ),
-        if (elapsed != null) ...[
-          const SizedBox(height: 4),
-          _MetaLine(
-            icon: ToukhIcons.orders,
-            text:
-                '${AppStrings.Orders.waitingElapsedLabel.tr}: $elapsed',
-            emphasize: providerOrderIsOverdueIncoming(order),
-          ),
-        ],
         const SizedBox(height: 4),
         _MetaLine(
           icon: PhosphorIconsRegular.currencyDollar,
-          text: formatDashboardEgp(context, order.orderPrice),
+          text: formatDashboardEgp(context, row.slice.orderPriceEgp),
         ),
         if (itemsLabel != null) ...[
           const SizedBox(height: 4),
@@ -220,7 +267,7 @@ class _IncomingMeta extends StatelessWidget {
     );
   }
 
-  String? _formatItemNames(List<ProviderOrderLineItem> items) {
+  String? _formatItemNames(List<ProviderOrderSliceLineItem> items) {
     if (items.isEmpty) return null;
     const maxNames = 3;
     final names = items.take(maxNames).map((e) => e.name).toList();
@@ -230,31 +277,21 @@ class _IncomingMeta extends StatelessWidget {
     }
     return names.join(', ');
   }
-
-  String? _formatElapsed(DateTime? from) {
-    if (from == null) return null;
-    final d = DateTime.now().difference(from);
-    if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m';
-    if (d.inMinutes > 0) return '${d.inMinutes}m';
-    return '${d.inSeconds}s';
-  }
 }
 
 class _MetaLine extends StatelessWidget {
   const _MetaLine({
     required this.icon,
     required this.text,
-    this.emphasize = false,
   });
 
   final IconData icon;
   final String text;
-  final bool emphasize;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final color = emphasize ? scheme.error : scheme.onSurface.withValues(alpha: 0.72);
+    final color = scheme.onSurface.withValues(alpha: 0.72);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,7 +304,7 @@ class _MetaLine extends StatelessWidget {
             style: TextStyle(
               color: color,
               fontSize: AppSizes.fontBody,
-              fontWeight: emphasize ? FontWeight.w700 : FontWeight.w500,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ),
@@ -277,22 +314,23 @@ class _MetaLine extends StatelessWidget {
 }
 
 class _OutgoingMeta extends StatelessWidget {
-  const _OutgoingMeta({required this.order});
+  const _OutgoingMeta({required this.row});
 
-  final ProviderOrder order;
+  final ProviderMasterOrderRow row;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final label = order.isStoreDelivery
+    final slice = row.slice;
+    final label = slice.isStoreDelivery
         ? AppStrings.Orders.storeDeliveryLabel.tr
-        : (order.driverName ?? AppStrings.Orders.courierAssignedLabel.tr);
-    final elapsed = _formatElapsed(order.dispatchedAt);
+        : (slice.driverName ?? AppStrings.Orders.courierAssignedLabel.tr);
+    final elapsed = _formatElapsed(slice.dispatchedAt);
 
     return Row(
       children: [
         Icon(
-          order.isStoreDelivery ? ToukhIcons.store : ToukhIcons.delivery,
+          slice.isStoreDelivery ? ToukhIcons.store : ToukhIcons.delivery,
           size: 18,
           color: scheme.onSurface.withValues(alpha: 0.55),
         ),
@@ -328,29 +366,30 @@ class _OutgoingMeta extends StatelessWidget {
 }
 
 class _DriverChip extends StatelessWidget {
-  const _DriverChip({required this.order});
+  const _DriverChip({required this.row});
 
-  final ProviderOrder order;
+  final ProviderMasterOrderRow row;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final slice = row.slice;
     return Row(
       children: [
         CircleAvatar(
           radius: 16,
           backgroundColor: scheme.primaryContainer,
-          backgroundImage: order.driverPhotoUrl != null
-              ? NetworkImage(order.driverPhotoUrl!)
+          backgroundImage: slice.driverPhotoUrl != null
+              ? NetworkImage(slice.driverPhotoUrl!)
               : null,
-          child: order.driverPhotoUrl == null
+          child: slice.driverPhotoUrl == null
               ? Icon(ToukhIcons.profile, size: 18, color: scheme.primary)
               : null,
         ),
         const SizedBox(width: 8),
         Expanded(
           child: CustomText(
-            order.driverName ?? AppStrings.Orders.courierAssignedLabel.tr,
+            slice.driverName ?? AppStrings.Orders.courierAssignedLabel.tr,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
@@ -361,7 +400,7 @@ class _DriverChip extends StatelessWidget {
 
 class _Actions extends StatelessWidget {
   const _Actions({
-    required this.order,
+    required this.row,
     required this.tab,
     required this.busy,
     this.onApprove,
@@ -372,7 +411,7 @@ class _Actions extends StatelessWidget {
     this.onConfirmHandoff,
   });
 
-  final ProviderOrder order;
+  final ProviderMasterOrderRow row;
   final ProviderOrdersTab tab;
   final bool busy;
   final VoidCallback? onApprove;
@@ -384,12 +423,15 @@ class _Actions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final slice = row.slice;
+
     if (tab == ProviderOrdersTab.incoming) {
       return Row(
         children: [
           Expanded(
             child: AppOutlinedButton(
               text: AppStrings.Orders.actionCancel.tr,
+              size: AppButtonSize.small,
               height: ProviderOrderCard._compactButtonHeight,
               onTap: busy ? null : onCancel,
             ),
@@ -399,6 +441,7 @@ class _Actions extends StatelessWidget {
             child: AppFilledButton(
               text: AppStrings.Orders.actionApprove.tr,
               height: ProviderOrderCard._compactButtonHeight,
+              size: AppButtonSize.small,
               onTap: busy ? null : onApprove,
             ),
           ),
@@ -408,7 +451,7 @@ class _Actions extends StatelessWidget {
 
     if (tab == ProviderOrdersTab.inProgress) {
       final buttons = <Widget>[];
-      if (order.isAggregated && !order.hasAssignedDriver) {
+      if (slice.isAggregated && !slice.hasAssignedDriver) {
         return CustomText(
           'Driver will be assigned when all stores respond.',
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -416,7 +459,7 @@ class _Actions extends StatelessWidget {
               ),
         );
       }
-      if (order.canRequestDelivery) {
+      if (slice.canRequestDelivery) {
         buttons.add(
           AppFilledButton(
             text: AppStrings.Orders.actionRequestDelivery.tr,
@@ -425,7 +468,7 @@ class _Actions extends StatelessWidget {
           ),
         );
       }
-      if (order.canMarkReadyForPickup) {
+      if (slice.canMarkReadyForPickup) {
         buttons.add(
           AppFilledButton(
             text: AppStrings.Orders.actionReadyForPickup.tr,
@@ -434,7 +477,7 @@ class _Actions extends StatelessWidget {
           ),
         );
       }
-      if (order.canStoreDeliver) {
+      if (slice.canStoreDeliver) {
         buttons.add(
           AppFilledButton(
             text: AppStrings.Orders.actionDeliver.tr,
@@ -443,7 +486,7 @@ class _Actions extends StatelessWidget {
           ),
         );
       }
-      if (order.canConfirmHandoff) {
+      if (slice.canConfirmHandoff) {
         buttons.add(
           AppFilledButton(
             text: AppStrings.Orders.actionConfirmHandoff.tr,
@@ -466,7 +509,7 @@ class _Actions extends StatelessWidget {
 
     return AppTextButton(
       text: AppStrings.Orders.seeDetails.tr,
-      onTap: () => context.push(AppRoutes.orderDetailPath(order.id)),
+      onTap: () => context.push(AppRoutes.orderDetailPath(row.id)),
     );
   }
 }

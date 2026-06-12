@@ -1,9 +1,8 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:toukh_provider/core/constants/app_constants.dart';
-import 'package:toukh_provider/data/mappers/provider_order_mapper.dart';
-import 'package:toukh_provider/domain/entities/provider_fulfillment_mode.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
-import 'package:toukh_provider/domain/entities/provider_order_status_wire.dart';
+import 'package:cloud_functions/cloud_functions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -12,44 +11,244 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
   FirestoreProviderOrdersRepository(
     this._firestore, {
     CustomerOrderNotifyService? customerNotify,
-  }) : _customerNotify = customerNotify;
+    FirebaseFunctions? functions,
+  })  : _customerNotify = customerNotify,
+        _functions = functions;
 
   final FirebaseFirestore _firestore;
   final CustomerOrderNotifyService? _customerNotify;
+  final FirebaseFunctions? _functions;
 
-  Future<void> _notifyCustomer(String providerId, String orderId) async {
+  static const deliveryRequestsCollection = 'deliveryRequests';
+  static final _epoch = DateTime.fromMillisecondsSinceEpoch(0);
+
+  Future<void> _notifyCustomer(String providerId, String masterOrderId) async {
     await _customerNotify?.notifyCustomer(
       providerId: providerId,
-      orderId: orderId,
+      orderId: masterOrderId,
     );
   }
 
-  static const deliveryRequestsCollection = 'deliveryRequests';
+  DocumentReference<Map<String, dynamic>> _masterRef(String masterOrderId) =>
+      _firestore.collection(ToukhOrderPaths.masterOrders).doc(masterOrderId);
 
-  CollectionReference<Map<String, dynamic>> _ordersCol(String providerUid) =>
-      _firestore
-          .collection(AppConstants.providersCollection)
-          .doc(providerUid)
-          .collection('orders');
+  static bool _hasProviderSlice(MasterOrder m, String providerUid) =>
+      m.hasProviderSlice(providerUid);
 
-  @override
-  Stream<List<ProviderOrder>> watchOrders(String providerUid) {
-    return _ordersCol(providerUid)
-        .orderBy('createdAt', descending: true)
-        .limit(500)
-        .snapshots()
-        .map(
-          (snap) => snap.docs
-              .map((d) => ProviderOrderMapper.fromFirestore(d.id, d.data()))
-              .toList(),
-        );
+  static void _sortActive(List<MasterOrder> orders) {
+    orders.sort((a, b) {
+      final at = a.createdAt ?? _epoch;
+      final bt = b.createdAt ?? _epoch;
+      return bt.compareTo(at);
+    });
   }
 
-  DocumentReference<Map<String, dynamic>> _orderRef(
-    String providerId,
-    String orderId,
-  ) =>
-      _ordersCol(providerId).doc(orderId);
+  static void _sortFinished(List<MasterOrder> orders) {
+    orders.sort((a, b) {
+      final at = a.providerSlices.values
+              .map((s) => s.deliveredAt ?? s.createdAt)
+              .whereType<DateTime>()
+              .fold<DateTime?>(null, (prev, d) {
+            if (prev == null) return d;
+            return d.isAfter(prev) ? d : prev;
+          }) ??
+          a.createdAt ??
+          _epoch;
+      final bt = b.providerSlices.values
+              .map((s) => s.deliveredAt ?? s.createdAt)
+              .whereType<DateTime>()
+              .fold<DateTime?>(null, (prev, d) {
+            if (prev == null) return d;
+            return d.isAfter(prev) ? d : prev;
+          }) ??
+          b.createdAt ??
+          _epoch;
+      return bt.compareTo(at);
+    });
+  }
+
+  @override
+  Stream<List<MasterOrder>> watchOrders(String providerUid) {
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? activeSub;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? finishedSub;
+
+    late StreamController<List<MasterOrder>> controller;
+
+    List<MasterOrder> active = [];
+    List<MasterOrder> finished = [];
+
+    void emit() {
+      if (!controller.isClosed) {
+        final merged = <String, MasterOrder>{
+          for (final m in active) m.id: m,
+          for (final m in finished) m.id: m,
+        };
+        final list = merged.values.toList();
+        _sortActive(list);
+        controller.add(list);
+      }
+    }
+
+    controller = StreamController<List<MasterOrder>>(
+      onListen: () {
+        activeSub = _firestore
+            .collection(ToukhOrderPaths.masterOrders)
+            .where('providerIds', arrayContains: providerUid)
+            .limit(200)
+            .snapshots()
+            .listen(
+              (snap) {
+                active = snap.docs
+                    .map((d) => MasterOrder.fromMap(d.id, d.data()))
+                    .where((m) => _hasProviderSlice(m, providerUid))
+                    .toList();
+                _sortActive(active);
+                emit();
+              },
+              onError: controller.addError,
+            );
+
+        finishedSub = _firestore
+            .collection(ToukhOrderPaths.finishedOrders)
+            .where('providerIds', arrayContains: providerUid)
+            .limit(200)
+            .snapshots()
+            .listen(
+              (snap) {
+                finished = snap.docs
+                    .map((d) => FinishedOrder.fromMap(d.id, d.data()).order)
+                    .where((m) => _hasProviderSlice(m, providerUid))
+                    .toList();
+                _sortFinished(finished);
+                emit();
+              },
+              onError: controller.addError,
+            );
+      },
+      onCancel: () async {
+        await activeSub?.cancel();
+        await finishedSub?.cancel();
+      },
+    );
+
+    return controller.stream;
+  }
+
+  Future<void> _patchSlice({
+    required String providerId,
+    required String masterOrderId,
+    required Map<String, dynamic> patch,
+  }) async {
+    final functions = _functions;
+    if (functions != null) {
+      try {
+        await functions.httpsCallable('updateProviderOrderSlice').call({
+          'masterOrderId': masterOrderId,
+          'providerId': providerId,
+          'patch': patch,
+        });
+        return;
+      } on FirebaseFunctionsException catch (e) {
+        if (e.code != 'not-found' && e.code != 'unavailable') {
+          if (kDebugMode) {
+            debugPrint('updateProviderOrderSlice failed: ${e.code} ${e.message}');
+          }
+          rethrow;
+        }
+      }
+    }
+    await _patchSliceFallback(
+      providerId: providerId,
+      masterOrderId: masterOrderId,
+      patch: patch,
+    );
+  }
+
+  Future<void> _patchSliceFallback({
+    required String providerId,
+    required String masterOrderId,
+    required Map<String, dynamic> patch,
+  }) async {
+    final masterRef = _masterRef(masterOrderId);
+    await _firestore.runTransaction((tx) async {
+      final snap = await tx.get(masterRef);
+      if (!snap.exists) throw StateError('Order not found');
+
+      final master = snap.data()!;
+      final slices = Map<String, dynamic>.from(
+        master['providerSlices'] as Map? ?? {},
+      );
+      final slice = Map<String, dynamic>.from(
+        slices[providerId] as Map? ?? {},
+      );
+      if (slice.isEmpty) throw StateError('Provider slice not found');
+
+      slice.addAll(patch);
+      slice['updatedAt'] = FieldValue.serverTimestamp();
+      slices[providerId] = slice;
+
+      final statusMap = Map<String, dynamic>.from(
+        master['providerStatusMap'] as Map? ?? {},
+      );
+      if (patch['providerState'] != null) {
+        statusMap[providerId] = patch['providerState'];
+      } else if (patch['status'] != null) {
+        statusMap[providerId] = _mapWireToProviderState(patch['status'] as String);
+      }
+
+      final refsRaw = master['providerOrderRefs'] as List? ?? [];
+      final refs = refsRaw.map((e) {
+        final ref = Map<String, dynamic>.from(e as Map);
+        if (ref['providerId'] == providerId) {
+          ref['providerState'] = statusMap[providerId] ?? ref['providerState'];
+        }
+        return ref;
+      }).toList();
+
+      final updates = <String, dynamic>{
+        'providerSlices': slices,
+        'providerStatusMap': statusMap,
+        'providerOrderRefs': refs,
+        'updatedAt': FieldValue.serverTimestamp(),
+      };
+
+      final status = patch['status'] as String?;
+      if (status == 'out_for_delivery') updates['globalStatus'] = 'on_the_way';
+      if (status == 'delivered' || status == 'completed') {
+        updates['globalStatus'] = 'delivered';
+      }
+      if (status == 'cancelled') {
+        final allCancelled = statusMap.values.isNotEmpty &&
+            statusMap.values.every((s) => s == 'rejected');
+        if (allCancelled) updates['globalStatus'] = 'cancelled';
+      }
+
+      tx.update(masterRef, updates);
+    });
+  }
+
+  String _mapWireToProviderState(String status) {
+    switch (status.toLowerCase()) {
+      case 'placed':
+      case 'pending':
+        return 'pending';
+      case 'accepted':
+      case 'preparing':
+        return 'preparing';
+      case 'ready_for_pickup':
+        return 'ready_for_pickup';
+      case 'picked_up':
+      case 'out_for_delivery':
+        return 'picked_up';
+      case 'delivered':
+      case 'completed':
+        return 'picked_up';
+      case 'cancelled':
+        return 'rejected';
+      default:
+        return 'pending';
+    }
+  }
 
   @override
   Future<void> approveOrder({
@@ -57,15 +256,18 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String orderId,
     required bool storeDelivers,
   }) async {
-    await _orderRef(providerId, orderId).update({
-      'status': ProviderOrderStatusWire.preparing,
-      'providerState': 'preparing',
-      'fulfillmentMode': storeDelivers
-          ? ProviderFulfillmentMode.store.wireValue
-          : ProviderFulfillmentMode.courier.wireValue,
-      'acceptedAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _patchSlice(
+      providerId: providerId,
+      masterOrderId: orderId,
+      patch: {
+        'status': ProviderOrderStatusWire.preparing,
+        'providerState': 'preparing',
+        'fulfillmentMode': storeDelivers
+            ? FulfillmentMode.store.wireValue
+            : FulfillmentMode.courier.wireValue,
+        'acceptedAt': FieldValue.serverTimestamp(),
+      },
+    );
     await _notifyCustomer(providerId, orderId);
   }
 
@@ -76,94 +278,17 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     String? reason,
   }) async {
     final cancelReason = reason ?? 'unavailable';
-    await _orderRef(providerId, orderId).update({
-      'status': ProviderOrderStatusWire.cancelled,
-      'providerState': 'rejected',
-      'cancelReason': cancelReason,
-      'cancelledAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
-    await _syncCancelledProviderToMaster(
+    await _patchSlice(
       providerId: providerId,
-      orderId: orderId,
-      cancelReason: cancelReason,
+      masterOrderId: orderId,
+      patch: {
+        'status': ProviderOrderStatusWire.cancelled,
+        'providerState': 'rejected',
+        'cancelReason': cancelReason,
+        'cancelledAt': FieldValue.serverTimestamp(),
+      },
     );
     await _notifyCustomer(providerId, orderId);
-  }
-
-  /// Client fallback when Cloud Functions are not deployed.
-  Future<void> _syncCancelledProviderToMaster({
-    required String providerId,
-    required String orderId,
-    required String cancelReason,
-  }) async {
-    try {
-      final orderSnap = await _orderRef(providerId, orderId).get();
-      final masterOrderId = orderSnap.data()?['masterOrderId'] as String?;
-      if (masterOrderId == null || masterOrderId.isEmpty) return;
-
-      final masterRef = _firestore.collection('masterOrders').doc(masterOrderId);
-      String? providerName;
-      String? timelineId;
-
-      await _firestore.runTransaction((tx) async {
-        final masterSnap = await tx.get(masterRef);
-        if (!masterSnap.exists) return;
-
-        final master = masterSnap.data()!;
-        timelineId = master['timelineId'] as String? ?? masterOrderId;
-        final statusMap = Map<String, dynamic>.from(
-          master['providerStatusMap'] as Map? ?? {},
-        );
-        statusMap[providerId] = 'rejected';
-
-        final refsRaw = master['providerOrderRefs'] as List? ?? [];
-        final refs = refsRaw.map((e) {
-          final ref = Map<String, dynamic>.from(e as Map);
-          if (ref['providerId'] == providerId) {
-            ref['providerOrderId'] = orderId;
-            ref['providerState'] = 'rejected';
-            ref['cancelledAt'] = FieldValue.serverTimestamp();
-            ref['cancelReason'] = cancelReason;
-            providerName = ref['providerName'] as String? ?? providerId;
-          }
-          return ref;
-        }).toList();
-
-        final updates = <String, dynamic>{
-          'providerStatusMap': statusMap,
-          'providerOrderRefs': refs,
-          'updatedAt': FieldValue.serverTimestamp(),
-        };
-        final allRejected =
-            statusMap.values.isNotEmpty &&
-            statusMap.values.every((s) => s == 'rejected');
-        if (allRejected) {
-          updates['globalStatus'] = 'cancelled';
-        }
-
-        tx.update(masterRef, updates);
-      });
-
-      final resolvedTimelineId = timelineId ?? masterOrderId;
-      await _firestore
-          .collection('orderTimelines')
-          .doc(resolvedTimelineId)
-          .collection('events')
-          .add({
-        'masterOrderId': masterOrderId,
-        'type': 'provider_cancelled',
-        'at': FieldValue.serverTimestamp(),
-        'actorRole': 'provider',
-        'actorId': providerId,
-        'payload': {
-          'providerName': providerName ?? providerId,
-          'cancelReason': cancelReason,
-        },
-      });
-    } catch (_) {
-      // CF may handle sync when deployed; ignore duplicate updates.
-    }
   }
 
   @override
@@ -173,26 +298,31 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required Location searchCenter,
     int radiusMeters = 1000,
   }) async {
-    final requestRef =
-        _firestore.collection(deliveryRequestsCollection).doc();
+    final requestRef = _firestore.collection(deliveryRequestsCollection).doc();
     final expiresAt = DateTime.now().add(const Duration(minutes: 15));
 
-    await _firestore.runTransaction((tx) async {
-      final orderSnap = await tx.get(_orderRef(providerId, orderId));
-      if (!orderSnap.exists) {
-        throw StateError('Order not found');
-      }
+    String? deliveryTaskId;
 
-      final masterOrderId = orderSnap.data()?['masterOrderId'] as String?;
-      final deliveryTaskId = orderSnap.data()?['deliveryTaskId'] as String?;
+    await _firestore.runTransaction((tx) async {
+      final masterSnap = await tx.get(_masterRef(orderId));
+      if (!masterSnap.exists) throw StateError('Order not found');
+
+      final master = masterSnap.data()!;
+      final slices = Map<String, dynamic>.from(
+        master['providerSlices'] as Map? ?? {},
+      );
+      final slice = Map<String, dynamic>.from(
+        slices[providerId] as Map? ?? {},
+      );
+      deliveryTaskId = slice['deliveryTaskId'] as String?;
 
       tx.set(requestRef, {
         'providerId': providerId,
         'orderId': orderId,
-        if (masterOrderId != null) 'masterOrderId': masterOrderId,
+        'masterOrderId': orderId,
         if (deliveryTaskId != null) 'deliveryTaskId': deliveryTaskId,
         'storeLocation': GeoPoint(searchCenter.lat, searchCenter.lng),
-        'searchCenter': ProviderOrderMapper.storeLocationToFirestore(searchCenter),
+        'searchCenter': _locationToMap(searchCenter),
         'radiusMeters': radiusMeters,
         'status': 'open',
         'candidateDriverIds': <String>[],
@@ -200,10 +330,14 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         'expiresAt': Timestamp.fromDate(expiresAt),
       });
 
-      tx.update(_orderRef(providerId, orderId), {
-        'status': ProviderOrderStatusWire.courierRequested,
-        'deliveryRequestId': requestRef.id,
-        'storeLocation': ProviderOrderMapper.storeLocationToFirestore(searchCenter),
+      slice['status'] = ProviderOrderStatusWire.courierRequested;
+      slice['deliveryRequestId'] = requestRef.id;
+      slice['storeLocation'] = _locationToMap(searchCenter);
+      slice['updatedAt'] = FieldValue.serverTimestamp();
+      slices[providerId] = slice;
+
+      tx.update(_masterRef(orderId), {
+        'providerSlices': slices,
         'updatedAt': FieldValue.serverTimestamp(),
       });
     });
@@ -217,11 +351,14 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String providerId,
     required String orderId,
   }) async {
-    await _orderRef(providerId, orderId).update({
-      'status': ProviderOrderStatusWire.readyForPickup,
-      'readyForPickupAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _patchSlice(
+      providerId: providerId,
+      masterOrderId: orderId,
+      patch: {
+        'status': ProviderOrderStatusWire.readyForPickup,
+        'readyForPickupAt': FieldValue.serverTimestamp(),
+      },
+    );
     await _notifyCustomer(providerId, orderId);
   }
 
@@ -230,11 +367,14 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String providerId,
     required String orderId,
   }) async {
-    await _orderRef(providerId, orderId).update({
-      'status': ProviderOrderStatusWire.outForDelivery,
-      'dispatchedAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _patchSlice(
+      providerId: providerId,
+      masterOrderId: orderId,
+      patch: {
+        'status': ProviderOrderStatusWire.outForDelivery,
+        'dispatchedAt': FieldValue.serverTimestamp(),
+      },
+    );
     await _notifyCustomer(providerId, orderId);
   }
 
@@ -243,12 +383,22 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String providerId,
     required String orderId,
   }) async {
-    await _orderRef(providerId, orderId).update({
-      'status': ProviderOrderStatusWire.outForDelivery,
-      'dispatchedAt': FieldValue.serverTimestamp(),
-      'handedToCourierAt': FieldValue.serverTimestamp(),
-      'updatedAt': FieldValue.serverTimestamp(),
-    });
+    await _patchSlice(
+      providerId: providerId,
+      masterOrderId: orderId,
+      patch: {
+        'status': ProviderOrderStatusWire.outForDelivery,
+        'dispatchedAt': FieldValue.serverTimestamp(),
+        'handedToCourierAt': FieldValue.serverTimestamp(),
+      },
+    );
     await _notifyCustomer(providerId, orderId);
   }
+
+  Map<String, dynamic> _locationToMap(Location loc) => {
+        'lat': loc.lat,
+        'lng': loc.lng,
+        if (loc.label != null) 'label': loc.label,
+        if (loc.formattedAddress != null) 'formattedAddress': loc.formattedAddress,
+      };
 }

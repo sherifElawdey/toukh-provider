@@ -3,7 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:toukh_provider/di/service_locator.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -22,7 +22,7 @@ Future<Location?> showRequestDeliverySheet(
 
 Future<void> showDriverAssignedSheet(
   BuildContext context, {
-  required ProviderOrder order,
+  required ProviderMasterOrderRow row,
 }) {
   return showModalBottomSheet<void>(
     context: context,

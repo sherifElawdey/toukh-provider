@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_ui/toukh_ui.dart';
-import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/domain/entities/dashboard_firestore_payload.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
+import 'package:toukh_provider/data/mappers/provider_review_mapper.dart';
 import 'package:toukh_provider/domain/entities/provider_review_summary.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
 
@@ -13,22 +13,14 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
 
   final FirebaseFirestore _firestore;
 
-  CollectionReference<Map<String, dynamic>> _ordersCol(String providerUid) =>
-      _firestore
-          .collection(AppConstants.providersCollection)
-          .doc(providerUid)
-          .collection('orders');
-
   CollectionReference<Map<String, dynamic>> _reviewsCol(String providerUid) =>
-      _firestore
-          .collection(AppConstants.providersCollection)
-          .doc(providerUid)
-          .collection('reviews');
+      _firestore.collection('providers').doc(providerUid).collection('reviews');
 
   @override
   Stream<DashboardFirestorePayload> watchFirestorePayload(String providerUid) {
-    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? subOrders;
-    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? subReviews;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? activeSub;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? finishedSub;
+    StreamSubscription<QuerySnapshot<Map<String, dynamic>>>? reviewsSub;
 
     late StreamController<DashboardFirestorePayload> controller;
 
@@ -48,65 +40,119 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
 
     controller = StreamController<DashboardFirestorePayload>(
       onListen: () {
-        subOrders = _ordersCol(providerUid)
-            .orderBy('createdAt', descending: true)
+        final activeOrders = <ProviderOrderDashboard>[];
+        final finishedOrders = <ProviderOrderDashboard>[];
+
+        activeSub = _firestore
+            .collection(ToukhOrderPaths.masterOrders)
+            .where('providerIds', arrayContains: providerUid)
             .limit(500)
             .snapshots()
             .listen(
               (snap) {
-                orders = snap.docs.map((d) => _mapOrder(d.id, d.data())).toList();
+                activeOrders
+                  ..clear()
+                  ..addAll(
+                    snap.docs
+                        .map((d) => _mapFromMaster(d.id, d.data(), providerUid))
+                        .whereType<ProviderOrderDashboard>(),
+                  );
+                activeOrders.sort((a, b) {
+                  final at = a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+                  final bt = b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0);
+                  return bt.compareTo(at);
+                });
+                orders = [...activeOrders, ...finishedOrders];
                 emit();
               },
               onError: controller.addError,
             );
 
-        subReviews = _reviewsCol(providerUid)
+        finishedSub = _firestore
+            .collection(ToukhOrderPaths.finishedOrders)
+            .where('providerIds', arrayContains: providerUid)
+            .limit(500)
+            .snapshots()
+            .listen(
+              (snap) {
+                finishedOrders
+                  ..clear()
+                  ..addAll(
+                    snap.docs
+                        .map((d) {
+                          final finished = FinishedOrder.fromMap(d.id, d.data());
+                          return _mapFromMaster(
+                            finished.masterOrderId,
+                            finished.order.toMap(),
+                            providerUid,
+                          );
+                        })
+                        .whereType<ProviderOrderDashboard>(),
+                  );
+                finishedOrders.sort((a, b) {
+                  final at = a.deliveredAt ?? a.createdAt ??
+                      DateTime.fromMillisecondsSinceEpoch(0);
+                  final bt = b.deliveredAt ?? b.createdAt ??
+                      DateTime.fromMillisecondsSinceEpoch(0);
+                  return bt.compareTo(at);
+                });
+                orders = [...activeOrders, ...finishedOrders];
+                emit();
+              },
+              onError: controller.addError,
+            );
+
+        reviewsSub = _reviewsCol(providerUid)
             .orderBy('createdAt', descending: true)
             .limit(60)
             .snapshots()
             .listen(
               (snap) {
-                reviews =
-                    snap.docs.map((d) => _mapReview(d.id, d.data())).toList();
+                reviews = snap.docs
+                    .map((d) => ProviderReviewMapper.fromFirestore(d.id, d.data()))
+                    .toList();
                 emit();
               },
               onError: controller.addError,
             );
       },
       onCancel: () async {
-        await subOrders?.cancel();
-        await subReviews?.cancel();
+        await activeSub?.cancel();
+        await finishedSub?.cancel();
+        await reviewsSub?.cancel();
       },
     );
 
     return controller.stream;
   }
 
-  static ProviderOrderDashboard _mapOrder(String id, Map<String, dynamic> data) {
-    final wire = (data['status'] as String?)?.trim().toLowerCase() ?? 'placed';
-    final status = _mapOrderStatus(wire);
-    final itemsRaw = data['items'] as List<dynamic>? ?? [];
-    final items = itemsRaw
-        .map((e) => _mapLine(Map<String, dynamic>.from(e as Map)))
-        .whereType<ProviderOrderLineItem>()
-        .toList();
-
-    final total =
-        _double(data['totalEgp']) ??
-            _double(data['amountEgp']) ??
-            _double(data['total']) ??
-            0.0;
+  static ProviderOrderDashboard? _mapFromMaster(
+    String masterOrderId,
+    Map<String, dynamic> master,
+    String providerUid,
+  ) {
+    final order = MasterOrder.fromMap(masterOrderId, master);
+    if (!order.hasProviderSlice(providerUid)) return null;
+    final slice = order.sliceFor(providerUid)!;
 
     return ProviderOrderDashboard(
-      id: id,
-      status: status,
-      statusWire: wire,
-      createdAt: _date(data['createdAt']),
-      acceptedAt: _date(data['acceptedAt']),
-      deliveredAt: _date(data['deliveredAt']) ?? _date(data['completedAt']),
-      totalEgp: total,
-      customerName: _string(data['customerName']) ?? _string(data['clientName']),
-      items: items,
+      id: masterOrderId,
+      status: _mapOrderStatus(slice.statusWire),
+      statusWire: slice.statusWire,
+      createdAt: slice.createdAt,
+      acceptedAt: slice.acceptedAt,
+      deliveredAt: slice.deliveredAt,
+      totalEgp: slice.totalEgp,
+      customerName: slice.customerName,
+      items: [
+        for (final item in slice.items)
+          ProviderOrderLineItem(
+            itemId: item.itemId,
+            name: item.name,
+            quantity: item.quantity,
+            lineTotalEgp: item.lineTotalEgp,
+          ),
+      ],
     );
   }
 
@@ -121,57 +167,4 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
     }
   }
 
-  static ProviderOrderLineItem? _mapLine(Map<String, dynamic> m) {
-    final name = _string(m['name']) ?? _string(m['itemName']);
-    if (name == null || name.isEmpty) return null;
-    final qty = _int(m['quantity']) ?? 1;
-    final line = _double(m['lineTotalEgp']) ??
-        _double(m['lineTotal']) ??
-        _double(m['priceEgp']) ??
-        0.0;
-    return ProviderOrderLineItem(
-      itemId: _string(m['itemId']) ?? _string(m['menuItemId']),
-      name: name,
-      quantity: qty,
-      lineTotalEgp: line,
-    );
-  }
-
-  static ProviderReviewSummary _mapReview(String id, Map<String, dynamic> data) {
-    final ratingRaw = data['rating'];
-    final rating = ratingRaw is int
-        ? ratingRaw.clamp(1, 5)
-        : (ratingRaw is num ? ratingRaw.round().clamp(1, 5) : 5);
-
-    return ProviderReviewSummary(
-      id: id,
-      rating: rating,
-      comment: _string(data['comment']) ?? _string(data['text']),
-      authorName:
-          _string(data['authorName']) ?? _string(data['customerName']),
-      createdAt: _date(data['createdAt']),
-    );
-  }
-
-  static DateTime? _date(dynamic v) {
-    if (v is Timestamp) return v.toDate();
-    return null;
-  }
-
-  static double? _double(dynamic v) {
-    if (v is num) return v.toDouble();
-    if (v is String) return double.tryParse(v.replaceAll(',', ''));
-    return null;
-  }
-
-  static int? _int(dynamic v) {
-    if (v is int) return v;
-    if (v is num) return v.toInt();
-    return null;
-  }
-
-  static String? _string(dynamic v) {
-    if (v is String && v.trim().isNotEmpty) return v.trim();
-    return null;
-  }
 }

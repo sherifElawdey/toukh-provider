@@ -42,7 +42,7 @@ class HomeDashboardInProgressStrip extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.spaceSm),
         SizedBox(
-          height: 112,
+          height: 120,
           child: orders.isEmpty
               ? HomeDashboardEmptyPlaceholder(
                   message: AppStrings.Home.dashboardInProgressEmpty,

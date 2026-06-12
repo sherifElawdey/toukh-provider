@@ -20,9 +20,9 @@ class OrderDetailScreen extends StatelessWidget {
     return BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
       builder: (context, state) {
         final cubit = context.read<ProviderOrdersCubit>();
-        final order = cubit.orderById(orderId);
+        final row = cubit.orderById(orderId);
 
-        if (order == null) {
+        if (row == null) {
           return Scaffold(
             appBar: AppBar(title: CustomText(AppStrings.Orders.detailTitle.tr)),
             body: Center(
@@ -39,6 +39,7 @@ class OrderDetailScreen extends StatelessWidget {
           );
         }
 
+        final slice = row.slice;
         final locale = Localizations.localeOf(context).toLanguageTag();
         final fmt = DateFormat.yMMMd(locale).add_Hm();
 
@@ -50,7 +51,7 @@ class OrderDetailScreen extends StatelessWidget {
             padding: AppSizes.screenPadding.copyWith(bottom: AppSizes.space2xl),
             children: [
               CustomText(
-                providerOrderStatusLabel(order),
+                providerOrderStatusLabel(row),
                 style: TextStyle(
                   fontWeight: FontWeight.w800,
                   color: AppColors.appColor,
@@ -59,68 +60,67 @@ class OrderDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               CustomText(
-                '${AppStrings.Orders.detailOrderIdLabel.tr}: ${order.id}',
+                '${AppStrings.Orders.detailOrderIdLabel.tr}: ${row.id}',
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
               const SizedBox(height: AppSizes.spaceLg),
               _sectionTitle(context, AppStrings.Orders.detailCustomer.tr),
-              CustomText(order.customerName ?? '—'),
-              if (order.customerPhone != null) ...[
+              CustomText(slice.customerName ?? '—'),
+              if (slice.customerPhone != null) ...[
                 const SizedBox(height: 4),
-                CustomText(order.customerPhone!),
+                CustomText(slice.customerPhone!),
               ],
               const SizedBox(height: AppSizes.spaceLg),
               _sectionTitle(context, AppStrings.Orders.detailSectionTimeline.tr),
               _timelineRow(
                 context,
                 AppStrings.Orders.detailCreated.tr,
-                order.createdAt,
+                slice.createdAt,
                 fmt,
               ),
               _timelineRow(
                 context,
                 AppStrings.Orders.detailAccepted.tr,
-                order.acceptedAt,
+                slice.acceptedAt,
                 fmt,
               ),
               _timelineRow(
                 context,
                 AppStrings.Orders.statusReadyForPickup.tr,
-                order.readyForPickupAt,
+                slice.readyForPickupAt,
                 fmt,
               ),
               _timelineRow(
                 context,
                 AppStrings.Orders.statusOutForDelivery.tr,
-                order.dispatchedAt,
+                slice.dispatchedAt,
                 fmt,
               ),
               _timelineRow(
                 context,
                 AppStrings.Orders.detailCompleted.tr,
-                order.deliveredAt,
+                slice.deliveredAt,
                 fmt,
               ),
               const SizedBox(height: AppSizes.spaceLg),
               _sectionTitle(context, AppStrings.Orders.detailSectionAddresses.tr),
               CustomText(
-                '${AppStrings.Orders.detailPickup.tr}: ${order.storeLocation?.formattedAddress ?? order.storeLocation?.label ?? '—'}',
+                '${AppStrings.Orders.detailPickup.tr}: ${slice.storeLocation?.formattedAddress ?? slice.storeLocation?.label ?? '—'}',
               ),
               const SizedBox(height: 6),
               CustomText(
-                '${AppStrings.Orders.detailDropoff.tr}: ${order.deliveryAddress?.formattedAddress ?? order.deliveryAddress?.label ?? '—'}',
+                '${AppStrings.Orders.detailDropoff.tr}: ${slice.deliveryAddress?.formattedAddress ?? slice.deliveryAddress?.label ?? row.master.deliveryAddress?.formattedAddress ?? row.master.deliveryAddress?.label ?? '—'}',
               ),
-              if (order.note != null && order.note!.isNotEmpty) ...[
+              if (slice.note != null && slice.note!.isNotEmpty) ...[
                 const SizedBox(height: AppSizes.spaceLg),
                 _sectionTitle(context, AppStrings.Orders.detailSectionNotes.tr),
-                CustomText(order.note!),
+                CustomText(slice.note!),
               ],
-              if (order.masterOrderId != null &&
-                  (order.canMarkReadyForPickup ||
-                      order.statusWire == 'ready_for_pickup')) ...[
+              if (slice.canMarkReadyForPickup ||
+                  slice.statusWire == 'ready_for_pickup') ...[
                 const SizedBox(height: AppSizes.spaceLg),
                 PickupQrTile(
-                  masterOrderId: order.masterOrderId!,
+                  masterOrderId: row.id,
                   providerId: context.read<AuthCubit>().state is Authenticated
                       ? (context.read<AuthCubit>().state as Authenticated).user.uid
                       : '',
@@ -128,7 +128,7 @@ class OrderDetailScreen extends StatelessWidget {
               ],
               const SizedBox(height: AppSizes.spaceLg),
               _sectionTitle(context, AppStrings.Home.dashboardStatOrders.tr),
-              ...order.items.map(
+              ...slice.items.map(
                 (item) => Padding(
                   padding: const EdgeInsets.only(bottom: 6),
                   child: CustomText(
@@ -138,7 +138,7 @@ class OrderDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               CustomText(
-                '${AppStrings.Home.dashboardStatRevenue.tr}: ${formatDashboardEgp(context, order.totalEgp)}',
+                '${AppStrings.Home.dashboardStatRevenue.tr}: ${formatDashboardEgp(context, slice.totalEgp)}',
                 style: const TextStyle(fontWeight: FontWeight.w800),
               ),
             ],

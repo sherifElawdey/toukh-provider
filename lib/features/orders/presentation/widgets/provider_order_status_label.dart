@@ -1,10 +1,9 @@
 import 'package:get/get.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
-import 'package:toukh_provider/domain/entities/provider_order_status_wire.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
-String providerOrderStatusLabel(ProviderOrder order) {
-  final w = ProviderOrderStatusWire.normalize(order.statusWire);
+String providerOrderStatusLabel(ProviderMasterOrderRow row) {
+  final w = ProviderOrderStatusWire.normalize(row.slice.statusWire);
   switch (w) {
     case ProviderOrderStatusWire.placed:
     case ProviderOrderStatusWire.pending:
@@ -28,6 +27,6 @@ String providerOrderStatusLabel(ProviderOrder order) {
     case ProviderOrderStatusWire.cancelled:
       return AppStrings.Orders.statusCancelled.tr;
     default:
-      return order.statusWire;
+      return row.slice.statusWire;
   }
 }

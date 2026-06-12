@@ -1,28 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:toukh_provider/core/constants/app_constants.dart';
-import 'package:toukh_provider/domain/entities/provider_fulfillment_mode.dart';
-import 'package:toukh_provider/domain/entities/provider_order_status_wire.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
-/// Manual Firestore seed shape for testing provider orders UI.
+/// Manual Firestore seed for testing provider orders UI via [masterOrders].
 ///
-/// Path: `providers/{providerUid}/orders/{orderId}`
-///
-/// Example document:
-/// ```json
-/// {
-///   "status": "placed",
-///   "fulfillmentMode": "courier",
-///   "customerName": "Test Customer",
-///   "customerPhone": "01000000000",
-///   "orderPrice": 120,
-///   "deliveryPrice": 25,
-///   "totalEgp": 145,
-///   "createdAt": "<Timestamp>",
-///   "items": [{"name": "Burger", "quantity": 2, "lineTotalEgp": 120}],
-///   "storeLocation": {"lat": 30.0444, "lng": 31.2357, "label": "Store"},
-///   "deliveryAddress": {"lat": 30.05, "lng": 31.24, "formattedAddress": "Customer"}
-/// }
-/// ```
+/// Path: `masterOrders/{masterOrderId}` with `providerSlices.{providerUid}`.
 abstract final class ProviderOrderSeed {
   ProviderOrderSeed._();
 
@@ -31,40 +12,54 @@ abstract final class ProviderOrderSeed {
     required String providerUid,
     bool storeDelivers = false,
   }) async {
-    final ref = firestore
-        .collection(AppConstants.providersCollection)
-        .doc(providerUid)
-        .collection('orders')
-        .doc();
+    final ref = firestore.collection(ToukhOrderPaths.masterOrders).doc();
+    final placedAt = ToukhFirestoreTimestamps.createdAtNow();
 
     await ref.set({
-      'status': ProviderOrderStatusWire.placed,
-      'fulfillmentMode': storeDelivers
-          ? ProviderFulfillmentMode.store.wireValue
-          : ProviderFulfillmentMode.courier.wireValue,
-      'customerName': 'Test Customer',
-      'customerPhone': '01000000000',
-      'orderPrice': 120.0,
-      'deliveryPrice': storeDelivers ? 0.0 : 25.0,
-      'totalEgp': storeDelivers ? 120.0 : 145.0,
-      'createdAt': FieldValue.serverTimestamp(),
-      'items': [
+      'clientId': 'seed-customer',
+      'globalStatus': 'pending',
+      'providerIds': [providerUid],
+      'providerStatusMap': {providerUid: 'pending'},
+      'providerOrderRefs': [
         {
-          'name': 'Test item',
-          'quantity': 1,
-          'lineTotalEgp': 120.0,
+          'providerId': providerUid,
+          'providerOrderId': ref.id,
+          'providerState': 'pending',
+          'fulfillmentMode': storeDelivers ? 'store' : 'courier',
+          'orderPriceEgp': 120,
+          'deliveryFeeEgp': 25,
         },
       ],
-      'storeLocation': {
-        'lat': 30.0444,
-        'lng': 31.2357,
-        'label': 'Store',
+      'providerSlices': {
+        providerUid: {
+          'status': 'placed',
+          'providerState': 'pending',
+          'fulfillmentMode': storeDelivers ? 'store' : 'courier',
+          'customerName': 'Test Customer',
+          'customerPhone': '01000000000',
+          'orderPrice': 120,
+          'orderPriceEgp': 120,
+          'deliveryPrice': 25,
+          'deliveryFeeEgp': 25,
+          'totalEgp': 145,
+          ...ToukhFirestoreTimestamps.orderPlacementFields(createdAt: placedAt),
+          'items': [
+            {'name': 'Burger', 'quantity': 2, 'lineTotalEgp': 120},
+          ],
+          'storeLocation': {'lat': 30.0444, 'lng': 31.2357, 'label': 'Store'},
+          'deliveryAddress': {
+            'lat': 30.05,
+            'lng': 31.24,
+            'formattedAddress': 'Customer',
+          },
+        },
       },
       'deliveryAddress': {
         'lat': 30.05,
         'lng': 31.24,
-        'formattedAddress': 'Customer address',
+        'formattedAddress': 'Customer',
       },
+      ...ToukhFirestoreTimestamps.orderPlacementFields(createdAt: placedAt),
     });
 
     return ref.id;

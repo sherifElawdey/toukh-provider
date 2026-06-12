@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_card.dart';
@@ -21,12 +20,12 @@ class OrdersTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
       builder: (context, state) {
-        final orders = state.forTab(tab);
-        if (state.loading && orders.isEmpty) {
+        final rows = state.forTab(tab);
+        if (state.loading && rows.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (orders.isEmpty) {
+        if (rows.isEmpty) {
           return ListView(
             physics: const AlwaysScrollableScrollPhysics(),
             children: [
@@ -41,20 +40,21 @@ class OrdersTabView extends StatelessWidget {
         return ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: AppSizes.screenPadding,
-          itemCount: orders.length,
+          itemCount: rows.length,
           itemBuilder: (context, index) {
-            final order = orders[index];
-            final busy = state.actionInFlightId == order.id;
+            final row = rows[index];
+            final busy = state.actionInFlightId == row.id;
             return ProviderOrderCard(
-              order: order,
+              key: ValueKey(row.id),
+              row: row,
               tab: tab,
               busy: busy,
-              onApprove: () => cubit.approve(order.id),
-              onCancel: () => cubit.cancel(order.id),
-              onRequestDelivery: () => _openRequestDelivery(context, order),
-              onReadyForPickup: () => cubit.markReadyForPickup(order.id),
-              onDeliver: () => cubit.markStoreOutForDelivery(order.id),
-              onConfirmHandoff: () => cubit.confirmHandoff(order.id),
+              onApprove: () => cubit.approve(row.id),
+              onCancel: () => cubit.cancel(row.id),
+              onRequestDelivery: () => _openRequestDelivery(context, row),
+              onReadyForPickup: () => cubit.markReadyForPickup(row.id),
+              onDeliver: () => cubit.markStoreOutForDelivery(row.id),
+              onConfirmHandoff: () => cubit.confirmHandoff(row.id),
             );
           },
         );
@@ -62,18 +62,21 @@ class OrdersTabView extends StatelessWidget {
     );
   }
 
-  Future<void> _openRequestDelivery(BuildContext context, ProviderOrder order) async {
+  Future<void> _openRequestDelivery(
+    BuildContext context,
+    ProviderMasterOrderRow row,
+  ) async {
     final cubit = context.read<ProviderOrdersCubit>();
     final center = await showRequestDeliverySheet(
       context,
-      initialLocation: order.storeLocation,
+      initialLocation: row.slice.storeLocation,
     );
     if (center == null || !context.mounted) return;
-    await cubit.requestDelivery(orderId: order.id, searchCenter: center);
+    await cubit.requestDelivery(orderId: row.id, searchCenter: center);
     if (!context.mounted) return;
-    final updated = cubit.orderById(order.id);
-    if (updated?.hasAssignedDriver ?? false) {
-      await showDriverAssignedSheet(context, order: updated!);
+    final updated = cubit.orderById(row.id);
+    if (updated?.slice.hasAssignedDriver ?? false) {
+      await showDriverAssignedSheet(context, row: updated!);
     }
   }
 }

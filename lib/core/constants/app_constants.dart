@@ -7,6 +7,12 @@ abstract final class AppConstants {
   /// Firestore collection for shop/service provider profiles.
   static const providersCollection = 'providers';
 
+  /// Driver profiles (courier app).
+  static const driversCollection = 'drivers';
+
+  /// Driver registration applications (courier app).
+  static const deliveryRequestsCollection = 'Delivery Requests';
+
   static const mockOtpPhone = '0123456789';
   static const mockOtpCode = '123456';
 

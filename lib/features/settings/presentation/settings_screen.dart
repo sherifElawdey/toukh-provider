@@ -5,6 +5,7 @@ import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_sheet.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_app_version_footer.dart';
@@ -62,12 +63,7 @@ class SettingsScreen extends StatelessWidget {
                 if (auth is Authenticated) ...[
                   SettingsProfileHeaderCard(
                     profile: auth.profile,
-                    onTap: () => AppSnack.show(
-                      context,
-                      message: AppStrings.Settings.editProfileComingSoon,
-                      state: AppSnackState.alert,
-                      icon: ToukhIcons.person,
-                    ),
+                    onTap: () => context.push(AppRoutes.accountDetails),
                   ),
                   SizedBox(height: AppSizes.spaceLg),
                 ],
@@ -93,13 +89,34 @@ class SettingsScreen extends StatelessWidget {
                         .onSurface
                         .withValues(alpha: 0.45),
                   ),
-                  onTap: () => AppSnack.show(
-                    context,
-                    message: AppStrings.Settings.walletComingSoon,
-                    state: AppSnackState.alert,
-                    icon: ToukhIcons.wallet,
-                  ),
+                  onTap: () => context.push(AppRoutes.wallet),
                 ),
+                SettingsTile(
+                  icon: ToukhIcons.star,
+                  titleKey: AppStrings.Settings.reviews,
+                  trailing: Icon(
+                    ToukhIcons.chevronRight,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.45),
+                  ),
+                  onTap: () => context.push(AppRoutes.reviews),
+                ),
+                if (auth is Authenticated &&
+                    auth.profile.serviceType == ServiceType.restaurant)
+                  SettingsTile(
+                    icon: ToukhIcons.delivery,
+                    titleKey: AppStrings.Settings.manageDrivers,
+                    trailing: Icon(
+                      ToukhIcons.chevronRight,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.45),
+                    ),
+                    onTap: () => context.push(AppRoutes.manageDrivers),
+                  ),
                 SizedBox(height: AppSizes.spaceLg),
                 SettingsSectionTitle(labelKey: AppStrings.Settings.appearance),
                 SizedBox(height: AppSizes.spaceSm),
@@ -148,6 +165,21 @@ class SettingsScreen extends StatelessWidget {
                     context,
                     settings: settings,
                   ),
+                ),
+                SizedBox(height: AppSizes.spaceXl),
+                SettingsSectionTitle(labelKey: AppStrings.Settings.aboutApp),
+                SizedBox(height: AppSizes.spaceSm),
+                SettingsTile(
+                  icon: ToukhIcons.info,
+                  titleKey: AppStrings.Settings.aboutApp,
+                  trailing: Icon(
+                    ToukhIcons.chevronRight,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.45),
+                  ),
+                  onTap: () => context.push(AppRoutes.aboutApp),
                 ),
                 SizedBox(height: AppSizes.spaceXl),
                 SettingsSectionTitle(labelKey: AppStrings.Settings.legal),

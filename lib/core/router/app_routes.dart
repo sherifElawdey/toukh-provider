@@ -45,6 +45,14 @@ abstract final class AppRoutes {
   static const legalPrivacy = '/legal/privacy';
   static const legalDeclaration = '/legal/declaration';
 
+  static const accountDetails = '/settings/account';
+  static const aboutApp = '/settings/about';
+
+  static const wallet = '/wallet';
+  static const walletTransactions = '/wallet-transactions';
+  static const reviews = '/reviews';
+  static const manageDrivers = '/manage-drivers';
+
   /// Registration wizard (before Firebase user exists).
   static const Set<String> registerWizardPaths = {
     registerKind,
@@ -61,6 +69,12 @@ abstract final class AppRoutes {
     if (matchedLocation.startsWith('/legal/')) return true;
     if (matchedLocation == notifications ||
         matchedLocation.startsWith('$notifications/')) {
+      return true;
+    }
+    if (matchedLocation == wallet ||
+        matchedLocation == walletTransactions ||
+        matchedLocation == reviews ||
+        matchedLocation == manageDrivers) {
       return true;
     }
     for (final p in shellPaths) {

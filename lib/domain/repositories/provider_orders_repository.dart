@@ -1,8 +1,7 @@
-import 'package:toukh_provider/domain/entities/provider_order.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 abstract class ProviderOrdersRepository {
-  Stream<List<ProviderOrder>> watchOrders(String providerUid);
+  Stream<List<MasterOrder>> watchOrders(String providerUid);
 
   Future<void> approveOrder({
     required String providerId,
@@ -16,7 +15,7 @@ abstract class ProviderOrdersRepository {
     String? reason,
   });
 
-  /// Creates a delivery request and sets order status to [courier_requested].
+  /// Creates a delivery request and sets slice status to [courier_requested].
   Future<String> requestDelivery({
     required String providerId,
     required String orderId,

@@ -17,6 +17,9 @@ import 'package:toukh_provider/data/repositories/firestore_provider_orders_repos
 import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/data/repositories/firestore_notification_inbox_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_profile_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_provider_drivers_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_provider_reviews_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_provider_wallet_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
 import 'package:toukh_provider/data/services/otp_service_stub.dart';
@@ -33,6 +36,9 @@ import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/domain/services/order_qr_service.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_drivers_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_reviews_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
@@ -100,10 +106,23 @@ Future<void> configureDependencies() async {
     () => FirestoreProviderOrdersRepository(
       getIt<FirebaseFirestore>(),
       customerNotify: getIt<CustomerOrderNotifyService>(),
+      functions: getIt<FirebaseFunctions>(),
     ),
   );
   getIt.registerLazySingleton<ProviderOrdersRepository>(
     () => getIt<FirestoreProviderOrdersRepository>(),
+  );
+  getIt.registerLazySingleton<ProviderWalletRepository>(
+    () => FirestoreProviderWalletRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<ProviderReviewsRepository>(
+    () => FirestoreProviderReviewsRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<ProviderDriversRepository>(
+    () => FirestoreProviderDriversRepository(
+      getIt<FirebaseFirestore>(),
+      getIt<FirebaseFunctions>(),
+    ),
   );
   getIt.registerLazySingleton<OtpRepository>(() {
     final twilioConfig = twilioVerifyConfigFromEnvironment();

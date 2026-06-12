@@ -1,10 +1,11 @@
 import 'package:equatable/equatable.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class ProviderOrdersState extends Equatable {
   const ProviderOrdersState({
     this.loading = true,
     this.orders = const [],
+    this.providerUid,
     this.errorMessage,
     this.actionInFlightId,
     this.sort = ProviderOrdersSort.newest,
@@ -12,36 +13,44 @@ class ProviderOrdersState extends Equatable {
   });
 
   final bool loading;
-  final List<ProviderOrder> orders;
+  final List<MasterOrder> orders;
+  final String? providerUid;
   final String? errorMessage;
   final String? actionInFlightId;
   final ProviderOrdersSort sort;
   final bool withCourierOnly;
 
-  List<ProviderOrder> forTab(ProviderOrdersTab tab) {
-    var list = ProviderOrderTabFilters.forTab(orders, tab);
+  List<ProviderMasterOrderRow> forTab(ProviderOrdersTab tab) {
+    final uid = providerUid;
+    if (uid == null) return const [];
+    var rows = ProviderMasterOrderTabFilters.forTab(orders, uid, tab);
     if (tab == ProviderOrdersTab.inProgress && withCourierOnly) {
-      list = ProviderOrderTabFilters.withDeliveryPersonOnly(list);
+      rows = ProviderMasterOrderTabFilters.withDeliveryPersonOnly(rows);
     }
-    return ProviderOrderTabFilters.applySort(
-      list,
-      sort == ProviderOrdersSort.newest
-          ? ProviderOrdersSort.newest
-          : ProviderOrdersSort.oldest,
+    return ProviderMasterOrderTabFilters.applySort(
+      rows,
+      sort,
       tab: tab,
     );
   }
 
   bool showWithCourierFilter(ProviderOrdersTab tab) {
     if (tab != ProviderOrdersTab.inProgress) return false;
-    return ProviderOrderTabFilters.showWithCourierFilter(
-      ProviderOrderTabFilters.forTab(orders, ProviderOrdersTab.inProgress),
+    final uid = providerUid;
+    if (uid == null) return false;
+    return ProviderMasterOrderTabFilters.showWithCourierFilter(
+      ProviderMasterOrderTabFilters.forTab(
+        orders,
+        uid,
+        ProviderOrdersTab.inProgress,
+      ),
     );
   }
 
   ProviderOrdersState copyWith({
     bool? loading,
-    List<ProviderOrder>? orders,
+    List<MasterOrder>? orders,
+    String? providerUid,
     String? errorMessage,
     String? actionInFlightId,
     bool clearActionInFlight = false,
@@ -52,6 +61,7 @@ class ProviderOrdersState extends Equatable {
     return ProviderOrdersState(
       loading: loading ?? this.loading,
       orders: orders ?? this.orders,
+      providerUid: providerUid ?? this.providerUid,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       actionInFlightId:
           clearActionInFlight ? null : (actionInFlightId ?? this.actionInFlightId),
@@ -64,6 +74,7 @@ class ProviderOrdersState extends Equatable {
   List<Object?> get props => [
         loading,
         orders,
+        providerUid,
         errorMessage,
         actionInFlightId,
         sort,

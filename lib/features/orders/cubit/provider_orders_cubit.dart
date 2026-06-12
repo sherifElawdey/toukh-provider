@@ -2,15 +2,12 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
-import 'package:toukh_provider/domain/entities/provider_order_status_wire.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_state.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 export 'provider_orders_state.dart' show ProviderOrdersState;
-export 'package:toukh_provider/domain/entities/provider_order.dart' show ProviderOrdersSort;
 
 class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
   ProviderOrdersCubit({
@@ -23,7 +20,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
   final AuthCubit _authCubit;
   final ProviderOrdersRepository _ordersRepository;
 
-  StreamSubscription<List<ProviderOrder>>? _ordersSub;
+  StreamSubscription<List<MasterOrder>>? _ordersSub;
   String? _boundUid;
   final Set<String> _alertedIncomingOrderIds = {};
   bool _ordersStreamPrimed = false;
@@ -51,7 +48,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
     _ordersSub?.cancel();
     _alertedIncomingOrderIds.clear();
     _ordersStreamPrimed = false;
-    emit(state.copyWith(loading: true, clearError: true));
+    emit(state.copyWith(loading: true, providerUid: uid, clearError: true));
 
     _ordersSub = _ordersRepository.watchOrders(uid).listen(
       (orders) {
@@ -59,7 +56,10 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
         emit(state.copyWith(loading: false, orders: orders, clearError: true));
       },
       onError: (Object e) {
-        emit(state.copyWith(loading: false, errorMessage: e.toString()));
+        emit(state.copyWith(
+          loading: false,
+          errorMessage: _ordersStreamErrorMessage(e),
+        ));
       },
     );
   }
@@ -75,8 +75,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
   Future<void> approve(String orderId) async {
     final auth = _authCubit.state;
     if (auth is! Authenticated) return;
-    final order = _find(orderId);
-    if (order == null) return;
+    if (_findRow(orderId) == null) return;
 
     final storeDelivers = auth.profile.deliveryConfig?.offersDelivery ?? false;
     await _runAction(orderId, () => _ordersRepository.approveOrder(
@@ -146,13 +145,26 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
         ));
   }
 
-  ProviderOrder? orderById(String id) => _find(id);
+  ProviderMasterOrderRow? orderById(String id) => _findRow(id);
 
-  ProviderOrder? _find(String id) {
-    for (final o in state.orders) {
-      if (o.id == id) return o;
+  ProviderMasterOrderRow? _findRow(String id) {
+    final uid = state.providerUid;
+    if (uid == null) return null;
+    for (final m in state.orders) {
+      if (m.id == id && m.hasProviderSlice(uid)) {
+        return ProviderMasterOrderRow.fromMaster(m, uid);
+      }
     }
     return null;
+  }
+
+  static String _ordersStreamErrorMessage(Object e) {
+    final text = e.toString();
+    if (text.contains('FAILED_PRECONDITION') ||
+        text.contains('requires an index')) {
+      return 'Orders are loading — Firestore index is building. Try again shortly.';
+    }
+    return text;
   }
 
   Future<void> _runAction(String orderId, Future<void> Function() fn) async {
@@ -168,42 +180,49 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
     }
   }
 
-  void _maybeShowIncomingOrderAlerts(String providerId, List<ProviderOrder> orders) {
+  void _maybeShowIncomingOrderAlerts(String providerId, List<MasterOrder> orders) {
     if (!_ordersStreamPrimed) {
       _ordersStreamPrimed = true;
-      for (final order in orders) {
-        if (ProviderOrderStatusWire.isIncoming(order.statusWire)) {
-          _alertedIncomingOrderIds.add(order.id);
+      for (final master in orders) {
+        if (!master.hasProviderSlice(providerId)) continue;
+        final slice = master.sliceFor(providerId);
+        if (slice != null && slice.isIncoming) {
+          _alertedIncomingOrderIds.add(master.id);
         }
       }
       return;
     }
 
-    for (final order in orders) {
-      if (!ProviderOrderStatusWire.isIncoming(order.statusWire)) continue;
-      if (_alertedIncomingOrderIds.contains(order.id)) continue;
-      _alertedIncomingOrderIds.add(order.id);
+    for (final master in orders) {
+      if (!master.hasProviderSlice(providerId)) continue;
+      final slice = master.sliceFor(providerId);
+      if (slice == null || !slice.isIncoming) continue;
+      if (_alertedIncomingOrderIds.contains(master.id)) continue;
+      _alertedIncomingOrderIds.add(master.id);
 
       final notification = ToukhOrderNotificationTemplates.notificationFromProviderOrder(
-        notificationId: order.id,
-        order: _orderToNotificationMap(order),
+        notificationId: master.id,
+        order: _sliceToNotificationMap(master.id, slice),
         providerId: providerId,
-        orderId: order.id,
+        orderId: master.id,
       );
       ProviderOrderAlertController.instance.show(notification);
     }
   }
 
-  Map<String, dynamic> _orderToNotificationMap(ProviderOrder order) {
+  Map<String, dynamic> _sliceToNotificationMap(
+    String masterOrderId,
+    ProviderOrderSlice slice,
+  ) {
     return {
-      'customerId': order.customerId,
-      'customerName': order.customerName,
-      'masterOrderId': order.masterOrderId,
-      'orderPrice': order.orderPrice,
-      'deliveryPrice': order.deliveryPrice,
-      'totalEgp': order.totalEgp,
+      'customerId': slice.customerId,
+      'customerName': slice.customerName,
+      'masterOrderId': masterOrderId,
+      'orderPrice': slice.orderPriceEgp,
+      'deliveryPrice': slice.deliveryFeeEgp,
+      'totalEgp': slice.totalEgp,
       'items': [
-        for (final item in order.items)
+        for (final item in slice.items)
           {
             'title': item.name,
             'quantity': item.quantity,

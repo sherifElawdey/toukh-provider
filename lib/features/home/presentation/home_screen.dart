@@ -6,7 +6,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/di/service_locator.dart';
-import 'package:toukh_provider/domain/entities/provider_order.dart';
+import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
+import 'package:toukh_provider/domain/entities/provider_master_order_extensions.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
@@ -175,9 +176,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: AppSizes.spaceXl),
                       BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
                         builder: (context, ordersState) {
-                          final pendingCount = ordersState.orders
-                              .where((o) => o.isIncoming)
-                              .length;
+                          final uid = ordersState.providerUid;
+                          final pendingCount = uid == null
+                              ? 0
+                              : ordersState.orders
+                                  .where(
+                                    (m) =>
+                                        m.hasProviderSlice(uid) &&
+                                        (m.sliceFor(uid)?.isIncoming ?? false),
+                                  )
+                                  .length;
                           return HomeDashboardPendingOrdersBanner(
                             pendingCount: pendingCount,
                           );
@@ -185,16 +193,23 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
                         builder: (context, ordersState) {
-                          final inProgress = ProviderOrderTabFilters.homeInProgress(
-                            ordersState.orders,
-                          )
-                              .map((o) => o.toDashboard())
-                              .toList();
+                          final uid = ordersState.providerUid;
+                          final inProgress = uid == null
+                              ? <ProviderOrderDashboard>[]
+                              : ProviderMasterOrderTabFilters.homeInProgress(
+                                  ordersState.orders,
+                                  uid,
+                                )
+                                  .map((r) => r.toDashboard())
+                                  .toList();
                           return Column(
                             children: [
-                              if (ordersState.orders
-                                  .where((o) => o.isIncoming)
-                                  .isNotEmpty)
+                              if (uid != null &&
+                                  ordersState.orders.any(
+                                    (m) =>
+                                        m.hasProviderSlice(uid) &&
+                                        (m.sliceFor(uid)?.isIncoming ?? false),
+                                  ))
                                 const SizedBox(height: AppSizes.spaceXl),
                               HomeDashboardInProgressStrip(orders: inProgress),
                             ],

@@ -7,7 +7,9 @@ import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
+import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/features/registration/models/registration_submit_data.dart';
+import 'package:toukh_provider/features/settings/domain/provider_profile_draft_mapper.dart';
 
 ShopCategory? shopCategoryForSubmit(ServiceType kind, ShopCategory? draft) {
   switch (kind) {
@@ -299,4 +301,9 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
   }
 
   void reset() => emit(_initial());
+
+  /// Seeds draft fields from a live provider profile (account details editing).
+  void seedFromProfile(ProviderProfile profile) {
+    emit(ProviderProfileDraftMapper.draftFromProfile(profile));
+  }
 }

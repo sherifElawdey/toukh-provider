@@ -29,6 +29,8 @@ abstract final class AppStrings {
   static const Registration = _Registration();
   static const Pending = _Pending();
   static const AppUpdate = _AppUpdate();
+  static const Wallet = _Wallet();
+  static const Drivers = _Drivers();
 }
 
 class _App {
@@ -376,6 +378,12 @@ class _Settings {
   String get appVersion => 'settings.app_version';
   String get ordersHistory => 'settings.orders_history';
   String get wallet => 'settings.wallet';
+  String get reviews => 'settings.reviews';
+  String get reviewsAverage => 'settings.reviews_average';
+  String get reviewsCount => 'settings.reviews_count';
+  String get manageDrivers => 'settings.manage_drivers';
+  String get copyProviderId => 'settings.copy_provider_id';
+  String get copyProviderIdHint => 'settings.copy_provider_id_hint';
   String get legal => 'settings.legal';
   String get selectLanguage => 'settings.select_language';
   String get termsAndConditions => 'settings.terms_and_conditions';
@@ -387,6 +395,26 @@ class _Settings {
   String get editProfileComingSoon => 'settings.edit_profile_coming_soon';
   String get walletComingSoon => 'settings.wallet_coming_soon';
   String get profileDriverFallback => 'settings.profile_driver_fallback';
+  String get accountDetails => 'settings.account_details';
+  String get businessInfo => 'settings.business_info';
+  String get contactInfo => 'settings.contact_info';
+  String get location => 'settings.location';
+  String get operations => 'settings.operations';
+  String get accountInfo => 'settings.account_info';
+  String get providerId => 'settings.provider_id';
+  String get memberSince => 'settings.member_since';
+  String get phoneVerified => 'settings.phone_verified';
+  String get email => 'settings.email';
+  String get statusActive => 'settings.status_active';
+  String get statusPending => 'settings.status_pending';
+  String get statusUnverified => 'settings.status_unverified';
+  String get statusBlocked => 'settings.status_blocked';
+  String get statusDeleted => 'settings.status_deleted';
+  String get aboutTagline => 'settings.about_tagline';
+  String get support => 'settings.support';
+  String get copyright => 'settings.copyright';
+  String get copied => 'settings.copied';
+  String get fieldLocked => 'settings.field_locked';
 }
 
 class _Welcome {
@@ -487,4 +515,54 @@ class _Pending {
   const _Pending();
   String get title => 'pending.title';
   String get subtitle => 'pending.subtitle';
+}
+
+class _Wallet {
+  const _Wallet();
+  String get myWallet => 'wallet.my_wallet';
+  String get toukhServiceWallet => 'wallet.toukh_service_wallet';
+  String get availableBalance => 'wallet.available_balance';
+  String get pendingBalance => 'wallet.pending_balance';
+  String get cardMask => 'wallet.card_mask';
+  String get earningsOverview => 'wallet.earnings_overview';
+  String get week => 'wallet.week';
+  String get month => 'wallet.month';
+  String get year => 'wallet.year';
+  String get noEarningsInPeriod => 'wallet.no_earnings_in_period';
+  String get recentEarnings => 'wallet.recent_earnings';
+  String get seeAll => 'wallet.see_all';
+  String get lastEarning => 'wallet.last_earning';
+  String get noEarningsYet => 'wallet.no_earnings_yet';
+  String get requestPayout => 'wallet.request_payout';
+  String get requestPayoutComingSoon => 'wallet.request_payout_coming_soon';
+  String get allTransactions => 'wallet_transactions.all_transactions';
+  String get noTransactionsYet => 'wallet_transactions.no_transactions_yet';
+  String get walletEarningOrder => 'wallet_earning.order';
+  String get walletEarningOrderId => 'wallet_earning.order_id';
+  String get earningCredit => 'wallet.earning_credit';
+  String get earningDebit => 'wallet.earning_debit';
+  String get amount => 'wallet.amount';
+  String get date => 'wallet.date';
+  String get title => 'wallet.title';
+  String get details => 'wallet.details';
+  String get type => 'wallet.type';
+  String get total => 'wallet.total';
+}
+
+class _Drivers {
+  const _Drivers();
+  String get pendingRequests => 'drivers.pending_requests';
+  String get linkedDrivers => 'drivers.linked_drivers';
+  String get noPendingRequests => 'drivers.no_pending_requests';
+  String get noLinkedDrivers => 'drivers.no_linked_drivers';
+  String get accept => 'drivers.accept';
+  String get reject => 'drivers.reject';
+  String get online => 'drivers.online';
+  String get offline => 'drivers.offline';
+  String get requestAccepted => 'drivers.request_accepted';
+  String get requestRejected => 'drivers.request_rejected';
+  String get actionFailed => 'drivers.action_failed';
+  String get vehicleMotorcycle => 'drivers.vehicle_motorcycle';
+  String get vehicleBicycle => 'drivers.vehicle_bicycle';
+  String get vehicleTukTuk => 'drivers.vehicle_tuk_tuk';
 }

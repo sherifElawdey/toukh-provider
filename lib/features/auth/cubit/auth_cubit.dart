@@ -12,7 +12,10 @@ import 'package:toukh_provider/domain/repositories/auth_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_state.dart';
+import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/models/registration_submit_data.dart';
+import 'package:toukh_provider/features/registration/presentation/review_field.dart';
+import 'package:toukh_provider/features/settings/domain/provider_profile_draft_mapper.dart';
 
 export 'auth_state.dart';
 
@@ -284,6 +287,24 @@ class AuthCubit extends Cubit<AuthState> {
     } catch (e) {
       emit(AuthFailure(message: e.toString()));
     }
+  }
+
+  /// Persists a single profile field edited via account details.
+  Future<void> updateProfileField(
+    ReviewField field,
+    RegistrationDraft draft,
+  ) async {
+    final current = state;
+    if (current is! Authenticated) {
+      throw StateError('Not signed in.');
+    }
+    final updated = ProviderProfileDraftMapper.applyDraft(
+      current.profile,
+      draft,
+      field,
+    );
+    await _profileRepository.upsertProfile(updated);
+    emit(Authenticated(user: current.user, profile: updated));
   }
 
   Future<void> signOut() => _authRepository.signOut();
