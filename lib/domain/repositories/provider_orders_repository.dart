@@ -3,6 +3,11 @@ import 'package:toukh_ui/toukh_ui.dart';
 abstract class ProviderOrdersRepository {
   Stream<List<MasterOrder>> watchOrders(String providerUid);
 
+  Future<MasterOrder?> getOrderById({
+    required String providerId,
+    required String orderId,
+  });
+
   Future<void> approveOrder({
     required String providerId,
     required String orderId,
@@ -36,5 +41,14 @@ abstract class ProviderOrdersRepository {
   Future<void> confirmHandoffToCourier({
     required String providerId,
     required String orderId,
+  });
+
+  Future<void> approvePharmacyRequest({
+    required String providerId,
+    required String masterOrderId,
+    required String pharmacistNote,
+    required List<String> approvedItemIds,
+    required double quotedSubtotalEgp,
+    required double quotedDeliveryFeeEgp,
   });
 }

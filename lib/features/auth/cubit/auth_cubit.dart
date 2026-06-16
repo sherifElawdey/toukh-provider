@@ -289,6 +289,49 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Uploads a new brand/profile image, persists it, then deletes the previous
+  /// B2 file when [b2FileIds]['brand'] is known.
+  Future<void> updateBrandImage(File image) async {
+    final current = state;
+    if (current is! Authenticated) {
+      throw StateError('Not signed in.');
+    }
+
+    final profile = current.profile;
+    final uid = profile.uid;
+    final objectPath = 'providers/$uid/brand.jpg';
+    final oldFileId = profile.b2FileIds['brand'];
+
+    final uploaded = await _media.uploadImage(
+      source: image,
+      objectPath: objectPath,
+    );
+
+    final updated = profile.copyWith(
+      brandImageUrl: _cacheBustedImageUrl(uploaded.url, uploaded.fileId),
+      b2FileIds: {...profile.b2FileIds, 'brand': uploaded.fileId},
+      updatedAt: DateTime.now(),
+    );
+
+    try {
+      await _profileRepository.upsertProfile(updated);
+      emit(Authenticated(user: current.user, profile: updated));
+    } catch (e) {
+      await _media.deleteImage(uploaded);
+      rethrow;
+    }
+
+    if (oldFileId != null && oldFileId.isNotEmpty) {
+      await _media.deleteImage(
+        UploadedMedia(
+          url: profile.brandImageUrl ?? '',
+          fileName: objectPath,
+          fileId: oldFileId,
+        ),
+      );
+    }
+  }
+
   /// Persists a single profile field edited via account details.
   Future<void> updateProfileField(
     ReviewField field,
@@ -308,6 +351,18 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signOut() => _authRepository.signOut();
+
+  /// Appends a version query param so [Image.network] fetches the new file
+  /// when the underlying B2 object path is unchanged.
+  static String _cacheBustedImageUrl(String url, String version) {
+    final uri = Uri.parse(url);
+    return uri.replace(
+      queryParameters: {
+        ...uri.queryParameters,
+        'v': version,
+      },
+    ).toString();
+  }
 
   Future<void> dismissFailure() async {
     final user = _authRepository.currentUser;

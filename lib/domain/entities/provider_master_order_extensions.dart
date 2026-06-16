@@ -12,7 +12,11 @@ extension ProviderMasterOrderRowDashboardX on ProviderMasterOrderRow {
       acceptedAt: s.acceptedAt,
       deliveredAt: s.deliveredAt,
       totalEgp: s.totalEgp,
-      customerName: s.customerName,
+      customerName: providerCanViewCustomerContact(master, s)
+          ? (s.customerName ?? master.customerName)
+          : null,
+      hideCustomerContact:
+          master.isPharmacyRequest && !providerCanViewCustomerContact(master, s),
       items: [
         for (final item in s.items)
           ProviderOrderLineItem(

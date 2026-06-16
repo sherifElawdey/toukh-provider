@@ -134,6 +134,29 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     return controller.stream;
   }
 
+  @override
+  Future<MasterOrder?> getOrderById({
+    required String providerId,
+    required String orderId,
+  }) async {
+    final masterSnap = await _masterRef(orderId).get();
+    if (masterSnap.exists && masterSnap.data() != null) {
+      final order = MasterOrder.fromMap(orderId, masterSnap.data()!);
+      if (_hasProviderSlice(order, providerId)) return order;
+    }
+
+    final finishedSnap = await _firestore
+        .collection(ToukhOrderPaths.finishedOrders)
+        .doc(orderId)
+        .get();
+    if (finishedSnap.exists && finishedSnap.data() != null) {
+      final order = FinishedOrder.fromMap(orderId, finishedSnap.data()!).order;
+      if (_hasProviderSlice(order, providerId)) return order;
+    }
+
+    return null;
+  }
+
   Future<void> _patchSlice({
     required String providerId,
     required String masterOrderId,
@@ -196,11 +219,22 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         statusMap[providerId] = _mapWireToProviderState(patch['status'] as String);
       }
 
+      final status = patch['status'] as String?;
       final refsRaw = master['providerOrderRefs'] as List? ?? [];
       final refs = refsRaw.map((e) {
         final ref = Map<String, dynamic>.from(e as Map);
         if (ref['providerId'] == providerId) {
           ref['providerState'] = statusMap[providerId] ?? ref['providerState'];
+          if (status == 'cancelled') {
+            if (slice['cancelledAt'] != null) {
+              ref['cancelledAt'] = slice['cancelledAt'];
+            }
+            if (slice['cancelReason'] != null) {
+              ref['cancelReason'] = slice['cancelReason'];
+            }
+            ref['cancelledByRole'] =
+                slice['cancelledByRole'] as String? ?? 'provider';
+          }
         }
         return ref;
       }).toList();
@@ -212,7 +246,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
-      final status = patch['status'] as String?;
       if (status == 'out_for_delivery') updates['globalStatus'] = 'on_the_way';
       if (status == 'delivered' || status == 'completed') {
         updates['globalStatus'] = 'delivered';
@@ -286,6 +319,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         'providerState': 'rejected',
         'cancelReason': cancelReason,
         'cancelledAt': FieldValue.serverTimestamp(),
+        'cancelledByRole': 'provider',
       },
     );
     await _notifyCustomer(providerId, orderId);
@@ -393,6 +427,30 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       },
     );
     await _notifyCustomer(providerId, orderId);
+  }
+
+  @override
+  Future<void> approvePharmacyRequest({
+    required String providerId,
+    required String masterOrderId,
+    required String pharmacistNote,
+    required List<String> approvedItemIds,
+    required double quotedSubtotalEgp,
+    required double quotedDeliveryFeeEgp,
+  }) async {
+    final fn = _functions;
+    if (fn == null) {
+      throw StateError('Cloud Functions not configured');
+    }
+    final callable = fn.httpsCallable('approvePharmacyRequest');
+    await callable.call<Map<String, dynamic>>({
+      'masterOrderId': masterOrderId,
+      'providerId': providerId,
+      'pharmacistNote': pharmacistNote,
+      'approvedItemIds': approvedItemIds,
+      'quotedSubtotalEgp': quotedSubtotalEgp,
+      'quotedDeliveryFeeEgp': quotedDeliveryFeeEgp,
+    });
   }
 
   Map<String, dynamic> _locationToMap(Location loc) => {

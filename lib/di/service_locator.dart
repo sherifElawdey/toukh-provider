@@ -13,6 +13,7 @@ import 'package:toukh_provider/core/config/twilio_environment.dart';
 import 'package:toukh_provider/data/repositories/firebase_auth_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_home_service_categories_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_dashboard_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_provider_order_history_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_orders_repository.dart';
 import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/data/repositories/firestore_notification_inbox_repository.dart';
@@ -29,6 +30,7 @@ import 'package:toukh_provider/domain/repositories/auth_repository.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/home_service_categories_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_order_history_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
@@ -111,6 +113,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<ProviderOrdersRepository>(
     () => getIt<FirestoreProviderOrdersRepository>(),
+  );
+  getIt.registerLazySingleton<ProviderOrderHistoryRepository>(
+    () => FirestoreProviderOrderHistoryRepository(getIt<FirebaseFirestore>()),
   );
   getIt.registerLazySingleton<ProviderWalletRepository>(
     () => FirestoreProviderWalletRepository(getIt<FirebaseFirestore>()),

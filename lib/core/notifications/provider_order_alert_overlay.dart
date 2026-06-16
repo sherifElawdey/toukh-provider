@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -127,8 +128,21 @@ class _OrderAlertBanner extends StatelessWidget {
                             onPressed: orderId.isEmpty
                                 ? null
                                 : () async {
-                                    await getIt<ProviderOrdersCubit>()
-                                        .approve(orderId);
+                                    final cubit =
+                                        getIt<ProviderOrdersCubit>();
+                                    final row = cubit.orderById(orderId);
+                                    final pendingPharmacy = row != null &&
+                                        row.master.isPharmacyRequest &&
+                                        row.slice.providerState ==
+                                            ProviderSubState.pending.wireValue;
+                                    if (pendingPharmacy) {
+                                      await showPharmacyApproveOrderSheet(
+                                        context,
+                                        row: row,
+                                      );
+                                    } else {
+                                      await cubit.approve(orderId);
+                                    }
                                     ProviderOrderAlertController.instance
                                         .dismiss();
                                   },

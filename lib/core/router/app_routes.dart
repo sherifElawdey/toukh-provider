@@ -35,6 +35,7 @@ abstract final class AppRoutes {
 
   static const home = '/home';
   static const orders = '/orders';
+  static const ordersHistory = '/orders-history';
 
   static String orderDetailPath(String orderId) => '$orders/$orderId';
   static const menu = '/menu';
@@ -74,7 +75,8 @@ abstract final class AppRoutes {
     if (matchedLocation == wallet ||
         matchedLocation == walletTransactions ||
         matchedLocation == reviews ||
-        matchedLocation == manageDrivers) {
+        matchedLocation == manageDrivers ||
+        matchedLocation == ordersHistory) {
       return true;
     }
     for (final p in shellPaths) {

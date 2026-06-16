@@ -29,6 +29,7 @@ class ProviderOrderDashboard extends Equatable {
     this.deliveredAt,
     required this.totalEgp,
     this.customerName,
+    this.hideCustomerContact = false,
     this.items = const [],
   });
 
@@ -41,6 +42,7 @@ class ProviderOrderDashboard extends Equatable {
   final DateTime? deliveredAt;
   final double totalEgp;
   final String? customerName;
+  final bool hideCustomerContact;
   final List<ProviderOrderLineItem> items;
 
   bool get isCancelled => status == OrderStatus.cancelled;
@@ -84,6 +86,7 @@ class ProviderOrderDashboard extends Equatable {
         deliveredAt,
         totalEgp,
         customerName,
+        hideCustomerContact,
         items,
       ];
 }

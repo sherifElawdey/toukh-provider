@@ -58,9 +58,13 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _leaveSplashIfNeeded(BuildContext context) {
-    if (!_versionGateCompleted) return;
-    final routerState = GoRouterState.of(context);
-    if (routerState.matchedLocation != AppRoutes.splash) return;
+    if (!_versionGateCompleted || !context.mounted) return;
+
+    final router = GoRouter.maybeOf(context);
+    if (router == null) return;
+
+    final matchedLocation = router.state.matchedLocation;
+    if (matchedLocation != AppRoutes.splash) return;
 
     final auth = context.read<AuthCubit>().state;
     final gate = context.read<OnboardingCubit>().state.gate;
@@ -73,10 +77,11 @@ class _SplashScreenState extends State<SplashScreen>
     if (!settings.firstLaunchCompleted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) return;
-        if (GoRouterState.of(context).matchedLocation != AppRoutes.splash) {
+        final r = GoRouter.maybeOf(context);
+        if (r == null || r.state.matchedLocation != AppRoutes.splash) {
           return;
         }
-        context.go(AppRoutes.welcome);
+        r.go(AppRoutes.welcome);
         _logSplash('navigate -> ${AppRoutes.welcome}');
       });
       return;
@@ -91,10 +96,11 @@ class _SplashScreenState extends State<SplashScreen>
     if (next != null && next != AppRoutes.splash) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) return;
-        if (GoRouterState.of(context).matchedLocation != AppRoutes.splash) {
+        final r = GoRouter.maybeOf(context);
+        if (r == null || r.state.matchedLocation != AppRoutes.splash) {
           return;
         }
-        context.go(next);
+        r.go(next);
         _logSplash('navigate -> $next');
       });
     }
@@ -144,7 +150,9 @@ class _SplashScreenState extends State<SplashScreen>
       final result = await gate.ensureChecked();
       if (!mounted) return;
       if (result.needsUpdate && gate.storeUri != null) {
-        router.go(AppRoutes.appUpdate, extra: gate.storeUri);
+        if (router.state.matchedLocation == AppRoutes.splash) {
+          router.go(AppRoutes.appUpdate, extra: gate.storeUri);
+        }
         return;
       }
     } finally {

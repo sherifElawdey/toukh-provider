@@ -56,6 +56,9 @@ import 'package:toukh_provider/features/wallet/presentation/wallet_screen.dart';
 import 'package:toukh_provider/domain/repositories/provider_drivers_repository.dart';
 import 'package:toukh_provider/features/drivers/cubit/manage_drivers_cubit.dart';
 import 'package:toukh_provider/features/drivers/presentation/manage_drivers_screen.dart';
+import 'package:toukh_provider/domain/repositories/provider_order_history_repository.dart';
+import 'package:toukh_provider/features/order_history/cubit/order_history_cubit.dart';
+import 'package:toukh_provider/features/order_history/presentation/order_history_screen.dart';
 import 'package:toukh_provider/features/reviews/cubit/provider_reviews_cubit.dart';
 import 'package:toukh_provider/features/reviews/presentation/provider_reviews_screen.dart';
 import 'package:toukh_provider/domain/repositories/provider_reviews_repository.dart';
@@ -332,6 +335,29 @@ GoRouter createAppRouter({
               auth.user.uid,
             ),
             child: const ProviderReviewsScreen(),
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.ordersHistory,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = authCubit.state;
+          if (auth is! Authenticated) {
+            return Scaffold(
+              body: Center(child: CustomText(AppStrings.Common.error.tr)),
+            );
+          }
+          return BlocProvider(
+            create: (_) {
+              final c = OrderHistoryCubit(
+                getIt<ProviderOrderHistoryRepository>(),
+                auth.user.uid,
+              );
+              c.loadInitial();
+              return c;
+            },
+            child: const OrderHistoryScreen(),
           );
         },
       ),

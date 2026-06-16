@@ -143,7 +143,11 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
       acceptedAt: slice.acceptedAt,
       deliveredAt: slice.deliveredAt,
       totalEgp: slice.totalEgp,
-      customerName: slice.customerName,
+      customerName: providerCanViewCustomerContact(order, slice)
+          ? (slice.customerName ?? order.customerName)
+          : null,
+      hideCustomerContact: order.isPharmacyRequest &&
+          !providerCanViewCustomerContact(order, slice),
       items: [
         for (final item in slice.items)
           ProviderOrderLineItem(

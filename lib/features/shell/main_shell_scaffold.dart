@@ -49,7 +49,9 @@ class MainShellScaffold extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final unselectedIconColor = scheme.onSurface.withValues(alpha: 0.45);
 
-    return Scaffold(
+    return AppSnackInsets(
+      bottomInset: 100,
+      child: Scaffold(
       appBar: AppBar(
         title: navigationShell.currentIndex == 0
             ? Image.asset(
@@ -128,6 +130,7 @@ class MainShellScaffold extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 }

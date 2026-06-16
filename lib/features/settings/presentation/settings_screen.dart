@@ -11,7 +11,6 @@ import 'package:toukh_provider/features/settings/presentation/widgets/language_s
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_app_version_footer.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_profile_header_card.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
-import 'package:toukh_provider/features/settings/presentation/widgets/settings_theme_toggle.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 
@@ -53,12 +52,12 @@ class SettingsScreen extends StatelessWidget {
                 bottom: AppSizes.space2xl,
               ),
               children: [
-                Center(
-                  child: ToukhServiceLogo(
-                    size: 64,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
+                // Center(
+                //   child: ToukhServiceLogo(
+                //     size: 64,
+                //     borderRadius: BorderRadius.circular(16),
+                //   ),
+                // ),
                 SizedBox(height: AppSizes.spaceLg),
                 if (auth is Authenticated) ...[
                   SettingsProfileHeaderCard(
@@ -77,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
                         .onSurface
                         .withValues(alpha: 0.45),
                   ),
-                  onTap: () => context.go(AppRoutes.orders),
+                  onTap: () => context.push(AppRoutes.ordersHistory),
                 ),
                 SettingsTile(
                   icon: ToukhIcons.wallet,
@@ -120,7 +119,8 @@ class SettingsScreen extends StatelessWidget {
                 SizedBox(height: AppSizes.spaceLg),
                 SettingsSectionTitle(labelKey: AppStrings.Settings.appearance),
                 SizedBox(height: AppSizes.spaceSm),
-                SettingsThemeToggle(
+                ToukhSettingsThemeTile(
+                  title: CustomText(AppStrings.Settings.themeMode),
                   value: settings.themeMode,
                   onChanged: context.read<SettingsCubit>().setThemeMode,
                 ),

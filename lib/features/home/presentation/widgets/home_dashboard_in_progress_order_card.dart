@@ -47,8 +47,10 @@ class HomeDashboardInProgressOrderCard extends StatelessWidget {
                 ),
                 const Spacer(),
                 CustomText(
-                  order.customerName ??
-                      '${AppStrings.Home.dashboardOrderShort.tr} #${order.id.length > 6 ? order.id.substring(0, 6) : order.id}',
+                  order.hideCustomerContact
+                      ? AppStrings.Orders.pharmacyRequestCustomerLabel.tr
+                      : order.customerName ??
+                          '${AppStrings.Home.dashboardOrderShort.tr} #${order.id.length > 6 ? order.id.substring(0, 6) : order.id}',
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(

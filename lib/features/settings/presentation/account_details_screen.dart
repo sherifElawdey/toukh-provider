@@ -12,6 +12,7 @@ import 'package:toukh_provider/features/registration/presentation/register_revie
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/register_review_tile.dart';
 import 'package:toukh_provider/features/settings/presentation/provider_profile_display.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/editable_provider_avatar.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -236,7 +237,6 @@ class _AccountDetailsHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final imageUrl = profile.brandImageUrl;
     final statusColor = _statusColor(profile.status);
 
     return Material(
@@ -249,29 +249,9 @@ class _AccountDetailsHero extends StatelessWidget {
         padding: const EdgeInsets.all(AppSizes.spaceLg),
         child: Column(
           children: [
-            ClipOval(
-              child: SizedBox(
-                width: 88,
-                height: 88,
-                child: imageUrl != null && imageUrl.isNotEmpty
-                    ? Image.network(
-                        imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => Icon(
-                          PhosphorIconsRegular.storefront,
-                          size: 40,
-                          color: scheme.onSurface.withValues(alpha: 0.45),
-                        ),
-                      )
-                    : ColoredBox(
-                        color: AppColors.thirdColor.withValues(alpha: 0.5),
-                        child: Icon(
-                          PhosphorIconsRegular.storefront,
-                          size: 40,
-                          color: scheme.onSurface.withValues(alpha: 0.45),
-                        ),
-                      ),
-              ),
+            EditableProviderAvatar(
+              imageUrl: profile.brandImageUrl,
+              size: 88,
             ),
             SizedBox(height: AppSizes.spaceMd),
             CustomText(

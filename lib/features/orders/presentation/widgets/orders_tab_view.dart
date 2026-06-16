@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_sheet.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -44,12 +45,20 @@ class OrdersTabView extends StatelessWidget {
           itemBuilder: (context, index) {
             final row = rows[index];
             final busy = state.actionInFlightId == row.id;
+            final isPharmacyRequest = row.master.isPharmacyRequest;
+            final pendingPharmacy = isPharmacyRequest &&
+                row.slice.providerState == ProviderSubState.pending.wireValue;
             return ProviderOrderCard(
               key: ValueKey(row.id),
               row: row,
               tab: tab,
               busy: busy,
-              onApprove: () => cubit.approve(row.id),
+              onApprove: pendingPharmacy
+                  ? null
+                  : () => cubit.approve(row.id),
+              onReview: pendingPharmacy
+                  ? () => showPharmacyApproveOrderSheet(context, row: row)
+                  : null,
               onCancel: () => cubit.cancel(row.id),
               onRequestDelivery: () => _openRequestDelivery(context, row),
               onReadyForPickup: () => cubit.markReadyForPickup(row.id),

@@ -31,6 +31,7 @@ abstract final class AppStrings {
   static const AppUpdate = _AppUpdate();
   static const Wallet = _Wallet();
   static const Drivers = _Drivers();
+  static const OrderHistory = _OrderHistory();
 }
 
 class _App {
@@ -345,8 +346,37 @@ class _Orders {
   String get detailCompleted => 'orders.detail_completed';
   String get detailDatePending => 'orders.detail_date_pending';
   String get detailCustomer => 'orders.detail_customer';
+  String get pharmacyRequestCustomerLabel =>
+      'orders.pharmacy_request_customer_label';
+  String get pharmacyCustomerContactHidden =>
+      'orders.pharmacy_customer_contact_hidden';
   String get detailPickup => 'orders.detail_pickup';
   String get detailDropoff => 'orders.detail_dropoff';
+  String get detailPlacedAt => 'orders.detail_placed_at';
+  String get detailSectionItems => 'orders.detail_section_items';
+  String get detailSubtotal => 'orders.detail_subtotal';
+  String get detailDeliveryFee => 'orders.detail_delivery_fee';
+  String get detailOrderTotal => 'orders.detail_order_total';
+  String get detailPickupQrTitle => 'orders.detail_pickup_qr_title';
+  String get detailPickupQrHint => 'orders.detail_pickup_qr_hint';
+  String get detailCancelledByProvider => 'orders.detail_cancelled_by_provider';
+  String get detailCancelledByCustomer => 'orders.detail_cancelled_by_customer';
+  String get detailCancelledAt => 'orders.detail_cancelled_at';
+  String get detailCancelReason => 'orders.detail_cancel_reason';
+  String get detailCancellationSection => 'orders.detail_cancellation_section';
+  String get detailCancelled => 'orders.detail_cancelled';
+  String get pharmacyReviewOrder => 'orders.pharmacy_review_order';
+  String get pharmacyApproveTitle => 'orders.pharmacy_approve_title';
+  String get pharmacyPharmacistNote => 'orders.pharmacy_pharmacist_note';
+  String get pharmacyPharmacistNoteHint => 'orders.pharmacy_pharmacist_note_hint';
+  String get pharmacyQuoteSubtotal => 'orders.pharmacy_quote_subtotal';
+  String get pharmacyQuoteDeliveryFee => 'orders.pharmacy_quote_delivery_fee';
+  String get pharmacyAcceptOrder => 'orders.pharmacy_accept_order';
+  String get pharmacyQuoteSubtotalRequired => 'orders.pharmacy_quote_subtotal_required';
+  String get pharmacyQuoteSelectItems => 'orders.pharmacy_quote_select_items';
+  String get pharmacyQuoteFailed => 'orders.pharmacy_quote_failed';
+  String get imageLoadFailed => 'orders.image_load_failed';
+  String get pharmacyStatusQuoted => 'orders.pharmacy_status_quoted';
   String get trackPlaced => 'orders.track_placed';
   String get trackAccepted => 'orders.track_accepted';
   String get trackPickup => 'orders.track_pickup';
@@ -415,6 +445,11 @@ class _Settings {
   String get copyright => 'settings.copyright';
   String get copied => 'settings.copied';
   String get fieldLocked => 'settings.field_locked';
+  String get changeProfilePhoto => 'settings.change_profile_photo';
+  String get takePhoto => 'settings.take_photo';
+  String get pickFromGallery => 'settings.pick_from_gallery';
+  String get profilePhotoUpdated => 'settings.profile_photo_updated';
+  String get profilePhotoFailed => 'settings.profile_photo_failed';
 }
 
 class _Welcome {
@@ -565,4 +600,20 @@ class _Drivers {
   String get vehicleMotorcycle => 'drivers.vehicle_motorcycle';
   String get vehicleBicycle => 'drivers.vehicle_bicycle';
   String get vehicleTukTuk => 'drivers.vehicle_tuk_tuk';
+}
+
+class _OrderHistory {
+  const _OrderHistory();
+  String get title => 'order_history.title';
+  String get totalOrders => 'order_history.total_orders';
+  String get completedOrders => 'order_history.completed_orders';
+  String get canceledOrders => 'order_history.canceled_orders';
+  String get dateFrom => 'order_history.date_from';
+  String get dateTo => 'order_history.date_to';
+  String get applyFilter => 'order_history.apply_filter';
+  String get clearFilter => 'order_history.clear_filter';
+  String get empty => 'order_history.empty';
+  String get loadError => 'order_history.load_error';
+  String get selectDate => 'order_history.select_date';
+  String get invalidDateRange => 'order_history.invalid_date_range';
 }

@@ -26,6 +26,8 @@ String providerOrderStatusLabel(ProviderMasterOrderRow row) {
       return AppStrings.Orders.statusDelivered.tr;
     case ProviderOrderStatusWire.cancelled:
       return AppStrings.Orders.statusCancelled.tr;
+    case ProviderOrderStatusWire.quoted:
+      return AppStrings.Orders.pharmacyStatusQuoted.tr;
     default:
       return row.slice.statusWire;
   }

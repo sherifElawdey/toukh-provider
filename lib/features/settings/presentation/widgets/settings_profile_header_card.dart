@@ -4,6 +4,7 @@ import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/editable_provider_avatar.dart';
 
 /// Hero profile card for provider settings.
 class SettingsProfileHeaderCard extends StatelessWidget {
@@ -65,7 +66,6 @@ class SettingsProfileHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final url = profile.brandImageUrl;
 
     return Material(
       elevation: 0,
@@ -80,27 +80,9 @@ class SettingsProfileHeaderCard extends StatelessWidget {
           padding: const EdgeInsets.all(AppSizes.spaceLg),
           child: Row(
             children: [
-              ClipOval(
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  color: AppColors.thirdColor.withValues(alpha: 0.6),
-                  child: url != null && url.isNotEmpty
-                      ? Image.network(
-                          url,
-                          width: 64,
-                          height: 64,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) => Icon(
-                            PhosphorIconsRegular.storefront,
-                            color: scheme.onSurface.withValues(alpha: 0.45),
-                          ),
-                        )
-                      : Icon(
-                          PhosphorIconsRegular.storefront,
-                          color: scheme.onSurface.withValues(alpha: 0.45),
-                        ),
-                ),
+              EditableProviderAvatar(
+                imageUrl: profile.brandImageUrl,
+                size: 64,
               ),
               SizedBox(width: AppSizes.spaceMd),
               Expanded(

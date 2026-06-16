@@ -94,6 +94,28 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
         ));
   }
 
+  Future<void> approvePharmacyRequest({
+    required String orderId,
+    required String pharmacistNote,
+    required List<String> approvedItemIds,
+    required double quotedSubtotalEgp,
+    required double quotedDeliveryFeeEgp,
+  }) async {
+    final auth = _authCubit.state;
+    if (auth is! Authenticated) return;
+    await _runAction(
+      orderId,
+      () => _ordersRepository.approvePharmacyRequest(
+        providerId: auth.user.uid,
+        masterOrderId: orderId,
+        pharmacistNote: pharmacistNote,
+        approvedItemIds: approvedItemIds,
+        quotedSubtotalEgp: quotedSubtotalEgp,
+        quotedDeliveryFeeEgp: quotedDeliveryFeeEgp,
+      ),
+    );
+  }
+
   Future<String?> requestDelivery({
     required String orderId,
     required Location searchCenter,
@@ -185,6 +207,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
       _ordersStreamPrimed = true;
       for (final master in orders) {
         if (!master.hasProviderSlice(providerId)) continue;
+        if (master.globalStatus.isTerminal) continue;
         final slice = master.sliceFor(providerId);
         if (slice != null && slice.isIncoming) {
           _alertedIncomingOrderIds.add(master.id);
@@ -195,6 +218,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
 
     for (final master in orders) {
       if (!master.hasProviderSlice(providerId)) continue;
+      if (master.globalStatus.isTerminal) continue;
       final slice = master.sliceFor(providerId);
       if (slice == null || !slice.isIncoming) continue;
       if (_alertedIncomingOrderIds.contains(master.id)) continue;
@@ -202,7 +226,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
 
       final notification = ToukhOrderNotificationTemplates.notificationFromProviderOrder(
         notificationId: master.id,
-        order: _sliceToNotificationMap(master.id, slice),
+        order: _sliceToNotificationMap(master, slice),
         providerId: providerId,
         orderId: master.id,
       );
@@ -211,13 +235,12 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
   }
 
   Map<String, dynamic> _sliceToNotificationMap(
-    String masterOrderId,
+    MasterOrder master,
     ProviderOrderSlice slice,
   ) {
-    return {
+    final map = <String, dynamic>{
       'customerId': slice.customerId,
-      'customerName': slice.customerName,
-      'masterOrderId': masterOrderId,
+      'masterOrderId': master.id,
       'orderPrice': slice.orderPriceEgp,
       'deliveryPrice': slice.deliveryFeeEgp,
       'totalEgp': slice.totalEgp,
@@ -230,6 +253,13 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
           },
       ],
     };
+    if (providerCanViewCustomerContact(master, slice)) {
+      final name = slice.customerName ?? master.customerName;
+      if (name != null && name.trim().isNotEmpty) {
+        map['customerName'] = name;
+      }
+    }
+    return map;
   }
 
   @override

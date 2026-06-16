@@ -16,6 +16,7 @@ class ProviderOrderCard extends StatelessWidget {
     required this.tab,
     this.busy = false,
     this.onApprove,
+    this.onReview,
     this.onCancel,
     this.onRequestDelivery,
     this.onReadyForPickup,
@@ -27,6 +28,7 @@ class ProviderOrderCard extends StatelessWidget {
   final ProviderOrdersTab tab;
   final bool busy;
   final VoidCallback? onApprove;
+  final VoidCallback? onReview;
   final VoidCallback? onCancel;
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onReadyForPickup;
@@ -88,7 +90,12 @@ class ProviderOrderCard extends StatelessWidget {
                 children: [
                   Expanded(
                     child: CustomText(
-                      _slice.customerName ?? AppStrings.Orders.detailCustomer.tr,
+                      providerDisplayCustomerName(
+                        row.master,
+                        _slice,
+                        genericLabel:
+                            AppStrings.Orders.pharmacyRequestCustomerLabel.tr,
+                      ),
                       style: TextStyle(
                         fontWeight: FontWeight.w800,
                         fontSize: AppSizes.fontTitle,
@@ -142,6 +149,7 @@ class ProviderOrderCard extends StatelessWidget {
                 tab: tab,
                 busy: busy,
                 onApprove: onApprove,
+                onReview: onReview,
                 onCancel: onCancel,
                 onRequestDelivery: onRequestDelivery,
                 onReadyForPickup: onReadyForPickup,
@@ -404,6 +412,7 @@ class _Actions extends StatelessWidget {
     required this.tab,
     required this.busy,
     this.onApprove,
+    this.onReview,
     this.onCancel,
     this.onRequestDelivery,
     this.onReadyForPickup,
@@ -415,6 +424,7 @@ class _Actions extends StatelessWidget {
   final ProviderOrdersTab tab;
   final bool busy;
   final VoidCallback? onApprove;
+  final VoidCallback? onReview;
   final VoidCallback? onCancel;
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onReadyForPickup;
@@ -439,10 +449,12 @@ class _Actions extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: AppFilledButton(
-              text: AppStrings.Orders.actionApprove.tr,
+              text: onReview != null
+                  ? AppStrings.Orders.pharmacyReviewOrder.tr
+                  : AppStrings.Orders.actionApprove.tr,
               height: ProviderOrderCard._compactButtonHeight,
               size: AppButtonSize.small,
-              onTap: busy ? null : onApprove,
+              onTap: busy ? null : (onReview ?? onApprove),
             ),
           ),
         ],
@@ -464,6 +476,7 @@ class _Actions extends StatelessWidget {
           AppFilledButton(
             text: AppStrings.Orders.actionRequestDelivery.tr,
             height: ProviderOrderCard._compactButtonHeight,
+            size: AppButtonSize.small,
             onTap: busy ? null : onRequestDelivery,
           ),
         );
@@ -473,6 +486,7 @@ class _Actions extends StatelessWidget {
           AppFilledButton(
             text: AppStrings.Orders.actionReadyForPickup.tr,
             height: ProviderOrderCard._compactButtonHeight,
+            size: AppButtonSize.small,
             onTap: busy ? null : onReadyForPickup,
           ),
         );
@@ -482,6 +496,7 @@ class _Actions extends StatelessWidget {
           AppFilledButton(
             text: AppStrings.Orders.actionDeliver.tr,
             height: ProviderOrderCard._compactButtonHeight,
+            size: AppButtonSize.small,
             onTap: busy ? null : onDeliver,
           ),
         );
@@ -491,6 +506,7 @@ class _Actions extends StatelessWidget {
           AppFilledButton(
             text: AppStrings.Orders.actionConfirmHandoff.tr,
             height: ProviderOrderCard._compactButtonHeight,
+            size: AppButtonSize.small,
             onTap: busy ? null : onConfirmHandoff,
           ),
         );
@@ -509,6 +525,7 @@ class _Actions extends StatelessWidget {
 
     return AppTextButton(
       text: AppStrings.Orders.seeDetails.tr,
+      size: AppButtonSize.small,
       onTap: () => context.push(AppRoutes.orderDetailPath(row.id)),
     );
   }

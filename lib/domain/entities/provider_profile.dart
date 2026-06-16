@@ -273,6 +273,10 @@ class ProviderProfile extends Equatable {
   bool get isRestaurantShop =>
       serviceType == ServiceType.restaurant && shopCategory == ShopCategory.restaurant;
 
+  bool get isPharmacy =>
+      serviceType == ServiceType.pharmacy ||
+      shopCategory == ShopCategory.pharmacy;
+
   /// Display label for verification screens (matches delivery `DriverProfile`).
   String get displayName => name;
 
