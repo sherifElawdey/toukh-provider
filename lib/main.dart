@@ -2,10 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter_android/google_maps_flutter_android.dart';
-import 'package:google_maps_flutter_platform_interface/google_maps_flutter_platform_interface.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/app.dart';
 import 'package:toukh_provider/core/notifications/background_message_handler.dart';
 import 'package:toukh_provider/di/service_locator.dart';
@@ -16,13 +14,7 @@ import 'package:get/get.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-    final mapsImpl = GoogleMapsFlutterPlatform.instance;
-    if (mapsImpl is GoogleMapsFlutterAndroid) {
-      mapsImpl.useAndroidViewSurface = true;
-    }
-  }
+  await initToukhMapsPlatform();
 
   try {
     if (Firebase.apps.isEmpty) {

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -80,7 +81,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
           showUnreadOnly: state.showUnreadOnly,
         ),
       ),
-      onError: (e) => emit(state.copyWith(loading: false, errorMessage: e.toString())),
+      onError: (e) => emit(state.copyWith(loading: false, errorMessage: appFirebaseError(e))),
     );
   }
 

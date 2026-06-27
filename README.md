@@ -8,6 +8,9 @@ Flutter app for Toukh shop and service providers: registration wizard, Firebase 
 cd toukh_provider
 flutter pub get
 ```
+toukh_ui:
+git:
+url: https://github.com/sherifElawdey/toukh-ui-constants.git
 
 Configure Firebase for your bundle IDs (see `lib/firebase_options.dart`). For Google Maps, add API keys to:
 

@@ -3,6 +3,9 @@ import 'package:toukh_provider/data/repositories/firestore_home_service_categori
 
 /// Sample documents for Firestore collection [FirestoreHomeServiceCategoriesRepository.collectionName].
 ///
+/// Document id and `id` field use the same slug (e.g. `plumber`) so
+/// `providers.serviceCategoryId` matches toukh client queries via `hs_<slug>`.
+///
 /// **Security:** registration reads this collection while the user is **not** signed in.
 /// Firestore rules must allow `read` on `HomeServices` for that flow (e.g. public read in dev).
 Future<void> seedHomeServiceCategories({
@@ -14,59 +17,85 @@ Future<void> seedHomeServiceCategories({
   );
 
   final samples = <String, Map<String, dynamic>>{
-    'home_cat_cleaning': {
-      'id': 'home_cat_cleaning',
-      'title': 'Cleaning',
+    'plumber': {
+      'id': 'plumber',
+      'title': 'سباك',
       'description':
-          'Residential and office cleaning, deep clean, and move-out packages.',
-      'imageUrl': 'https://picsum.photos/seed/toukhclean/400/400',
+          'إصلاح التسريبات، تركيب وصيانة مواسير المياه، فتح الانسدادات، وخدمات الحمام والمطبخ.',
+      'imageUrl': 'https://picsum.photos/seed/toukhplumber/400/400',
       'isActive': true,
     },
-    'home_cat_electrical': {
-      'id': 'home_cat_electrical',
-      'title': 'Electrical',
+    'electrician': {
+      'id': 'electrician',
+      'title': 'كهربائي',
       'description':
-          'Wiring repairs, fixture installation, breaker issues, and safety checks.',
-      'imageUrl': 'https://picsum.photos/seed/toukhelec/400/400',
+          'إصلاح الأعطال الكهربائية، تركيب الإنارة والمفاتيح، صيانة اللوحات الكهربائية، وضمان السلامة.',
+      'imageUrl': 'https://picsum.photos/seed/toukhelectrician/400/400',
       'isActive': true,
     },
-    'home_cat_plumbing': {
-      'id': 'home_cat_plumbing',
-      'title': 'Plumbing',
+    'painter': {
+      'id': 'painter',
+      'title': 'دهان',
       'description':
-          'Leaks, clogs, water heaters, and bathroom or kitchen plumbing work.',
-      'imageUrl': 'https://picsum.photos/seed/toukhplumb/400/400',
+          'دهانات داخلية وخارجية، معالجة الجدران، وتشطيبات احترافية للمنازل والمكاتب.',
+      'imageUrl': 'https://picsum.photos/seed/toukhpainter/400/400',
       'isActive': true,
     },
-    'home_cat_ac': {
-      'id': 'home_cat_ac',
-      'title': 'AC & cooling',
+    'carpenter': {
+      'id': 'carpenter',
+      'title': 'نجار',
       'description':
-          'Split-unit service, maintenance, gas refill coordination, and diagnostics.',
+          'تركيب وصيانة الأثاث الخشبي، الأبواب والشبابيك، والإصلاحات النجارية للمنزل.',
+      'imageUrl': 'https://picsum.photos/seed/toukhcarpenter/400/400',
+      'isActive': true,
+    },
+    'nurse': {
+      'id': 'nurse',
+      'title': 'ممرض / ممرضة',
+      'description':
+          'رعاية صحية منزلية، قياس العلامات الحيوية، متابعة بعد العمليات، ورعاية كبار السن.',
+      'imageUrl': 'https://picsum.photos/seed/toukhnurse/400/400',
+      'isActive': true,
+    },
+    'ac_technician': {
+      'id': 'ac_technician',
+      'title': 'فني تكييف',
+      'description':
+          'تركيب وصيانة أجهزة التكييف، تنظيف الفلاتر، تعبئة الغاز، وتشخيص الأعطال.',
       'imageUrl': 'https://picsum.photos/seed/toukhac/400/400',
       'isActive': true,
     },
-    'home_cat_painting': {
-      'id': 'home_cat_painting',
-      'title': 'Painting',
-      'description': 'Interior and exterior painting, prep, and touch-ups.',
-      'imageUrl': 'https://picsum.photos/seed/toukhpaint/400/400',
+    'pickup_truck': {
+      'id': 'pickup_truck',
+      'title': 'نقل عفش (بيك أب)',
+      'description':
+          'نقل الأثاث والبضائع بسيارات بيك أب، تحميل وتفريغ آمن داخل المدينة.',
+      'imageUrl': 'https://picsum.photos/seed/toukhpickup/400/400',
       'isActive': true,
     },
-    'home_cat_beauty': {
-      'id': 'home_cat_beauty',
-      'title': 'Beauty at home',
+    'private_car': {
+      'id': 'private_car',
+      'title': 'سيارة خاصة',
       'description':
-          'Hair, nails, and skincare services at the customer location.',
-      'imageUrl': 'https://picsum.photos/seed/toukhbeauty/400/400',
+          'خدمة نقل خاص بالسيارة للرحلات داخل المدينة أو بين المناطق بأسعار مرنة.',
+      'imageUrl': 'https://picsum.photos/seed/toukhprivatecar/400/400',
       'isActive': true,
     },
-    'home_cat_inactive_demo': {
-      'id': 'home_cat_inactive_demo',
-      'title': 'Inactive demo',
+    'home_appliances': {
+      'id': 'home_appliances',
+      'title': 'أجهزة كهربائية ومنزلية',
       'description':
-          'This row is inactive — it should not appear in the registration list.',
-      'isActive': false,
+          'صيانة وتركيب الأجهزة المنزلية: غسالات، ثلاجات، بوتاجازات، وسخانات.',
+      'imageUrl': 'https://picsum.photos/seed/toukhappliances/400/400',
+      'isActive': true,
+    },
+    'tv_repair': {
+      'id': 'tv_repair',
+      'title': 'صيانة رسيفرات وشاشات',
+      'description':
+          'إصلاح شاشات التلفزيون والرسيفر، ضبط القنوات، وصيانة أجهزة العرض.',
+      'imageUrl': 'https://picsum.photos/seed/toukhtv/400/400',
+      'isActive': true,
     },
   };
 

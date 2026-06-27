@@ -157,7 +157,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
       if (mounted) {
         AppSnack.show(
           context,
-          message: messageForOtpError(e),
+          message: otpOrFirebaseError(e),
           state: AppSnackState.error,
           icon: PhosphorIconsRegular.chatCircleDots,
         );

@@ -6,7 +6,6 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
 
 Future<Location?> showRequestDeliverySheet(
   BuildContext context, {
@@ -179,7 +178,8 @@ class _RequestDeliverySheetState extends State<_RequestDeliverySheet> {
             child: Stack(
               alignment: Alignment.center,
               children: [
-                GoogleMap(
+                ToukhGoogleMap(
+                  debugScreenName: 'request_delivery',
                   initialCameraPosition: CameraPosition(
                     target: _center,
                     zoom: 15,
@@ -195,7 +195,7 @@ class _RequestDeliverySheetState extends State<_RequestDeliverySheet> {
                   myLocationButtonEnabled: true,
                   myLocationEnabled: true,
                 ),
-                Icon(ToukhIcons.location, size: 48, color: AppColors.appColor),
+                Icon(ToukhIcons.location, size: 48, color: ToukhMapColors.pickup),
                 if (_locating)
                   const Align(
                     alignment: Alignment.topCenter,

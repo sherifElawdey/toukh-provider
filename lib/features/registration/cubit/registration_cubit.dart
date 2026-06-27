@@ -42,6 +42,7 @@ class RegistrationDraft extends Equatable {
     this.lat,
     this.lng,
     this.formattedAddress = '',
+    this.city,
     this.workingHours = const {},
     this.deliveryConfig,
     this.avgPrepMinutes,
@@ -64,6 +65,7 @@ class RegistrationDraft extends Equatable {
   final double? lat;
   final double? lng;
   final String formattedAddress;
+  final String? city;
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
@@ -85,6 +87,8 @@ class RegistrationDraft extends Equatable {
     double? lat,
     double? lng,
     String? formattedAddress,
+    String? city,
+    bool clearCity = false,
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
     int? avgPrepMinutes,
@@ -106,6 +110,7 @@ class RegistrationDraft extends Equatable {
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
       formattedAddress: formattedAddress ?? this.formattedAddress,
+      city: clearCity ? null : (city ?? this.city),
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
@@ -151,6 +156,7 @@ class RegistrationDraft extends Equatable {
       lat: lat!,
       lng: lng!,
       formattedAddress: formattedAddress.trim(),
+      city: city,
       workingHours: workingHours,
       deliveryConfig: deliveryConfig,
       avgPrepMinutes: avgPrepMinutes,
@@ -172,6 +178,7 @@ class RegistrationDraft extends Equatable {
         lat,
         lng,
         formattedAddress,
+        city,
         workingHours,
         deliveryConfig,
         avgPrepMinutes,
@@ -279,11 +286,14 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
     required double lat,
     required double lng,
     required String formattedAddress,
+    String? city,
   }) {
     emit(state.copyWith(
       lat: lat,
       lng: lng,
       formattedAddress: formattedAddress,
+      city: city,
+      clearCity: city == null,
     ));
   }
 

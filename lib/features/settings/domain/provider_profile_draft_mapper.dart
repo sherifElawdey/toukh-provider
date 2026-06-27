@@ -34,6 +34,7 @@ abstract final class ProviderProfileDraftMapper {
       lat: profile.lat,
       lng: profile.lng,
       formattedAddress: profile.address ?? '',
+      city: profile.city,
       workingHours: wh,
       deliveryConfig: profile.deliveryConfig,
       avgPrepMinutes: profile.avgPrepMinutes,
@@ -62,6 +63,7 @@ abstract final class ProviderProfileDraftMapper {
           address: draft.formattedAddress.trim().isEmpty
               ? null
               : draft.formattedAddress.trim(),
+          city: draft.city,
           updatedAt: now,
         );
       case ReviewField.hours:

@@ -1,0 +1,50 @@
+import 'package:equatable/equatable.dart';
+import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
+
+enum ProviderHomeServiceRequestsTab { incoming, inProgress, history }
+
+class ProviderHomeServiceRequestsState extends Equatable {
+  const ProviderHomeServiceRequestsState({
+    this.loading = true,
+    this.providerUid,
+    this.requests = const [],
+    this.errorMessage,
+  });
+
+  final bool loading;
+  final String? providerUid;
+  final List<ProviderHomeServiceRequest> requests;
+  final String? errorMessage;
+
+  int get pendingIncomingCount =>
+      requests.where((r) => r.isIncoming).length;
+
+  List<ProviderHomeServiceRequest> forTab(ProviderHomeServiceRequestsTab tab) {
+    return switch (tab) {
+      ProviderHomeServiceRequestsTab.incoming =>
+        requests.where((r) => r.isIncoming).toList(),
+      ProviderHomeServiceRequestsTab.inProgress =>
+        requests.where((r) => r.isInProgress).toList(),
+      ProviderHomeServiceRequestsTab.history =>
+        requests.where((r) => r.isTerminal).toList(),
+    };
+  }
+
+  ProviderHomeServiceRequestsState copyWith({
+    bool? loading,
+    String? providerUid,
+    List<ProviderHomeServiceRequest>? requests,
+    String? errorMessage,
+    bool clearError = false,
+  }) {
+    return ProviderHomeServiceRequestsState(
+      loading: loading ?? this.loading,
+      providerUid: providerUid ?? this.providerUid,
+      requests: requests ?? this.requests,
+      errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+    );
+  }
+
+  @override
+  List<Object?> get props => [loading, providerUid, requests, errorMessage];
+}

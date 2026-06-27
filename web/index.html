@@ -31,6 +31,14 @@
 
   <title>Toukh Service</title>
   <link rel="manifest" href="manifest.json">
+  <script>
+    window.gm_authFailure = function () {
+      console.error(
+        '[Google Maps] Auth failure — check API key, billing, and HTTP referrer restrictions. See docs/google-maps-setup.md'
+      );
+    };
+  </script>
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC51eQ97nsVL7Fv_uYlngnG7QCBSk7h3P0&libraries=marker"></script>
 </head>
 <body>
   <!--

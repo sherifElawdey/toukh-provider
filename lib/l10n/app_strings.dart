@@ -21,6 +21,7 @@ abstract final class AppStrings {
   static const AccountStatus = _AccountStatus();
   static const Shell = _Shell();
   static const Home = _Home();
+  static const HomeServiceRequests = _HomeServiceRequests();
   static const Orders = _Orders();
   static const Notifications = _Notifications();
   static const Accepted = _Accepted();
@@ -32,6 +33,7 @@ abstract final class AppStrings {
   static const Wallet = _Wallet();
   static const Drivers = _Drivers();
   static const OrderHistory = _OrderHistory();
+  static const FirebaseErrors = _FirebaseErrors();
 }
 
 class _App {
@@ -245,6 +247,59 @@ class _Home {
   String get dashboardPendingOrdersTitle => 'home.dashboard_pending_orders_title';
   String get dashboardPendingOrdersSubtitle =>
       'home.dashboard_pending_orders_subtitle';
+}
+
+class _HomeServiceRequests {
+  const _HomeServiceRequests();
+  String get title => 'home_service_requests.title';
+  String get tabIncoming => 'home_service_requests.tab_incoming';
+  String get tabInProgress => 'home_service_requests.tab_in_progress';
+  String get tabHistory => 'home_service_requests.tab_history';
+  String get emptyIncoming => 'home_service_requests.empty_incoming';
+  String get emptyInProgress => 'home_service_requests.empty_in_progress';
+  String get emptyHistory => 'home_service_requests.empty_history';
+  String get detailTitle => 'home_service_requests.detail_title';
+  String get notFound => 'home_service_requests.not_found';
+  String get accept => 'home_service_requests.accept';
+  String get decline => 'home_service_requests.decline';
+  String get updated => 'home_service_requests.updated';
+  String get fieldCategory => 'home_service_requests.field_category';
+  String get fieldStatus => 'home_service_requests.field_status';
+  String get fieldRequested => 'home_service_requests.field_requested';
+  String get fieldAddress => 'home_service_requests.field_address';
+  String get fieldPreferredTime => 'home_service_requests.field_preferred_time';
+  String get fieldProblem => 'home_service_requests.field_problem';
+  String get noAddress => 'home_service_requests.no_address';
+  String get dashboardPendingTitle =>
+      'home_service_requests.dashboard_pending_title';
+  String get dashboardPendingSubtitle =>
+      'home_service_requests.dashboard_pending_subtitle';
+  String get customerFallback => 'home_service_requests.customer_fallback';
+  String get placedAtLabel => 'home_service_requests.placed_at_label';
+  String get statusPending => 'home_service_requests.status_pending';
+  String get statusTendering => 'home_service_requests.status_tendering';
+  String get statusQuoted => 'home_service_requests.status_quoted';
+  String get statusAwaitingCustomer =>
+      'home_service_requests.status_awaiting_customer';
+  String get statusAwaitingProvider =>
+      'home_service_requests.status_awaiting_provider';
+  String get statusAccepted => 'home_service_requests.status_accepted';
+  String get statusCompleted => 'home_service_requests.status_completed';
+  String get statusCancelled => 'home_service_requests.status_cancelled';
+  String get statusDeclined => 'home_service_requests.status_declined';
+  String get sendQuote => 'home_service_requests.send_quote';
+  String get quoteSheetTitle => 'home_service_requests.quote_sheet_title';
+  String get quoteClientPriceLabel => 'home_service_requests.quote_client_price_label';
+  String get quoteUseClientPrice => 'home_service_requests.quote_use_client_price';
+  String get quotePriceLabel => 'home_service_requests.quote_price_label';
+  String get quotePickVisitDate => 'home_service_requests.quote_pick_visit_date';
+  String get quoteSendToClient => 'home_service_requests.quote_send_to_client';
+  String get quoteSent => 'home_service_requests.quote_sent';
+  String get quoteInvalidPrice => 'home_service_requests.quote_invalid_price';
+  String get quoteVisitDateRequired => 'home_service_requests.quote_visit_date_required';
+  String get fieldClientPrice => 'home_service_requests.field_client_price';
+  String get fieldQuotedPrice => 'home_service_requests.field_quoted_price';
+  String get fieldVisitDate => 'home_service_requests.field_visit_date';
 }
 
 class _Notifications {
@@ -616,4 +671,20 @@ class _OrderHistory {
   String get loadError => 'order_history.load_error';
   String get selectDate => 'order_history.select_date';
   String get invalidDateRange => 'order_history.invalid_date_range';
+}
+
+class _FirebaseErrors {
+  const _FirebaseErrors();
+  String get unknown => 'firebase.errors.unknown';
+  String get signInAgain => 'firebase.errors.sign_in_again';
+  String get permissionDenied => 'firebase.errors.permission_denied';
+  String get network => 'firebase.errors.network';
+  String get tryAgain => 'firebase.errors.try_again';
+  String get serviceUnavailable => 'firebase.errors.service_unavailable';
+  String get actionNotAllowed => 'firebase.errors.action_not_allowed';
+  String get authInvalidCredentials => 'firebase.errors.auth_invalid_credentials';
+  String get authEmailInUse => 'firebase.errors.auth_email_in_use';
+  String get authTooManyRequests => 'firebase.errors.auth_too_many_requests';
+  String get authRequiresRecentLogin => 'firebase.errors.auth_requires_recent_login';
+  String get indexBuilding => 'firebase.errors.index_building';
 }

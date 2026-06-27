@@ -101,7 +101,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
       if (mounted) {
         AppSnack.show(
           context,
-          message: messageForOtpError(e),
+          message: otpOrFirebaseError(e),
           state: AppSnackState.error,
           icon: PhosphorIconsRegular.password,
         );
@@ -180,7 +180,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
       if (mounted) {
         AppSnack.show(
           context,
-          message: messageForOtpError(e),
+          message: otpOrFirebaseError(e),
           state: AppSnackState.error,
           icon: ToukhIcons.error,
         );

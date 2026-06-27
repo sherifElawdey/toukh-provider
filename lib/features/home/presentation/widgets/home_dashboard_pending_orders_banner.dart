@@ -9,9 +9,13 @@ class HomeDashboardPendingOrdersBanner extends StatelessWidget {
   const HomeDashboardPendingOrdersBanner({
     super.key,
     required this.pendingCount,
+    this.titleKey,
+    this.subtitleKey,
   });
 
   final int pendingCount;
+  final String? titleKey;
+  final String? subtitleKey;
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +56,7 @@ class HomeDashboardPendingOrdersBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     CustomText(
-                      AppStrings.Home.dashboardPendingOrdersTitle.tr,
+                      (titleKey ?? AppStrings.Home.dashboardPendingOrdersTitle).tr,
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w800,
@@ -61,7 +65,9 @@ class HomeDashboardPendingOrdersBanner extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     CustomText(
-                      AppStrings.Home.dashboardPendingOrdersSubtitle.tr,
+                      (subtitleKey ??
+                              AppStrings.Home.dashboardPendingOrdersSubtitle)
+                          .tr,
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.88),
                         fontSize: AppSizes.fontBody,

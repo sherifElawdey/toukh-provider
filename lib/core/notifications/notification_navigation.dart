@@ -25,11 +25,14 @@ Future<void> handleProviderNotificationTap(ToukhNotification notification) async
   }
 
   final orderId = notification.orderId ?? notification.payload['orderId']?.toString();
+  final requestId = notification.payload['requestId']?.toString();
   final route = notification.rootRoute.isNotEmpty
       ? notification.rootRoute
-      : (orderId != null && orderId.isNotEmpty
-          ? ToukhNotificationRoutes.providerOrderDetail(orderId)
-          : AppRoutes.home);
+      : (requestId != null && requestId.isNotEmpty
+          ? ToukhNotificationRoutes.providerHomeServiceRequestDetail(requestId)
+          : (orderId != null && orderId.isNotEmpty
+              ? ToukhNotificationRoutes.providerOrderDetail(orderId)
+              : AppRoutes.home));
 
   NotificationRouterHolder.router?.go(route);
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_item_card.dart';
@@ -60,7 +61,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
       if (mounted) {
         AppSnack.show(
           context,
-          message: '$e',
+          message: appFirebaseError(e),
           state: AppSnackState.error,
           icon: ToukhIcons.error,
         );
@@ -91,7 +92,7 @@ class _PermissionsScreenState extends State<PermissionsScreen>
       if (mounted) {
         AppSnack.show(
           context,
-          message: '$e',
+          message: appFirebaseError(e),
           state: AppSnackState.error,
           icon: ToukhIcons.error,
         );

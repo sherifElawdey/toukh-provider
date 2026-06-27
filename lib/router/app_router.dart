@@ -26,6 +26,8 @@ import 'package:toukh_provider/features/auth/presentation/verify_otp_screen.dart
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/home_service_request_detail_screen.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/home_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/menu_builder_screen.dart';
@@ -278,6 +280,17 @@ GoRouter createAppRouter({
         builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
+        path: '/home-service-request/:requestId',
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final requestId = state.pathParameters['requestId']!;
+          return BlocProvider.value(
+            value: getIt<ProviderHomeServiceRequestsCubit>(),
+            child: HomeServiceRequestDetailScreen(requestId: requestId),
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.wallet,
         parentNavigatorKey: providerRootNavigatorKey,
         builder: (context, state) {
@@ -443,6 +456,9 @@ GoRouter createAppRouter({
                         )..start(),
                       ),
                       BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
+                      BlocProvider.value(
+                        value: getIt<ProviderHomeServiceRequestsCubit>(),
+                      ),
                     ],
                     child: const HomeScreen(),
                   ),
@@ -456,8 +472,15 @@ GoRouter createAppRouter({
                 path: AppRoutes.orders,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: BlocProvider.value(
-                    value: getIt<ProviderOrdersCubit>(),
+                  child: MultiBlocProvider(
+                    providers: [
+                      BlocProvider.value(
+                        value: getIt<ProviderOrdersCubit>(),
+                      ),
+                      BlocProvider.value(
+                        value: getIt<ProviderHomeServiceRequestsCubit>(),
+                      ),
+                    ],
                     child: const OrdersScreen(),
                   ),
                 ),

@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
+import 'package:toukh_provider/core/util/city_key.dart';
 import 'package:toukh_provider/core/utils/phone_auth_helpers.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
@@ -111,7 +113,7 @@ class AuthCubit extends Cubit<AuthState> {
     } on FirebaseAuthException catch (e) {
       emit(AuthFailure(message: e.message ?? e.code));
     } catch (e) {
-      emit(AuthFailure(message: e.toString()));
+      emit(AuthFailure(message: appFirebaseError(e)));
     }
   }
 
@@ -150,6 +152,13 @@ class AuthCubit extends Cubit<AuthState> {
       final phoneDigits = displayDigits(data.phone);
       final now = DateTime.now();
       final email = syntheticEmailFromPhone(data.phone);
+      final city = data.city?.trim().isNotEmpty == true
+          ? data.city!.trim()
+          : await resolveUserCityKey(
+              lat: data.lat,
+              lng: data.lng,
+              formattedAddress: data.formattedAddress,
+            );
 
       final profile = ProviderProfile(
         uid: user.uid,
@@ -170,6 +179,7 @@ class AuthCubit extends Cubit<AuthState> {
         lat: data.lat,
         lng: data.lng,
         address: data.formattedAddress,
+        city: city,
         workingHours: data.workingHours,
         deliveryConfig: data.deliveryConfig,
         avgPrepMinutes: data.avgPrepMinutes,
@@ -194,7 +204,7 @@ class AuthCubit extends Cubit<AuthState> {
       for (final u in uploaded) {
         await _media.deleteImage(u);
       }
-      emit(AuthFailure(message: e.toString()));
+      emit(AuthFailure(message: appFirebaseError(e)));
     }
   }
 
@@ -226,7 +236,7 @@ class AuthCubit extends Cubit<AuthState> {
     } on FirebaseAuthException catch (e) {
       emit(AuthFailure(message: e.message ?? e.code));
     } catch (e) {
-      emit(AuthFailure(message: e.toString()));
+      emit(AuthFailure(message: appFirebaseError(e)));
     }
   }
 
@@ -251,7 +261,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       emit(Authenticated(user: user, profile: updated));
     } catch (e) {
-      emit(AuthFailure(message: e.toString()));
+      emit(AuthFailure(message: appFirebaseError(e)));
     }
   }
 
@@ -285,7 +295,7 @@ class AuthCubit extends Cubit<AuthState> {
         emit(Authenticated(user: user, profile: profile));
       }
     } catch (e) {
-      emit(AuthFailure(message: e.toString()));
+      emit(AuthFailure(message: appFirebaseError(e)));
     }
   }
 
@@ -341,11 +351,23 @@ class AuthCubit extends Cubit<AuthState> {
     if (current is! Authenticated) {
       throw StateError('Not signed in.');
     }
-    final updated = ProviderProfileDraftMapper.applyDraft(
+    var updated = ProviderProfileDraftMapper.applyDraft(
       current.profile,
       draft,
       field,
     );
+    if (field == ReviewField.location &&
+        draft.lat != null &&
+        draft.lng != null) {
+      final city = draft.city?.trim().isNotEmpty == true
+          ? draft.city!.trim()
+          : await resolveUserCityKey(
+              lat: draft.lat!,
+              lng: draft.lng!,
+              formattedAddress: draft.formattedAddress,
+            );
+      updated = updated.copyWith(city: city);
+    }
     await _profileRepository.upsertProfile(updated);
     emit(Authenticated(user: current.user, profile: updated));
   }

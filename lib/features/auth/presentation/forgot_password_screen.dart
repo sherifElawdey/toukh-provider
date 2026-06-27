@@ -77,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       if (!mounted) return;
       AppSnack.show(
         context,
-        message: messageForOtpError(e),
+        message: otpOrFirebaseError(e),
         state: AppSnackState.error,
         icon: ToukhIcons.error,
       );

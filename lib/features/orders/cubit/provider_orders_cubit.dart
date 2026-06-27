@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
@@ -58,7 +59,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
       onError: (Object e) {
         emit(state.copyWith(
           loading: false,
-          errorMessage: _ordersStreamErrorMessage(e),
+          errorMessage: appFirebaseError(e),
         ));
       },
     );
@@ -134,7 +135,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
     } catch (e) {
       emit(state.copyWith(
         actionInFlightId: null,
-        errorMessage: e.toString(),
+        errorMessage: appFirebaseError(e),
       ));
       return null;
     }
@@ -180,15 +181,6 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
     return null;
   }
 
-  static String _ordersStreamErrorMessage(Object e) {
-    final text = e.toString();
-    if (text.contains('FAILED_PRECONDITION') ||
-        text.contains('requires an index')) {
-      return 'Orders are loading — Firestore index is building. Try again shortly.';
-    }
-    return text;
-  }
-
   Future<void> _runAction(String orderId, Future<void> Function() fn) async {
     try {
       emit(state.copyWith(actionInFlightId: orderId, clearError: true));
@@ -197,7 +189,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
     } catch (e) {
       emit(state.copyWith(
         clearActionInFlight: true,
-        errorMessage: e.toString(),
+        errorMessage: appFirebaseError(e),
       ));
     }
   }

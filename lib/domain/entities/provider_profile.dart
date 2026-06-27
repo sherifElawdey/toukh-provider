@@ -26,6 +26,7 @@ class ProviderProfile extends Equatable {
     this.lat,
     this.lng,
     this.address,
+    this.city,
     this.workingHours = const {},
     this.deliveryConfig,
     /// Prep time for restaurants (minutes), independent of delivery toggle.
@@ -61,6 +62,7 @@ class ProviderProfile extends Equatable {
   final double? lat;
   final double? lng;
   final String? address;
+  final String? city;
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
@@ -104,6 +106,7 @@ class ProviderProfile extends Equatable {
     double? lat,
     double? lng,
     String? address,
+    String? city,
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
     int? avgPrepMinutes,
@@ -136,6 +139,7 @@ class ProviderProfile extends Equatable {
       lat: lat ?? this.lat,
       lng: lng ?? this.lng,
       address: address ?? this.address,
+      city: city ?? this.city,
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
@@ -175,6 +179,7 @@ class ProviderProfile extends Equatable {
       if (lat != null) 'lat': lat,
       if (lng != null) 'lng': lng,
       if (address != null) 'address': address,
+      if (city != null && city!.trim().isNotEmpty) 'city': city,
       'workingHours': wh,
       if (deliveryConfig != null) 'deliveryConfig': deliveryConfig!.toFirestore(),
       if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
@@ -242,6 +247,9 @@ class ProviderProfile extends Equatable {
       lat: (data['lat'] as num?)?.toDouble(),
       lng: (data['lng'] as num?)?.toDouble(),
       address: data['formattedAddress'] as String? ?? data['address'] as String?,
+      city: (data['city'] as String?)?.trim().isNotEmpty == true
+          ? (data['city'] as String).trim()
+          : null,
       workingHours: wh,
       deliveryConfig: DeliveryConfig.fromFirestore(
         data['deliveryConfig'] as Map<String, dynamic>?,
@@ -298,6 +306,7 @@ class ProviderProfile extends Equatable {
         lat,
         lng,
         address,
+        city,
         workingHours,
         deliveryConfig,
         avgPrepMinutes,

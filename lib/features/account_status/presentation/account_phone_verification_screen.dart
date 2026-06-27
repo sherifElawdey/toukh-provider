@@ -58,7 +58,7 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
       if (context.mounted) {
         AppSnack.show(
           context,
-          message: messageForOtpError(e),
+          message: otpOrFirebaseError(e),
           state: AppSnackState.error,
           icon: ToukhIcons.error,
         );

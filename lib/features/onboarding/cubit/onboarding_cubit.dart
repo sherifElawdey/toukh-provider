@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -90,7 +91,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     } catch (e, st) {
       debugPrint('OnboardingCubit.refresh error: $e\n$st');
       emit(const OnboardingState(gate: OnboardingGate.needsPermissions));
-      return e.toString();
+      return appFirebaseError(e);
     }
   }
 

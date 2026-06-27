@@ -10,7 +10,9 @@ Future<void> configureProviderPush() async {
       firestore: FirebaseFirestore.instance,
       onTap: handleProviderNotificationTap,
       onForegroundNotification: (notification) {
-        if (notification.type == ToukhOrderNotificationTypes.orderPlaced) {
+        if (notification.type == ToukhOrderNotificationTypes.orderPlaced ||
+            notification.type ==
+                ToukhHomeServiceNotificationTypes.homeServiceRequestPlaced) {
           ProviderOrderAlertController.instance.show(notification);
         }
       },

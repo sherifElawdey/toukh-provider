@@ -151,7 +151,8 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
           child: Stack(
             alignment: Alignment.center,
             children: [
-              GoogleMap(
+              ToukhGoogleMap(
+                debugScreenName: 'review_edit_location',
                 initialCameraPosition: CameraPosition(
                   target: _target,
                   zoom: 14,
@@ -170,7 +171,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: 32),
-                child: Icon(ToukhIcons.location, size: 48, color: AppColors.error),
+                child: Icon(ToukhIcons.location, size: 48, color: ToukhMapColors.pickup),
               ),
               if (_locating)
                 const Align(

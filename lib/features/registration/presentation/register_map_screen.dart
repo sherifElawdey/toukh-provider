@@ -4,6 +4,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:toukh_provider/core/util/city_key.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
@@ -127,13 +128,21 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     }
   }
 
-  void _continue() {
+  Future<void> _continue() async {
+    final formattedAddress = _address.isEmpty
+        ? '${_target.latitude},${_target.longitude}'
+        : _address;
+    final city = await resolveUserCityKey(
+      lat: _target.latitude,
+      lng: _target.longitude,
+      formattedAddress: formattedAddress,
+    );
+    if (!mounted) return;
     context.read<RegistrationCubit>().setLocation(
           lat: _target.latitude,
           lng: _target.longitude,
-          formattedAddress: _address.isEmpty
-              ? '${_target.latitude},${_target.longitude}'
-              : _address,
+          formattedAddress: formattedAddress,
+          city: city,
         );
     context.push(AppRoutes.registerHours);
   }
@@ -153,7 +162,8 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
         fit: StackFit.expand,
         children: [
           Positioned.fill(
-            child: GoogleMap(
+            child: ToukhGoogleMap(
+              debugScreenName: 'register_map',
               initialCameraPosition: CameraPosition(
                 target: _target,
                 zoom: 14,
@@ -175,7 +185,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           Center(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 40),
-              child: Icon(ToukhIcons.location, size: 48, color: AppColors.error),
+              child: Icon(ToukhIcons.location, size: 48, color: ToukhMapColors.pickup),
             ),
           ),
           Positioned(

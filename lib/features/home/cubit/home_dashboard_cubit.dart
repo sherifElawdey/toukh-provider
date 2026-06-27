@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/domain/entities/dashboard_firestore_payload.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
@@ -86,7 +87,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
           emit(
             state.copyWith(
               loading: false,
-              errorMessage: e.toString(),
+              errorMessage: appFirebaseError(e),
             ),
           );
         },

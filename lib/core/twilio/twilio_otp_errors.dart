@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 
 /// Maps Twilio / OTP repository errors to localized snack messages.
@@ -43,4 +44,11 @@ String messageForOtpError(Object error) {
   }
 
   return AppStrings.Auth.otpSendFailed.tr;
+}
+
+/// OTP-specific message when recognized; otherwise [fallback] or Firebase-friendly text.
+String otpOrFirebaseError(Object error, {String? fallback}) {
+  final otp = messageForOtpError(error);
+  if (otp != AppStrings.Auth.otpSendFailed.tr) return otp;
+  return fallback ?? appFirebaseError(error);
 }

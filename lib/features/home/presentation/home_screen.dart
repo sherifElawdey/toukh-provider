@@ -9,6 +9,8 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/domain/entities/provider_master_order_extensions.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_sections.dart';
@@ -174,45 +176,82 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(height: AppSizes.spaceXl),
-                      BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
-                        builder: (context, ordersState) {
-                          final uid = ordersState.providerUid;
-                          final pendingCount = uid == null
-                              ? 0
-                              : ordersState.orders
-                                  .where(
-                                    (m) =>
-                                        m.hasProviderSlice(uid) &&
-                                        (m.sliceFor(uid)?.isIncoming ?? false),
-                                  )
-                                  .length;
-                          return HomeDashboardPendingOrdersBanner(
-                            pendingCount: pendingCount,
+                      BlocBuilder<AuthCubit, AuthState>(
+                        builder: (context, auth) {
+                          if (auth is Authenticated &&
+                              auth.profile.serviceType ==
+                                  ServiceType.homeService) {
+                            return BlocBuilder<
+                                ProviderHomeServiceRequestsCubit,
+                                ProviderHomeServiceRequestsState>(
+                              builder: (context, hsState) {
+                                return HomeDashboardPendingOrdersBanner(
+                                  pendingCount: hsState.pendingIncomingCount,
+                                  titleKey: AppStrings
+                                      .HomeServiceRequests.dashboardPendingTitle,
+                                  subtitleKey: AppStrings.HomeServiceRequests
+                                      .dashboardPendingSubtitle,
+                                );
+                              },
+                            );
+                          }
+                          return BlocBuilder<ProviderOrdersCubit,
+                              ProviderOrdersState>(
+                            builder: (context, ordersState) {
+                              final uid = ordersState.providerUid;
+                              final pendingCount = uid == null
+                                  ? 0
+                                  : ordersState.orders
+                                      .where(
+                                        (m) =>
+                                            m.hasProviderSlice(uid) &&
+                                            (m.sliceFor(uid)?.isIncoming ??
+                                                false),
+                                      )
+                                      .length;
+                              return HomeDashboardPendingOrdersBanner(
+                                pendingCount: pendingCount,
+                              );
+                            },
                           );
                         },
                       ),
-                      BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
-                        builder: (context, ordersState) {
-                          final uid = ordersState.providerUid;
-                          final inProgress = uid == null
-                              ? <ProviderOrderDashboard>[]
-                              : ProviderMasterOrderTabFilters.homeInProgress(
-                                  ordersState.orders,
-                                  uid,
-                                )
-                                  .map((r) => r.toDashboard())
-                                  .toList();
-                          return Column(
-                            children: [
-                              if (uid != null &&
-                                  ordersState.orders.any(
-                                    (m) =>
-                                        m.hasProviderSlice(uid) &&
-                                        (m.sliceFor(uid)?.isIncoming ?? false),
-                                  ))
-                                const SizedBox(height: AppSizes.spaceXl),
-                              HomeDashboardInProgressStrip(orders: inProgress),
-                            ],
+                      BlocBuilder<AuthCubit, AuthState>(
+                        builder: (context, auth) {
+                          if (auth is Authenticated &&
+                              auth.profile.serviceType ==
+                                  ServiceType.homeService) {
+                            return const SizedBox.shrink();
+                          }
+                          return BlocBuilder<ProviderOrdersCubit,
+                              ProviderOrdersState>(
+                            builder: (context, ordersState) {
+                              final uid = ordersState.providerUid;
+                              final inProgress = uid == null
+                                  ? <ProviderOrderDashboard>[]
+                                  : ProviderMasterOrderTabFilters
+                                      .homeInProgress(
+                                      ordersState.orders,
+                                      uid,
+                                    )
+                                      .map((r) => r.toDashboard())
+                                      .toList();
+                              return Column(
+                                children: [
+                                  if (uid != null &&
+                                      ordersState.orders.any(
+                                        (m) =>
+                                            m.hasProviderSlice(uid) &&
+                                            (m.sliceFor(uid)?.isIncoming ??
+                                                false),
+                                      ))
+                                    const SizedBox(height: AppSizes.spaceXl),
+                                  HomeDashboardInProgressStrip(
+                                    orders: inProgress,
+                                  ),
+                                ],
+                              );
+                            },
                           );
                         },
                       ),

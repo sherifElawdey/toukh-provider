@@ -21,6 +21,7 @@ class RegistrationSubmitData {
     required this.lat,
     required this.lng,
     required this.formattedAddress,
+    this.city,
     required this.workingHours,
     this.deliveryConfig,
     this.avgPrepMinutes,
@@ -42,6 +43,7 @@ class RegistrationSubmitData {
   final double lat;
   final double lng;
   final String formattedAddress;
+  final String? city;
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;

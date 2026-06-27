@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/id_photo_picker_card.dart';
@@ -63,7 +64,7 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
       if (!mounted) return null;
       AppSnack.show(
         context,
-        message: '$e',
+        message: appFirebaseError(e),
         state: AppSnackState.error,
         icon: PhosphorIconsRegular.imageBroken,
       );

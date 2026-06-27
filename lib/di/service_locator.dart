@@ -21,6 +21,8 @@ import 'package:toukh_provider/data/repositories/firestore_provider_profile_repo
 import 'package:toukh_provider/data/repositories/firestore_provider_drivers_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_reviews_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_wallet_repository.dart';
+import 'package:toukh_provider/data/services/customer_home_service_quote_notify_service.dart';
+import 'package:toukh_provider/data/repositories/firestore_provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
 import 'package:toukh_provider/data/services/otp_service_stub.dart';
@@ -32,6 +34,7 @@ import 'package:toukh_provider/domain/repositories/home_service_categories_repos
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_order_history_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/domain/services/driver_matching_service.dart';
@@ -45,6 +48,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/notifications/cubit/notifications_cubit.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
 
@@ -109,6 +113,11 @@ Future<void> configureDependencies() async {
       getIt<FirebaseFirestore>(),
       customerNotify: getIt<CustomerOrderNotifyService>(),
       functions: getIt<FirebaseFunctions>(),
+    ),
+  );
+  getIt.registerLazySingleton<ProviderHomeServiceRequestsRepository>(
+    () => FirestoreProviderHomeServiceRequestsRepository(
+      getIt<FirebaseFirestore>(),
     ),
   );
   getIt.registerLazySingleton<ProviderOrdersRepository>(
@@ -176,6 +185,17 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<AppVersionGateService>(
     AppVersionGateService.new,
+  );
+
+  getIt.registerLazySingleton<ProviderHomeServiceRequestsCubit>(
+    () => ProviderHomeServiceRequestsCubit(
+      authCubit: getIt<AuthCubit>(),
+      requestsRepository: getIt<ProviderHomeServiceRequestsRepository>(),
+    )..start(),
+  );
+
+  getIt.registerLazySingleton<CustomerHomeServiceQuoteNotifyService>(
+    () => CustomerHomeServiceQuoteNotifyService(getIt<FirebaseFirestore>()),
   );
 
   getIt.registerLazySingleton<ProviderOrdersCubit>(

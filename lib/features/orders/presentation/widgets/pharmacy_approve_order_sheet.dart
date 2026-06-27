@@ -94,23 +94,23 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
     }
 
     setState(() => _submitting = true);
-    try {
-      await context.read<ProviderOrdersCubit>().approvePharmacyRequest(
-            orderId: widget.row.id,
-            pharmacistNote: _note.text.trim(),
-            approvedItemIds: _approvedIds.toList(),
-            quotedSubtotalEgp: subtotal,
-            quotedDeliveryFeeEgp: _deliveryFee,
-          );
-      if (!mounted) return;
-      Navigator.pop(context, true);
-    } catch (e, st) {
-      debugPrint('approvePharmacyRequest failed: $e\n$st');
-      if (!mounted) return;
-      _showSnack(AppStrings.Orders.pharmacyQuoteFailed.tr);
-    } finally {
-      if (mounted) setState(() => _submitting = false);
+    final cubit = context.read<ProviderOrdersCubit>();
+    await cubit.approvePharmacyRequest(
+          orderId: widget.row.id,
+          pharmacistNote: _note.text.trim(),
+          approvedItemIds: _approvedIds.toList(),
+          quotedSubtotalEgp: subtotal,
+          quotedDeliveryFeeEgp: _deliveryFee,
+        );
+    if (!mounted) return;
+    final err = cubit.state.errorMessage;
+    if (err != null) {
+      _showSnack(err);
+      setState(() => _submitting = false);
+      return;
     }
+    Navigator.pop(context, true);
+    setState(() => _submitting = false);
   }
 
   @override

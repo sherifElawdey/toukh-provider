@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
 import 'package:toukh_provider/di/service_locator.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -44,7 +46,17 @@ class _OrderAlertBanner extends StatelessWidget {
   String get _orderId =>
       notification.orderId ?? notification.payload['orderId']?.toString() ?? '';
 
+  String get _requestId => notification.payload['requestId']?.toString() ?? '';
+
+  bool get _isHomeServiceRequest =>
+      notification.type ==
+          ToukhHomeServiceNotificationTypes.homeServiceRequestPlaced ||
+      _requestId.isNotEmpty;
+
   String _subtitle() {
+    if (_isHomeServiceRequest) {
+      return notification.description;
+    }
     final payload = notification.payload;
     final items = payload['items'];
     if (items is List && items.isNotEmpty) {
@@ -71,6 +83,8 @@ class _OrderAlertBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final orderId = _orderId;
+    final requestId = _requestId;
+    final isHomeService = _isHomeServiceRequest;
     final imageUrl = notification.imageUrl;
 
     return Material(
@@ -91,11 +105,12 @@ class _OrderAlertBanner extends StatelessWidget {
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _placeholderIcon(scheme),
+                    errorBuilder: (_, __, ___) =>
+                        _placeholderIcon(scheme, isHomeService: isHomeService),
                   ),
                 )
               else
-                _placeholderIcon(scheme),
+                _placeholderIcon(scheme, isHomeService: isHomeService),
               const SizedBox(width: 10),
               Expanded(
                 child: Column(
@@ -125,23 +140,39 @@ class _OrderAlertBanner extends StatelessWidget {
                       children: [
                         Expanded(
                           child: FilledButton(
-                            onPressed: orderId.isEmpty
+                            onPressed: (isHomeService
+                                    ? requestId.isEmpty
+                                    : orderId.isEmpty)
                                 ? null
                                 : () async {
-                                    final cubit =
-                                        getIt<ProviderOrdersCubit>();
-                                    final row = cubit.orderById(orderId);
-                                    final pendingPharmacy = row != null &&
-                                        row.master.isPharmacyRequest &&
-                                        row.slice.providerState ==
-                                            ProviderSubState.pending.wireValue;
-                                    if (pendingPharmacy) {
-                                      await showPharmacyApproveOrderSheet(
-                                        context,
-                                        row: row,
-                                      );
+                                    if (isHomeService) {
+                                      final cubit = getIt<
+                                          ProviderHomeServiceRequestsCubit>();
+                                      final req =
+                                          cubit.requestById(requestId);
+                                      if (req != null && req.isPending) {
+                                        await showHomeServiceSubmitQuoteSheet(
+                                          context,
+                                          request: req,
+                                        );
+                                      }
                                     } else {
-                                      await cubit.approve(orderId);
+                                      final cubit =
+                                          getIt<ProviderOrdersCubit>();
+                                      final row = cubit.orderById(orderId);
+                                      final pendingPharmacy = row != null &&
+                                          row.master.isPharmacyRequest &&
+                                          row.slice.providerState ==
+                                              ProviderSubState
+                                                  .pending.wireValue;
+                                      if (pendingPharmacy) {
+                                        await showPharmacyApproveOrderSheet(
+                                          context,
+                                          row: row,
+                                        );
+                                      } else {
+                                        await cubit.approve(orderId);
+                                      }
                                     }
                                     ProviderOrderAlertController.instance
                                         .dismiss();
@@ -163,11 +194,19 @@ class _OrderAlertBanner extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: orderId.isEmpty
+                            onPressed: (isHomeService
+                                    ? requestId.isEmpty
+                                    : orderId.isEmpty)
                                 ? null
                                 : () async {
-                                    await getIt<ProviderOrdersCubit>()
-                                        .cancel(orderId);
+                                    if (isHomeService) {
+                                      await getIt<
+                                              ProviderHomeServiceRequestsCubit>()
+                                          .decline(requestId);
+                                    } else {
+                                      await getIt<ProviderOrdersCubit>()
+                                          .cancel(orderId);
+                                    }
                                     ProviderOrderAlertController.instance
                                         .dismiss();
                                   },
@@ -202,7 +241,7 @@ class _OrderAlertBanner extends StatelessWidget {
     );
   }
 
-  Widget _placeholderIcon(ColorScheme scheme) {
+  Widget _placeholderIcon(ColorScheme scheme, {required bool isHomeService}) {
     return Container(
       width: 48,
       height: 48,
@@ -210,7 +249,10 @@ class _OrderAlertBanner extends StatelessWidget {
         color: AppColors.appColor.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(10),
       ),
-      child: Icon(ToukhIcons.orders, color: AppColors.appColor),
+      child: Icon(
+        isHomeService ? ToukhIcons.home : ToukhIcons.orders,
+        color: AppColors.appColor,
+      ),
     );
   }
 }

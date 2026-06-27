@@ -1,14 +1,33 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
+import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/home_service_requests_screen.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/orders_tab_view.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
 
 class OrdersScreen extends StatelessWidget {
   const OrdersScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, auth) {
+        if (auth is Authenticated &&
+            auth.profile.serviceType == ServiceType.homeService) {
+          return const HomeServiceRequestsScreen();
+        }
+        return const _MasterOrdersScreen();
+      },
+    );
+  }
+}
+
+class _MasterOrdersScreen extends StatelessWidget {
+  const _MasterOrdersScreen();
 
   @override
   Widget build(BuildContext context) {

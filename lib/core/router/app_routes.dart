@@ -37,6 +37,9 @@ abstract final class AppRoutes {
   static const orders = '/orders';
   static const ordersHistory = '/orders-history';
 
+  static String homeServiceRequestDetailPath(String requestId) =>
+      '/home-service-request/$requestId';
+
   static String orderDetailPath(String orderId) => '$orders/$orderId';
   static const menu = '/menu';
   static const settings = '/settings';
@@ -76,7 +79,8 @@ abstract final class AppRoutes {
         matchedLocation == walletTransactions ||
         matchedLocation == reviews ||
         matchedLocation == manageDrivers ||
-        matchedLocation == ordersHistory) {
+        matchedLocation == ordersHistory ||
+        matchedLocation.startsWith('/home-service-request/')) {
       return true;
     }
     for (final p in shellPaths) {
