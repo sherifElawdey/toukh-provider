@@ -16,4 +16,14 @@ abstract class ProviderHomeServiceRequestsRepository {
     required String requestId,
     required String providerId,
   });
+
+  Future<void> markOnMyWay({
+    required String requestId,
+    required String providerId,
+  });
+
+  Future<void> markCompleted({
+    required String requestId,
+    required String providerId,
+  });
 }

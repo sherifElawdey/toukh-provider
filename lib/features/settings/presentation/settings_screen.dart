@@ -103,6 +103,20 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => context.push(AppRoutes.reviews),
                 ),
                 if (auth is Authenticated &&
+                    auth.profile.serviceType == ServiceType.homeService)
+                  SettingsTile(
+                    icon: ToukhIcons.gallery,
+                    titleKey: AppStrings.Settings.gallery,
+                    trailing: Icon(
+                      ToukhIcons.chevronRight,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.45),
+                    ),
+                    onTap: () => context.push(AppRoutes.settingsGallery),
+                  ),
+                if (auth is Authenticated &&
                     auth.profile.serviceType == ServiceType.restaurant)
                   SettingsTile(
                     icon: ToukhIcons.delivery,

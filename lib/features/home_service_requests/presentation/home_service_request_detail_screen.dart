@@ -5,10 +5,15 @@ import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
+import 'package:toukh_provider/data/services/customer_home_service_on_my_way_notify_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_contact_customer.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_client_details_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -24,7 +29,12 @@ class HomeServiceRequestDetailScreen extends StatelessWidget {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, auth) {
         if (auth is! Authenticated) {
-          return const Scaffold(
+          return  Scaffold(
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              title: CustomText(AppStrings.HomeServiceRequests.detailTitle.tr),
+            ),
             body: Center(child: CustomText('Sign in required')),
           );
         }
@@ -101,6 +111,11 @@ class _HomeServiceRequestDetailBodyState
             appBar: AppBar(
               backgroundColor: _pageBg,
               title: CustomText(AppStrings.HomeServiceRequests.detailTitle.tr),
+              centerTitle: true,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ),
             body: Center(
               child: CustomText(AppStrings.HomeServiceRequests.notFound.tr),
@@ -108,8 +123,25 @@ class _HomeServiceRequestDetailBodyState
           );
         }
 
+        final requestsState =
+            context.watch<ProviderHomeServiceRequestsCubit>().state;
+        final activeVisit = requestsState.activeOnMyWayRequest;
+        final hasOtherActiveOnMyWay =
+            activeVisit != null && activeVisit.id != request.id;
         final canRespond = request.isPending;
+        final canMarkOnMyWay =
+            request.canMarkOnMyWay && !hasOtherActiveOnMyWay;
+        final isBlockedOnMyWay =
+            request.canMarkOnMyWay && hasOtherActiveOnMyWay;
+        final canFinishVisit = request.isOnTheWay;
+        final showContactCustomer = request.isOverdueAccepted;
+        final showBottomBar = canRespond ||
+            canMarkOnMyWay ||
+            isBlockedOnMyWay ||
+            canFinishVisit ||
+            showContactCustomer;
         final created = request.createdAt;
+        final statusLabel = _statusLabel(request.statusNormalized);
 
         return Scaffold(
           backgroundColor: _pageBg,
@@ -118,8 +150,12 @@ class _HomeServiceRequestDetailBodyState
             backgroundColor: _pageBg,
             title: CustomText(AppStrings.HomeServiceRequests.detailTitle.tr),
             centerTitle: true,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
           ),
-          bottomNavigationBar: canRespond
+          bottomNavigationBar: showBottomBar
               ? Material(
                   elevation: 8,
                   child: SafeArea(
@@ -131,53 +167,107 @@ class _HomeServiceRequestDetailBodyState
                         AppSizes.spaceXl,
                         AppSizes.spaceMd,
                       ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: AppOutlinedButton(
-                              text: AppStrings.HomeServiceRequests.decline,
-                              onTap: _busy
-                                  ? null
-                                  : () => _respond(
-                                        () => context
-                                            .read<
-                                                ProviderHomeServiceRequestsCubit>()
-                                            .decline(request.id),
-                                      ),
-                              status: _busy
-                                  ? AppButtonStatus.disabled
-                                  : AppButtonStatus.enabled,
-                            ),
-                          ),
-                          const SizedBox(width: AppSizes.spaceMd),
-                          Expanded(
-                            child: AppFilledButton(
-                              text: AppStrings.HomeServiceRequests.sendQuote,
-                              onTap: _busy
-                                  ? null
-                                  : () async {
-                                      final sent =
-                                          await showHomeServiceSubmitQuoteSheet(
-                                        context,
-                                        request: request,
-                                      );
-                                      if (sent == true && mounted) {
-                                        AppSnack.show(
-                                          context,
-                                          message: AppStrings
-                                              .HomeServiceRequests.updated.tr,
-                                          state: AppSnackState.success,
-                                          icon: ToukhIcons.success,
-                                        );
-                                      }
-                                    },
-                              status: _busy
-                                  ? AppButtonStatus.disabled
-                                  : AppButtonStatus.enabled,
-                            ),
-                          ),
-                        ],
-                      ),
+                      child: canRespond
+                          ? Row(
+                              children: [
+                                Expanded(
+                                  child: AppOutlinedButton(
+                                    text: AppStrings.HomeServiceRequests.decline,
+                                    onTap: _busy
+                                        ? null
+                                        : () => _respond(
+                                              () => context
+                                                  .read<
+                                                      ProviderHomeServiceRequestsCubit>()
+                                                  .decline(request.id),
+                                            ),
+                                    status: _busy
+                                        ? AppButtonStatus.disabled
+                                        : AppButtonStatus.enabled,
+                                  ),
+                                ),
+                                const SizedBox(width: AppSizes.spaceMd),
+                                Expanded(
+                                  child: AppFilledButton(
+                                    text: AppStrings.HomeServiceRequests.sendQuote,
+                                    onTap: _busy
+                                        ? null
+                                        : () async {
+                                            final sent =
+                                                await showHomeServiceSubmitQuoteSheet(
+                                              context,
+                                              request: request,
+                                            );
+                                            if (sent == true && mounted) {
+                                              AppSnack.show(
+                                                context,
+                                                message: AppStrings
+                                                    .HomeServiceRequests.updated.tr,
+                                                state: AppSnackState.success,
+                                                icon: ToukhIcons.success,
+                                              );
+                                            }
+                                          },
+                                    status: _busy
+                                        ? AppButtonStatus.disabled
+                                        : AppButtonStatus.enabled,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : canFinishVisit
+                              ? AppFilledButton(
+                                  text: AppStrings.HomeServiceRequests.finishVisit,
+                                  onTap: _busy
+                                      ? null
+                                      : () => _respond(
+                                            () => context
+                                                .read<
+                                                    ProviderHomeServiceRequestsCubit>()
+                                                .markCompleted(request.id),
+                                          ),
+                                  status: _busy
+                                      ? AppButtonStatus.loading
+                                      : AppButtonStatus.enabled,
+                                )
+                              : request.canMarkOnMyWay
+                                  ? AppFilledButton(
+                                      text: AppStrings.HomeServiceRequests.onMyWay,
+                                      onTap: _busy
+                                          ? null
+                                          : isBlockedOnMyWay
+                                              ? () => _showOnMyWayBlocked(
+                                                    context,
+                                                    activeVisit,
+                                                  )
+                                              : () => _respond(() async {
+                                                    await context
+                                                        .read<
+                                                            ProviderHomeServiceRequestsCubit>()
+                                                        .markOnMyWay(request.id);
+                                                    await getIt<
+                                                            CustomerHomeServiceOnMyWayNotifyService>()
+                                                        .notifyOnMyWay(
+                                                      requestId: request.id,
+                                                    );
+                                                  }),
+                                      status: _busy
+                                          ? AppButtonStatus.loading
+                                          : AppButtonStatus.enabled,
+                                    )
+                                  : AppOutlinedButton(
+                                      text: AppStrings
+                                          .HomeServiceRequests.contactCustomer,
+                                      onTap: _busy
+                                          ? null
+                                          : () => contactHomeServiceCustomer(
+                                                context,
+                                                request,
+                                              ),
+                                      status: _busy
+                                          ? AppButtonStatus.disabled
+                                          : AppButtonStatus.enabled,
+                                    ),
                     ),
                   ),
                 )
@@ -190,6 +280,51 @@ class _HomeServiceRequestDetailBodyState
               120,
             ),
             children: [
+              if (request.isOverdueAccepted) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(AppSizes.spaceMd),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .errorContainer
+                        .withValues(alpha: 0.45),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.error,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            ToukhIcons.error,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(width: AppSizes.spaceSm),
+                          Expanded(
+                            child: HomeServiceVisitBadge(request: request),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppSizes.spaceSm),
+                      CustomText(
+                        AppStrings.HomeServiceRequests.visitOverdueBanner.tr,
+                        style: TextStyle(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onErrorContainer
+                              .withValues(alpha: 0.9),
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: AppSizes.spaceMd),
+              ],
               _InfoCard(
                 children: [
                   _DetailRow(
@@ -198,7 +333,7 @@ class _HomeServiceRequestDetailBodyState
                   ),
                   _DetailRow(
                     label: AppStrings.HomeServiceRequests.fieldStatus.tr,
-                    value: request.status,
+                    value: statusLabel,
                     emphasized: true,
                   ),
                   if (request.clientPriceEgp != null)
@@ -226,36 +361,26 @@ class _HomeServiceRequestDetailBodyState
                           .add_jm()
                           .format(created.toLocal()),
                     ),
-                ],
-              ),
-              const SizedBox(height: AppSizes.spaceMd),
-              _InfoCard(
-                children: [
-                  _DetailRow(
-                    label: AppStrings.HomeServiceRequests.fieldAddress.tr,
-                    value: request.addressTitle?.trim().isNotEmpty == true
-                        ? request.addressTitle!
-                        : AppStrings.HomeServiceRequests.noAddress.tr,
-                  ),
-                  if (request.addressFormatted?.trim().isNotEmpty == true)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: CustomText(
-                        request.addressFormatted!,
-                        style: t.bodyMedium?.copyWith(
-                          color: Colors.blueGrey.shade600,
-                          height: 1.35,
-                        ),
-                      ),
-                    ),
-                  if (request.preferredTimeLabel.isNotEmpty) ...[
-                    const SizedBox(height: AppSizes.spaceMd),
+                  if (request.preferredTimeLabel.isNotEmpty)
                     _DetailRow(
                       label: AppStrings.HomeServiceRequests.fieldPreferredTime.tr,
                       value: request.preferredTimeLabel,
                     ),
-                  ],
                 ],
+              ),
+              const SizedBox(height: AppSizes.spaceMd),
+              ClientDetailsCard(
+                data: ClientDetailsViewData(
+                  name: request.customerName?.trim().isNotEmpty == true
+                      ? request.customerName!.trim()
+                      : AppStrings.HomeServiceRequests.customerFallback.tr,
+                  phone: request.customerPhone,
+                  photoUrl: request.customerPhotoUrl,
+                  addressTitle: request.addressTitle,
+                  addressFormatted: request.addressFormatted,
+                  lat: request.addressLat ?? 0,
+                  lng: request.addressLng ?? 0,
+                ),
               ),
               if (request.note?.isNotEmpty == true) ...[
                 const SizedBox(height: AppSizes.spaceMd),
@@ -299,6 +424,43 @@ class _HomeServiceRequestDetailBodyState
         );
       },
     );
+  }
+
+  void _showOnMyWayBlocked(
+    BuildContext context,
+    ProviderHomeServiceRequest? activeVisit,
+  ) {
+    final name = activeVisit?.customerName?.trim();
+    final message = name != null && name.isNotEmpty
+        ? AppStrings.HomeServiceRequests.onMyWayBlockedNamed.trParams({
+            'name': name,
+          })
+        : AppStrings.HomeServiceRequests.onMyWayBlocked.tr;
+    AppSnack.show(
+      context,
+      message: message,
+      state: AppSnackState.error,
+      icon: ToukhIcons.error,
+    );
+  }
+
+  String _statusLabel(String status) {
+    return switch (status) {
+      'pending' => AppStrings.HomeServiceRequests.statusPending.tr,
+      'tendering' => AppStrings.HomeServiceRequests.statusTendering.tr,
+      'quoted' => AppStrings.HomeServiceRequests.statusQuoted.tr,
+      'awaiting_customer' =>
+        AppStrings.HomeServiceRequests.statusAwaitingCustomer.tr,
+      'awaiting_provider' =>
+        AppStrings.HomeServiceRequests.statusAwaitingProvider.tr,
+      'accepted' => AppStrings.HomeServiceRequests.statusAccepted.tr,
+      'in_progress' => AppStrings.HomeServiceRequests.statusOnTheWay.tr,
+      'completed' => AppStrings.HomeServiceRequests.statusCompleted.tr,
+      'cancelled' => AppStrings.HomeServiceRequests.statusCancelled.tr,
+      'declined' || 'rejected' =>
+        AppStrings.HomeServiceRequests.statusDeclined.tr,
+      _ => status,
+    };
   }
 }
 

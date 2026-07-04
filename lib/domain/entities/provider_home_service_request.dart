@@ -23,6 +23,9 @@ class ProviderHomeServiceRequest extends Equatable {
     this.scheduledAt,
     this.quotedAt,
     this.quoteUsesClientPrice,
+    this.customerPhone,
+    this.customerPhotoUrl,
+    this.onMyWayAt,
   });
 
   final String id;
@@ -46,6 +49,9 @@ class ProviderHomeServiceRequest extends Equatable {
   final DateTime? scheduledAt;
   final DateTime? quotedAt;
   final bool? quoteUsesClientPrice;
+  final String? customerPhone;
+  final String? customerPhotoUrl;
+  final DateTime? onMyWayAt;
 
   static const _terminalStatuses = {
     'completed',
@@ -74,6 +80,9 @@ class ProviderHomeServiceRequest extends Equatable {
 
   bool get isInProgress =>
       isActive && !isIncoming;
+
+  bool get isAcceptedScheduled =>
+      statusNormalized == 'accepted' && scheduledAt != null;
 
   String get preferredTimeLabel {
     return switch (preferredTimeRaw?.trim()) {
@@ -107,5 +116,8 @@ class ProviderHomeServiceRequest extends Equatable {
         scheduledAt,
         quotedAt,
         quoteUsesClientPrice,
+        customerPhone,
+        customerPhotoUrl,
+        onMyWayAt,
       ];
 }

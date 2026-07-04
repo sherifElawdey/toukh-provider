@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 
 enum ProviderHomeServiceRequestsTab { incoming, inProgress, history }
 
@@ -19,6 +20,11 @@ class ProviderHomeServiceRequestsState extends Equatable {
   int get pendingIncomingCount =>
       requests.where((r) => r.isIncoming).length;
 
+  ProviderHomeServiceRequest? get activeOnMyWayRequest =>
+      requests.activeOnMyWayRequest;
+
+  bool get hasActiveOnMyWay => requests.hasActiveOnMyWay;
+
   List<ProviderHomeServiceRequest> forTab(ProviderHomeServiceRequestsTab tab) {
     return switch (tab) {
       ProviderHomeServiceRequestsTab.incoming =>
@@ -29,6 +35,28 @@ class ProviderHomeServiceRequestsState extends Equatable {
         requests.where((r) => r.isTerminal).toList(),
     };
   }
+
+  List<ProviderHomeServiceRequest> acceptedScheduledJobs() =>
+      requests.acceptedScheduledJobs();
+
+  List<DateTime> scheduleDayTabs({
+    DateTime? anchor,
+    int pastDays = schedulePastDays,
+    int days = scheduleFutureDays,
+  }) =>
+      requests.scheduleDayTabs(
+        anchor: anchor,
+        pastDays: pastDays,
+        days: days,
+      );
+
+  int scheduleTodayTabIndex({DateTime? anchor, int pastDays = schedulePastDays}) =>
+      requests.scheduleTodayTabIndex(anchor: anchor, pastDays: pastDays);
+
+  List<ProviderHomeServiceRequest> jobsForDay(DateTime day) =>
+      requests.jobsForDay(day);
+
+  int jobCountForDay(DateTime day) => requests.jobCountForDay(day);
 
   ProviderHomeServiceRequestsState copyWith({
     bool? loading,

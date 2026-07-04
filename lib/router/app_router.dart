@@ -275,6 +275,11 @@ GoRouter createAppRouter({
         builder: (context, state) => const AboutAppScreen(),
       ),
       GoRoute(
+        path: AppRoutes.settingsGallery,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) => const PortfolioScreen(),
+      ),
+      GoRoute(
         path: AppRoutes.notifications,
         parentNavigatorKey: providerRootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
@@ -506,7 +511,10 @@ GoRouter createAppRouter({
                 path: AppRoutes.menu,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const MenuOrGalleryTabScreen(),
+                  child: BlocProvider.value(
+                    value: getIt<ProviderHomeServiceRequestsCubit>(),
+                    child: const MenuOrGalleryTabScreen(),
+                  ),
                 ),
               ),
             ],

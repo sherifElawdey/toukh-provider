@@ -21,6 +21,7 @@ abstract final class AppStrings {
   static const AccountStatus = _AccountStatus();
   static const Shell = _Shell();
   static const Home = _Home();
+  static const HomeServiceSchedule = _HomeServiceSchedule();
   static const HomeServiceRequests = _HomeServiceRequests();
   static const Orders = _Orders();
   static const Notifications = _Notifications();
@@ -186,6 +187,7 @@ class _Shell {
   const _Shell();
   String get home => 'shell.home';
   String get orders => 'shell.orders';
+  String get schedule => 'shell.schedule';
   String get menu => 'shell.menu';
   String get gallery => 'shell.gallery';
   String get accepted => 'shell.accepted';
@@ -247,6 +249,16 @@ class _Home {
   String get dashboardPendingOrdersTitle => 'home.dashboard_pending_orders_title';
   String get dashboardPendingOrdersSubtitle =>
       'home.dashboard_pending_orders_subtitle';
+  String get tabOverview => 'home.tab_overview';
+  String get tabSchedule => 'home.tab_schedule';
+}
+
+class _HomeServiceSchedule {
+  const _HomeServiceSchedule();
+  String get emptyDay => 'home_service_schedule.empty_day';
+  String get today => 'home_service_schedule.today';
+  String get tomorrow => 'home_service_schedule.tomorrow';
+  String get priceLabel => 'home_service_schedule.price_label';
 }
 
 class _HomeServiceRequests {
@@ -300,6 +312,22 @@ class _HomeServiceRequests {
   String get fieldClientPrice => 'home_service_requests.field_client_price';
   String get fieldQuotedPrice => 'home_service_requests.field_quoted_price';
   String get fieldVisitDate => 'home_service_requests.field_visit_date';
+  String get onMyWay => 'home_service_requests.on_my_way';
+  String get finishVisit => 'home_service_requests.finish_visit';
+  String get onMyWayBlocked => 'home_service_requests.on_my_way_blocked';
+  String get onMyWayBlockedNamed =>
+      'home_service_requests.on_my_way_blocked_named';
+  String get contactCustomer => 'home_service_requests.contact_customer';
+  String get contactCustomerUnavailable =>
+      'home_service_requests.contact_customer_unavailable';
+  String get visitToday => 'home_service_requests.visit_today';
+  String get visitTomorrow => 'home_service_requests.visit_tomorrow';
+  String get visitInDays => 'home_service_requests.visit_in_days';
+  String get visitOverdue => 'home_service_requests.visit_overdue';
+  String get visitOverdueDays => 'home_service_requests.visit_overdue_days';
+  String get visitOverdueBanner => 'home_service_requests.visit_overdue_banner';
+  String get statusOnTheWay => 'home_service_requests.status_on_the_way';
+  String get statusInProgress => 'home_service_requests.status_in_progress';
 }
 
 class _Notifications {
@@ -380,6 +408,7 @@ class _Orders {
   String get orderTypeGroup => 'orders.order_type_group';
   String get orderTypeIndividual => 'orders.order_type_individual';
   String get itemsMore => 'orders.items_more';
+  String get exploreItemsLabel => 'orders.explore_items_label';
   String get placedAtLabel => 'orders.placed_at_label';
   String get waitingElapsedLabel => 'orders.waiting_elapsed_label';
   String get notifiedElapsedLabel => 'orders.notified_elapsed_label';
@@ -394,6 +423,7 @@ class _Orders {
   String get detailOrderIdLabel => 'orders.detail_order_id_label';
   String get detailSectionTimeline => 'orders.detail_section_timeline';
   String get detailSectionAddresses => 'orders.detail_section_addresses';
+  String get detailClient => 'orders.detail_client';
   String get detailSectionNotes => 'orders.detail_section_notes';
   String get detailCreated => 'orders.detail_created';
   String get detailAccepted => 'orders.detail_accepted';
@@ -407,6 +437,9 @@ class _Orders {
       'orders.pharmacy_customer_contact_hidden';
   String get detailPickup => 'orders.detail_pickup';
   String get detailDropoff => 'orders.detail_dropoff';
+  String get viewOnMap => 'orders.view_on_map';
+  String get mapUnavailable => 'orders.map_unavailable';
+  String get noAddress => 'orders.no_address';
   String get detailPlacedAt => 'orders.detail_placed_at';
   String get detailSectionItems => 'orders.detail_section_items';
   String get detailSubtotal => 'orders.detail_subtotal';
@@ -467,6 +500,8 @@ class _Settings {
   String get reviewsAverage => 'settings.reviews_average';
   String get reviewsCount => 'settings.reviews_count';
   String get manageDrivers => 'settings.manage_drivers';
+  String get gallery => 'settings.gallery';
+  String get gallerySubtitle => 'settings.gallery_subtitle';
   String get copyProviderId => 'settings.copy_provider_id';
   String get copyProviderIdHint => 'settings.copy_provider_id_hint';
   String get legal => 'settings.legal';

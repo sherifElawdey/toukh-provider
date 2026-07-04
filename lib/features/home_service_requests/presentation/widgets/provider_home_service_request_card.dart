@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_state.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_request_timed_builder.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/incoming_order_wait_counter.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -45,14 +48,20 @@ class ProviderHomeServiceRequestCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final decoration = tab == ProviderHomeServiceRequestsTab.incoming
         ? incomingOrderUrgencyDecoration(urgency, scheme)
-        : incomingOrderUrgencyDecoration(IncomingOrderUrgency.normal, scheme);
+        : homeServiceVisitCardDecoration(request: request, scheme: scheme);
     final customerLabel = _customerLabel();
     final notePreview = request.note?.trim();
     final locale = Localizations.localeOf(context).toString();
-    final created = request.createdAt;
-    final dateLabel = created == null
+    final showVisitMeta = request.isScheduledVisitJob;
+    final metaDate = showVisitMeta ? request.scheduledAt : request.createdAt;
+    final metaLabel = showVisitMeta
+        ? AppStrings.HomeServiceRequests.fieldVisitDate.tr
+        : AppStrings.HomeServiceRequests.placedAtLabel.tr;
+    final dateLabel = metaDate == null
         ? '—'
-        : formatDateLabel(created, locale: locale);
+        : showVisitMeta
+            ? DateFormat.yMMMd().add_jm().format(metaDate.toLocal())
+            : formatDateLabel(metaDate, locale: locale);
 
     return Card(
       margin: EdgeInsets.zero,
@@ -102,6 +111,10 @@ class ProviderHomeServiceRequestCard extends StatelessWidget {
                   color: scheme.onSurface.withValues(alpha: 0.72),
                 ),
               ),
+              if (showVisitMeta) ...[
+                const SizedBox(height: 8),
+                HomeServiceVisitBadge(request: request),
+              ],
               if (notePreview != null && notePreview.isNotEmpty) ...[
                 const SizedBox(height: 8),
                 CustomText(
@@ -127,8 +140,8 @@ class ProviderHomeServiceRequestCard extends StatelessWidget {
                   const SizedBox(width: 6),
                   Expanded(
                     child: CustomText(
-                      '${AppStrings.HomeServiceRequests.placedAtLabel.tr}: $dateLabel',
-                      maxLines: 1,
+                      '$metaLabel: $dateLabel',
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: scheme.onSurface.withValues(alpha: 0.62),
@@ -195,6 +208,7 @@ class _StatusChip extends StatelessWidget {
       'awaiting_provider' =>
         AppStrings.HomeServiceRequests.statusAwaitingProvider.tr,
       'accepted' => AppStrings.HomeServiceRequests.statusAccepted.tr,
+      'in_progress' => AppStrings.HomeServiceRequests.statusOnTheWay.tr,
       'completed' => AppStrings.HomeServiceRequests.statusCompleted.tr,
       'cancelled' => AppStrings.HomeServiceRequests.statusCancelled.tr,
       'declined' || 'rejected' =>
@@ -212,6 +226,7 @@ class _StatusChip extends StatelessWidget {
       'pending' || 'tendering' || 'quoted' => AppColors.secondColor,
       'awaiting_customer' || 'awaiting_provider' => AppColors.warning,
       'accepted' => AppColors.success,
+      'in_progress' => AppColors.secondColor,
       'completed' => AppColors.appColor,
       'cancelled' || 'declined' || 'rejected' => scheme.error,
       _ => AppColors.appColor,

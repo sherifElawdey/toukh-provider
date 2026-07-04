@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 
 const _kCollection = 'homeServiceRequests';
 
@@ -54,6 +55,9 @@ class FirestoreProviderHomeServiceRequestsRepository
       scheduledAt: tsDate('scheduledAt'),
       quotedAt: tsDate('quotedAt'),
       quoteUsesClientPrice: data['quoteUsesClientPrice'] as bool?,
+      customerPhone: (data['customerPhone'] as String?)?.trim(),
+      customerPhotoUrl: (data['customerPhotoUrl'] as String?)?.trim(),
+      onMyWayAt: tsDate('onMyWayAt'),
     );
   }
 
@@ -146,6 +150,76 @@ class FirestoreProviderHomeServiceRequestsRepository
     }
     await ref.update({
       'status': 'declined',
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future<void> markOnMyWay({
+    required String requestId,
+    required String providerId,
+  }) async {
+    final ref = _fs.collection(_kCollection).doc(requestId);
+    final snap = await ref.get();
+    if (!snap.exists) {
+      throw StateError('Request not found');
+    }
+    final data = snap.data()!;
+    if ((data['providerId'] as String?) != providerId) {
+      throw StateError('Not authorized');
+    }
+    final current = (data['status'] as String? ?? '').trim().toLowerCase();
+    if (current != 'accepted') {
+      throw StateError('Request cannot be updated');
+    }
+    final scheduledTs = data['scheduledAt'];
+    if (scheduledTs is! Timestamp) {
+      throw StateError('Visit date is not scheduled');
+    }
+    if (!isVisitToday(scheduledTs.toDate())) {
+      throw StateError('On My Way is only available on the visit day');
+    }
+
+    final active = await _fs
+        .collection(_kCollection)
+        .where('providerId', isEqualTo: providerId)
+        .where('status', isEqualTo: 'in_progress')
+        .limit(2)
+        .get();
+    final hasOtherActive = active.docs.any((d) => d.id != requestId);
+    if (hasOtherActive) {
+      throw StateError('Another visit is already in progress');
+    }
+
+    await ref.update({
+      'status': 'in_progress',
+      'onMyWayAt': FieldValue.serverTimestamp(),
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
+  }
+
+  @override
+  Future<void> markCompleted({
+    required String requestId,
+    required String providerId,
+  }) async {
+    final ref = _fs.collection(_kCollection).doc(requestId);
+    final snap = await ref.get();
+    if (!snap.exists) {
+      throw StateError('Request not found');
+    }
+    final data = snap.data()!;
+    if ((data['providerId'] as String?) != providerId) {
+      throw StateError('Not authorized');
+    }
+    final current = (data['status'] as String? ?? '').trim().toLowerCase();
+    if (current != 'in_progress') {
+      throw StateError('Request cannot be updated');
+    }
+
+    await ref.update({
+      'status': 'completed',
+      'completedAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
   }

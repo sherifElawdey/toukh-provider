@@ -280,10 +280,13 @@ class _IncomingMeta extends StatelessWidget {
     const maxNames = 3;
     final names = items.take(maxNames).map((e) => e.name).toList();
     final remaining = items.length - names.length;
+    final explorePrefix = row.slice.fulfillmentMode.wireValue == 'pickup'
+        ? '${AppStrings.Orders.exploreItemsLabel.tr} · '
+        : '';
     if (remaining > 0) {
-      return '${names.join(', ')} ${AppStrings.Orders.itemsMore.trParams({'count': '$remaining'})}';
+      return '$explorePrefix${names.join(', ')} ${AppStrings.Orders.itemsMore.trParams({'count': '$remaining'})}';
     }
-    return names.join(', ');
+    return '$explorePrefix${names.join(', ')}';
   }
 }
 

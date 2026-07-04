@@ -169,6 +169,7 @@ class AuthCubit extends Cubit<AuthState> {
         serviceType: data.kind,
         shopCategory: data.shopCategory,
         serviceCategoryId: data.serviceCategoryId,
+        serviceCategoryTitle: data.serviceCategoryTitle,
         name: data.name.trim(),
         description: data.description.trim().isEmpty
             ? null

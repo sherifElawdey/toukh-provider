@@ -13,6 +13,7 @@ class RegistrationSubmitData {
     required this.kind,
     this.shopCategory,
     this.serviceCategoryId,
+    this.serviceCategoryTitle,
     required this.idFront,
     required this.idBack,
     required this.brandImage,
@@ -32,6 +33,7 @@ class RegistrationSubmitData {
   final ServiceType kind;
   final ShopCategory? shopCategory;
   final String? serviceCategoryId;
+  final String? serviceCategoryTitle;
 
   final File idFront;
   final File idBack;

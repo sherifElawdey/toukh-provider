@@ -21,6 +21,7 @@ import 'package:toukh_provider/data/repositories/firestore_provider_profile_repo
 import 'package:toukh_provider/data/repositories/firestore_provider_drivers_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_reviews_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_wallet_repository.dart';
+import 'package:toukh_provider/data/services/customer_home_service_on_my_way_notify_service.dart';
 import 'package:toukh_provider/data/services/customer_home_service_quote_notify_service.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
@@ -196,6 +197,10 @@ Future<void> configureDependencies() async {
 
   getIt.registerLazySingleton<CustomerHomeServiceQuoteNotifyService>(
     () => CustomerHomeServiceQuoteNotifyService(getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<CustomerHomeServiceOnMyWayNotifyService>(
+    () => CustomerHomeServiceOnMyWayNotifyService(getIt<FirebaseFirestore>()),
   );
 
   getIt.registerLazySingleton<ProviderOrdersCubit>(

@@ -93,6 +93,24 @@ class ProviderHomeServiceRequestsCubit
     );
   }
 
+  Future<void> markOnMyWay(String requestId) async {
+    final uid = state.providerUid;
+    if (uid == null) return;
+    await _requestsRepository.markOnMyWay(
+      requestId: requestId,
+      providerId: uid,
+    );
+  }
+
+  Future<void> markCompleted(String requestId) async {
+    final uid = state.providerUid;
+    if (uid == null) return;
+    await _requestsRepository.markCompleted(
+      requestId: requestId,
+      providerId: uid,
+    );
+  }
+
   ProviderHomeServiceRequest? requestById(String requestId) {
     for (final r in state.requests) {
       if (r.id == requestId) return r;

@@ -32,6 +32,7 @@ class RegistrationDraft extends Equatable {
     this.kind,
     this.shopCategory,
     this.serviceCategoryId,
+    this.serviceCategoryTitle,
     this.phoneNational = '',
     this.password = '',
     this.idFront,
@@ -51,6 +52,7 @@ class RegistrationDraft extends Equatable {
   final ServiceType? kind;
   final ShopCategory? shopCategory;
   final String? serviceCategoryId;
+  final String? serviceCategoryTitle;
 
   final String phoneNational;
   final String password;
@@ -76,6 +78,7 @@ class RegistrationDraft extends Equatable {
     ShopCategory? shopCategory,
     bool clearShopCategory = false,
     String? serviceCategoryId,
+    String? serviceCategoryTitle,
     bool clearServiceCategoryId = false,
     String? phoneNational,
     String? password,
@@ -100,6 +103,7 @@ class RegistrationDraft extends Equatable {
       serviceCategoryId: clearServiceCategoryId
           ? null
           : (serviceCategoryId ?? this.serviceCategoryId),
+      serviceCategoryTitle: serviceCategoryTitle ?? this.serviceCategoryTitle,
       phoneNational: phoneNational ?? this.phoneNational,
       password: password ?? this.password,
       idFront: idFront ?? this.idFront,
@@ -148,6 +152,7 @@ class RegistrationDraft extends Equatable {
       kind: k,
       shopCategory: shopCategoryForSubmit(k, shopCategory),
       serviceCategoryId: k == ServiceType.homeService ? serviceCategoryId : null,
+      serviceCategoryTitle: k == ServiceType.homeService ? serviceCategoryTitle : null,
       idFront: idFront!,
       idBack: idBack!,
       brandImage: brandImage!,
@@ -168,6 +173,7 @@ class RegistrationDraft extends Equatable {
         kind,
         shopCategory,
         serviceCategoryId,
+        serviceCategoryTitle,
         phoneNational,
         password,
         idFront?.path,
@@ -248,8 +254,9 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
         clearServiceCategoryId: true,
       ));
 
-  void setServiceCategoryId(String id) => emit(state.copyWith(
+  void setServiceCategoryId(String id, String title) => emit(state.copyWith(
         serviceCategoryId: id,
+        serviceCategoryTitle: title,
         clearShopCategory: true,
       ));
 

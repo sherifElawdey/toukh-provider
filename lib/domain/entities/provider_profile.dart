@@ -18,6 +18,7 @@ class ProviderProfile extends Equatable {
     required this.serviceType,
     this.shopCategory,
     this.serviceCategoryId,
+    this.serviceCategoryTitle,
     required this.name,
     this.description,
     this.brandImageUrl,
@@ -52,6 +53,7 @@ class ProviderProfile extends Equatable {
   final ServiceType serviceType;
   final ShopCategory? shopCategory;
   final String? serviceCategoryId;
+  final String? serviceCategoryTitle;
 
   final String name;
   final String? description;
@@ -98,6 +100,7 @@ class ProviderProfile extends Equatable {
     ServiceType? serviceType,
     ShopCategory? shopCategory,
     String? serviceCategoryId,
+    String? serviceCategoryTitle,
     String? name,
     String? description,
     String? brandImageUrl,
@@ -131,6 +134,7 @@ class ProviderProfile extends Equatable {
       serviceType: serviceType ?? this.serviceType,
       shopCategory: shopCategory ?? this.shopCategory,
       serviceCategoryId: serviceCategoryId ?? this.serviceCategoryId,
+      serviceCategoryTitle: serviceCategoryTitle ?? this.serviceCategoryTitle,
       name: name ?? this.name,
       description: description ?? this.description,
       brandImageUrl: brandImageUrl ?? this.brandImageUrl,
@@ -171,6 +175,7 @@ class ProviderProfile extends Equatable {
       'serviceType': serviceType.wireValue,
       if (shopCategory != null) 'shopCategory': shopCategory!.wireValue,
       if (serviceCategoryId != null) 'serviceCategoryId': serviceCategoryId,
+      if (serviceCategoryTitle != null) 'serviceCategoryTitle': serviceCategoryTitle,
       'name': name,
       if (description != null) 'description': description,
       if (brandImageUrl != null) 'brandImageUrl': brandImageUrl,
@@ -239,6 +244,7 @@ class ProviderProfile extends Equatable {
       serviceType: ServiceType.tryParse((data['serviceType'] as String?) ??(data['kind'] as String?) ) ?? ServiceType.restaurant,
       shopCategory: ShopCategory.tryParse(data['shopCategory'] as String?),
       serviceCategoryId: data['serviceCategoryId'] as String?,
+      serviceCategoryTitle: data['serviceCategoryTitle'] as String?,
       name: data['name'] as String? ?? '',
       description: data['description'] as String?,
       brandImageUrl: data['brandImageUrl'] as String?,
@@ -298,6 +304,7 @@ class ProviderProfile extends Equatable {
     serviceType,
         shopCategory,
         serviceCategoryId,
+        serviceCategoryTitle,
         name,
         description,
         brandImageUrl,

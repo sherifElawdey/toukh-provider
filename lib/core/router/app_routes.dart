@@ -50,6 +50,7 @@ abstract final class AppRoutes {
   static const legalDeclaration = '/legal/declaration';
 
   static const accountDetails = '/settings/account';
+  static const settingsGallery = '/settings/gallery';
   static const aboutApp = '/settings/about';
 
   static const wallet = '/wallet';
@@ -80,6 +81,7 @@ abstract final class AppRoutes {
         matchedLocation == reviews ||
         matchedLocation == manageDrivers ||
         matchedLocation == ordersHistory ||
+        matchedLocation == settingsGallery ||
         matchedLocation.startsWith('/home-service-request/')) {
       return true;
     }

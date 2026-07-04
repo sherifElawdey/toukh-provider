@@ -5,9 +5,8 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
-import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_addresses_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_cancellation_card.dart';
-import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_customer_card.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_client_details_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_items_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_notes_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_pharmacy_request_card.dart';
@@ -135,11 +134,9 @@ class _OrderDetailBody extends StatelessWidget {
             OrderDetailCancellationCard(row: row),
           ],
           const SizedBox(height: AppSizes.spaceLg),
-          OrderDetailCustomerCard(row: row),
+          OrderDetailClientDetailsCard(row: row),
           const SizedBox(height: AppSizes.spaceMd),
           OrderDetailTimelineCard(row: row),
-          const SizedBox(height: AppSizes.spaceMd),
-          OrderDetailAddressesCard(row: row),
           if (row.master.isPharmacyRequest) ...[
             const SizedBox(height: AppSizes.spaceMd),
             OrderDetailPharmacyRequestCard(row: row),

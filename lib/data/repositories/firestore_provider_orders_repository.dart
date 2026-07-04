@@ -289,17 +289,23 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String orderId,
     required bool storeDelivers,
   }) async {
+    final masterSnap = await _masterRef(orderId).get();
+    final existingMode = masterSnap.data()?['providerSlices']?[providerId]
+        ?['fulfillmentMode'] as String?;
+    final patch = <String, dynamic>{
+      'status': ProviderOrderStatusWire.preparing,
+      'providerState': 'preparing',
+      'acceptedAt': FieldValue.serverTimestamp(),
+    };
+    if (existingMode != 'pickup') {
+      patch['fulfillmentMode'] = storeDelivers
+          ? FulfillmentMode.store.wireValue
+          : FulfillmentMode.courier.wireValue;
+    }
     await _patchSlice(
       providerId: providerId,
       masterOrderId: orderId,
-      patch: {
-        'status': ProviderOrderStatusWire.preparing,
-        'providerState': 'preparing',
-        'fulfillmentMode': storeDelivers
-            ? FulfillmentMode.store.wireValue
-            : FulfillmentMode.courier.wireValue,
-        'acceptedAt': FieldValue.serverTimestamp(),
-      },
+      patch: patch,
     );
     await _notifyCustomer(providerId, orderId);
   }

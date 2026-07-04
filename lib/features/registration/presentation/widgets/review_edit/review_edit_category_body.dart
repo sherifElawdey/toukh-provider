@@ -21,6 +21,7 @@ class ReviewEditCategoryBody extends StatefulWidget {
 class ReviewEditCategoryBodyState extends State<ReviewEditCategoryBody> {
   ShopCategory? _shopCategory;
   String? _serviceCategoryId;
+  String? _serviceCategoryTitle;
 
   @override
   void initState() {
@@ -28,6 +29,7 @@ class ReviewEditCategoryBodyState extends State<ReviewEditCategoryBody> {
     final d = context.read<RegistrationCubit>().state;
     _shopCategory = d.shopCategory;
     _serviceCategoryId = d.serviceCategoryId;
+    _serviceCategoryTitle = d.serviceCategoryTitle;
   }
 
   String _shopLabel(ShopCategory c) {
@@ -53,8 +55,8 @@ class ReviewEditCategoryBodyState extends State<ReviewEditCategoryBody> {
     }
     if (kind == ServiceType.homeService) {
       final id = _serviceCategoryId;
-      if (id == null || id.isEmpty) return false;
-      cubit.setServiceCategoryId(id);
+      if (id == null || id.isEmpty || _serviceCategoryTitle == null || _serviceCategoryTitle!.isEmpty) return false;
+      cubit.setServiceCategoryId(id,_serviceCategoryTitle  ?? id);
       return true;
     }
     return true;
@@ -127,7 +129,10 @@ class ReviewEditCategoryBodyState extends State<ReviewEditCategoryBody> {
                 category: s,
                 selected: selected,
                 scheme: scheme,
-                onTap: () => setState(() => _serviceCategoryId = s.id),
+                onTap: () => setState((){
+                  _serviceCategoryId = s.id;
+                  _serviceCategoryTitle = s.title;
+                }),
               );
             },
           );
