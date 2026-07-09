@@ -6,6 +6,7 @@ import 'package:toukh_provider/core/notifications/provider_order_alert_controlle
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_state.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -116,6 +117,11 @@ class ProviderHomeServiceRequestsCubit
       if (r.id == requestId) return r;
     }
     return null;
+  }
+
+  void setHistoryFilter(HomeServiceHistoryFilter filter) {
+    if (state.historyFilter == filter) return;
+    emit(state.copyWith(historyFilter: filter));
   }
 
   void _maybeShowIncomingRequestAlerts(

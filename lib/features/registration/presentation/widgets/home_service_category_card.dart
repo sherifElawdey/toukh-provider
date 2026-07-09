@@ -34,92 +34,99 @@ class HomeServiceCategoryCard extends StatelessWidget {
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        child: Padding(
-          padding: const EdgeInsets.all(AppSizes.spaceSm),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    ClipRRect(
-                      borderRadius:
-                          BorderRadius.circular(AppSizes.radiusMd),
-                      child: ColoredBox(
-                        color: scheme.surfaceContainerHigh
-                            .withValues(alpha: 0.5),
-                        child: category.imageUrl != null &&
-                                category.imageUrl!.isNotEmpty
-                            ? Image.network(
-                                category.imageUrl!,
-                                fit: BoxFit.cover,
-                                filterQuality: FilterQuality.medium,
-                                errorBuilder: (_, _, _) => Center(
-                                  child: Icon(
-                                    PhosphorIconsRegular.wrench,
-                                    size: 40,
-                                    color: AppColors.secondColor,
-                                  ),
-                                ),
-                              )
-                            : Center(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  ClipRRect(
+                    borderRadius:
+                        BorderRadius.circular(AppSizes.radiusMd),
+                    child: ColoredBox(
+                      color: scheme.surfaceContainerHigh
+                          .withValues(alpha: 0.5),
+                      child: category.imageUrl != null &&
+                              category.imageUrl!.isNotEmpty
+                          ? Image.network(
+                              category.imageUrl!,
+                              fit: BoxFit.cover,
+                              filterQuality: FilterQuality.medium,
+                              errorBuilder: (_, _, _) => Center(
                                 child: Icon(
                                   PhosphorIconsRegular.wrench,
                                   size: 40,
                                   color: AppColors.secondColor,
                                 ),
                               ),
-                      ),
-                    ),
-                    if (selected)
-                      Positioned(
-                        top: AppSizes.spaceXs,
-                        right: AppSizes.spaceXs,
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: scheme.surface.withValues(alpha: 0.92),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(2),
-                            child: Icon(
-                              PhosphorIconsFill.checkCircle,
-                              color: AppColors.success,
-                              size: 22,
+                            )
+                          : Center(
+                              child: Icon(
+                                PhosphorIconsRegular.wrench,
+                                size: 40,
+                                color: AppColors.secondColor,
+                              ),
                             ),
+                    ),
+                  ),
+                  if (selected)
+                    Positioned(
+                      top: AppSizes.spaceXs,
+                      right: AppSizes.spaceXs,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: scheme.surface.withValues(alpha: 0.92),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Padding(
+                          padding: EdgeInsets.all(2),
+                          child: Icon(
+                            PhosphorIconsFill.checkCircle,
+                            color: AppColors.success,
+                            size: 22,
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
-              SizedBox(height: AppSizes.spaceSm),
-              CustomText(
-                category.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: AppSizes.fontBody,
-                  fontWeight: FontWeight.w700,
-                  height: 1.2,
-                ),
-              ),
-              if (desc.isNotEmpty) ...[
-                SizedBox(height: AppSizes.spaceXs),
-                CustomText(
-                  desc,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontSize: AppSizes.fontCaption,
-                    height: 1.25,
-                    color: scheme.onSurface.withValues(alpha: 0.65),
+            ),
+            // SizedBox(height: AppSizes.spaceXs),
+            Padding(
+              padding: const EdgeInsets.all(AppSizes.spaceSm),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(
+                    category.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: AppSizes.fontBody,
+                      fontWeight: FontWeight.w700,
+                      height: 1.2,
+                    ),
                   ),
-                ),
-              ],
-            ],
-          ),
+                  if (desc.isNotEmpty) ...[
+                    SizedBox(height: AppSizes.spaceXs),
+                    CustomText(
+                      desc,
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontSize: AppSizes.fontCaption,
+                        height: 1.25,
+                        color: scheme.onSurface.withValues(alpha: 0.65),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+
+          ],
         ),
       ),
     );

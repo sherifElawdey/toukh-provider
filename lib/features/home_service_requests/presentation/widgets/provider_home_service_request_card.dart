@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_state.dart';
@@ -24,10 +26,13 @@ class ProviderHomeServiceRequestCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sla = context.watch<OrderAcceptanceSlaCubit>().state;
     if (tab == ProviderHomeServiceRequestsTab.incoming) {
       return HomeServiceRequestTimedBuilder(
         key: ValueKey(request.id),
         request: request,
+        sla: sla,
+        serviceTypeKey: OrderAcceptanceSlaKeys.homeServices,
         builder: (context, elapsed, urgency, hasCreatedTime) => _buildCard(
           context,
           urgency: urgency,

@@ -94,9 +94,5 @@ class FirestoreNotificationInboxRepository implements NotificationInboxRepositor
     );
   }
 
-  DateTime? _toDate(dynamic v) {
-    if (v is Timestamp) return v.toDate();
-    if (v is DateTime) return v;
-    return null;
-  }
+  DateTime? _toDate(dynamic v) => ToukhFirestoreTimestamps.toDateTime(v);
 }

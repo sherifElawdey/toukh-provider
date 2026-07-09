@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 const _kCollection = 'homeServiceRequests';
 
@@ -24,14 +25,9 @@ class FirestoreProviderHomeServiceRequestsRepository
   ) {
     final data = d.data() ?? {};
     final ts = data['createdAt'];
-    DateTime? created;
-    if (ts is Timestamp) created = ts.toDate();
+    final created = ToukhFirestoreTimestamps.toDateTime(ts);
 
-    DateTime? tsDate(String key) {
-      final v = data[key];
-      if (v is Timestamp) return v.toDate();
-      return null;
-    }
+    DateTime? tsDate(String key) => ToukhFirestoreTimestamps.toDateTime(data[key]);
 
     return ProviderHomeServiceRequest(
       id: d.id,
@@ -58,6 +54,8 @@ class FirestoreProviderHomeServiceRequestsRepository
       customerPhone: (data['customerPhone'] as String?)?.trim(),
       customerPhotoUrl: (data['customerPhotoUrl'] as String?)?.trim(),
       onMyWayAt: tsDate('onMyWayAt'),
+      completedAt: tsDate('completedAt'),
+      cancelledAt: tsDate('cancelledAt'),
     );
   }
 

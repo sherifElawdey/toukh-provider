@@ -75,9 +75,13 @@ class IncomingOrderTimedBuilder extends StatefulWidget {
     super.key,
     required this.row,
     required this.builder,
+    this.sla,
+    this.serviceTypeKey,
   });
 
   final ProviderMasterOrderRow row;
+  final OrderAcceptanceSla? sla;
+  final String? serviceTypeKey;
   final Widget Function(
     BuildContext context,
     Duration elapsed,
@@ -133,7 +137,11 @@ class _IncomingOrderTimedBuilderState extends State<IncomingOrderTimedBuilder> {
     final hasPlacementTime = placedAt != null;
     final elapsed = providerIncomingOrderElapsedSince(placedAt);
     final urgency = hasPlacementTime
-        ? providerIncomingOrderUrgencyFromElapsed(elapsed)
+        ? providerIncomingOrderUrgencyFromElapsed(
+            elapsed,
+            sla: widget.sla,
+            serviceTypeKey: widget.serviceTypeKey,
+          )
         : IncomingOrderUrgency.normal;
     return widget.builder(
       context,

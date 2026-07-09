@@ -270,6 +270,15 @@ class _HomeServiceRequests {
   String get emptyIncoming => 'home_service_requests.empty_incoming';
   String get emptyInProgress => 'home_service_requests.empty_in_progress';
   String get emptyHistory => 'home_service_requests.empty_history';
+  String get emptyHistoryCompleted =>
+      'home_service_requests.empty_history_completed';
+  String get emptyHistoryCancelled =>
+      'home_service_requests.empty_history_cancelled';
+  String get historyFilterAll => 'home_service_requests.history_filter_all';
+  String get historyFilterCompleted =>
+      'home_service_requests.history_filter_completed';
+  String get historyFilterCancelled =>
+      'home_service_requests.history_filter_cancelled';
   String get detailTitle => 'home_service_requests.detail_title';
   String get notFound => 'home_service_requests.not_found';
   String get accept => 'home_service_requests.accept';

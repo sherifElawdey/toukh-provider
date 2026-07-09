@@ -20,7 +20,11 @@ class ProviderOrdersState extends Equatable {
   final ProviderOrdersSort sort;
   final bool withCourierOnly;
 
-  List<ProviderMasterOrderRow> forTab(ProviderOrdersTab tab) {
+  List<ProviderMasterOrderRow> forTab(
+    ProviderOrdersTab tab, {
+    OrderAcceptanceSla? acceptanceSla,
+    String? serviceTypeKey,
+  }) {
     final uid = providerUid;
     if (uid == null) return const [];
     var rows = ProviderMasterOrderTabFilters.forTab(orders, uid, tab);
@@ -31,6 +35,8 @@ class ProviderOrdersState extends Equatable {
       rows,
       sort,
       tab: tab,
+      sla: acceptanceSla,
+      serviceTypeKey: serviceTypeKey,
     );
   }
 

@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class BlockInfo extends Equatable {
   const BlockInfo({
@@ -23,26 +23,20 @@ class BlockInfo extends Equatable {
 
   Map<String, dynamic> toFirestore() => {
         'reason': reason,
-        'blockedAt': Timestamp.fromDate(blockedAt),
-        if (expiresAt != null) 'expiresAt': Timestamp.fromDate(expiresAt!),
+        'blockedAt': ToukhFirestoreTimestamps.fromDateTime(blockedAt),
+        if (expiresAt != null)
+          'expiresAt': ToukhFirestoreTimestamps.fromDateTime(expiresAt!),
       };
 
   static BlockInfo? fromFirestore(Map<String, dynamic>? data) {
     if (data == null) return null;
     final reason = data['reason'] as String?;
-    final blockedAtTs = data['blockedAt'];
-    final blockedAt = blockedAtTs is Timestamp
-        ? blockedAtTs.toDate()
-        : (blockedAtTs is DateTime ? blockedAtTs : null);
+    final blockedAt = ToukhFirestoreTimestamps.toDateTime(data['blockedAt']);
     if (reason == null || blockedAt == null) return null;
-    final expiresTs = data['expiresAt'];
-    final expiresAt = expiresTs is Timestamp
-        ? expiresTs.toDate()
-        : (expiresTs is DateTime ? expiresTs : null);
     return BlockInfo(
       reason: reason,
       blockedAt: blockedAt,
-      expiresAt: expiresAt,
+      expiresAt: ToukhFirestoreTimestamps.toDateTime(data['expiresAt']),
     );
   }
 

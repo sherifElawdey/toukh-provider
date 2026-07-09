@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/provider_home_service_request_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -45,6 +46,7 @@ class HomeServiceRequestsScreen extends StatelessWidget {
                   ),
                 ),
               _HomeServiceRequestsTabBar(),
+              const _HomeServiceHistoryFilters(),
               Expanded(
                 child: TabBarView(
                   children: [
@@ -186,6 +188,95 @@ class _HomeServiceRequestsTabBar extends StatelessWidget {
   }
 }
 
+class _HomeServiceHistoryFilters extends StatelessWidget {
+  const _HomeServiceHistoryFilters();
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: DefaultTabController.of(context),
+      builder: (context, _) {
+        final index = DefaultTabController.of(context).index;
+        if (index != 2) return const SizedBox.shrink();
+
+        return BlocBuilder<ProviderHomeServiceRequestsCubit,
+            ProviderHomeServiceRequestsState>(
+          buildWhen: (a, b) => a.historyFilter != b.historyFilter,
+          builder: (context, state) {
+            final cubit = context.read<ProviderHomeServiceRequestsCubit>();
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: AppSizes.screenHorizontal.copyWith(
+                top: AppSizes.spaceSm,
+                bottom: AppSizes.spaceSm,
+              ),
+              child: Row(
+                children: [
+                  _HistoryFilterChip(
+                    label: AppStrings.HomeServiceRequests.historyFilterAll.tr,
+                    selected:
+                        state.historyFilter == HomeServiceHistoryFilter.all,
+                    onTap: () =>
+                        cubit.setHistoryFilter(HomeServiceHistoryFilter.all),
+                  ),
+                  const SizedBox(width: 8),
+                  _HistoryFilterChip(
+                    label: AppStrings.HomeServiceRequests.historyFilterCompleted
+                        .tr,
+                    selected: state.historyFilter ==
+                        HomeServiceHistoryFilter.completed,
+                    onTap: () => cubit.setHistoryFilter(
+                      HomeServiceHistoryFilter.completed,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  _HistoryFilterChip(
+                    label: AppStrings.HomeServiceRequests.historyFilterCancelled
+                        .tr,
+                    selected: state.historyFilter ==
+                        HomeServiceHistoryFilter.cancelled,
+                    onTap: () => cubit.setHistoryFilter(
+                      HomeServiceHistoryFilter.cancelled,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _HistoryFilterChip extends StatelessWidget {
+  const _HistoryFilterChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return FilterChip(
+      label: CustomText(label),
+      selected: selected,
+      onSelected: (_) => onTap(),
+      selectedColor: AppColors.appColor.withValues(alpha: 0.18),
+      checkmarkColor: AppColors.appColor,
+      labelStyle: TextStyle(
+        color: selected ? AppColors.appColor : scheme.onSurface,
+        fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+      ),
+    );
+  }
+}
+
 class _HomeServiceRequestsTabView extends StatelessWidget {
   const _HomeServiceRequestsTabView({
     required this.tab,
@@ -208,7 +299,7 @@ class _HomeServiceRequestsTabView extends StatelessWidget {
         if (list.isEmpty) {
           return Center(
             child: HomeDashboardEmptyPlaceholder(
-              message: emptyMessageKey.tr,
+              message: _emptyMessage(state),
               compact: true,
             ),
           );
@@ -230,5 +321,19 @@ class _HomeServiceRequestsTabView extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _emptyMessage(ProviderHomeServiceRequestsState state) {
+    if (tab != ProviderHomeServiceRequestsTab.history) {
+      return emptyMessageKey.tr;
+    }
+    return switch (state.historyFilter) {
+      HomeServiceHistoryFilter.all =>
+        AppStrings.HomeServiceRequests.emptyHistory.tr,
+      HomeServiceHistoryFilter.completed =>
+        AppStrings.HomeServiceRequests.emptyHistoryCompleted.tr,
+      HomeServiceHistoryFilter.cancelled =>
+        AppStrings.HomeServiceRequests.emptyHistoryCancelled.tr,
+    };
   }
 }

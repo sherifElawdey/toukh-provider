@@ -26,6 +26,8 @@ class ProviderHomeServiceRequest extends Equatable {
     this.customerPhone,
     this.customerPhotoUrl,
     this.onMyWayAt,
+    this.completedAt,
+    this.cancelledAt,
   });
 
   final String id;
@@ -52,6 +54,8 @@ class ProviderHomeServiceRequest extends Equatable {
   final String? customerPhone;
   final String? customerPhotoUrl;
   final DateTime? onMyWayAt;
+  final DateTime? completedAt;
+  final DateTime? cancelledAt;
 
   static const _terminalStatuses = {
     'completed',
@@ -83,6 +87,15 @@ class ProviderHomeServiceRequest extends Equatable {
 
   bool get isAcceptedScheduled =>
       statusNormalized == 'accepted' && scheduledAt != null;
+
+  bool get isCompleted => statusNormalized == 'completed';
+
+  bool get isCancelled => statusNormalized == 'cancelled';
+
+  bool get isDeclined =>
+      statusNormalized == 'declined' || statusNormalized == 'rejected';
+
+  DateTime? get closedAt => completedAt ?? cancelledAt ?? createdAt;
 
   String get preferredTimeLabel {
     return switch (preferredTimeRaw?.trim()) {
@@ -119,5 +132,7 @@ class ProviderHomeServiceRequest extends Equatable {
         customerPhone,
         customerPhotoUrl,
         onMyWayAt,
+        completedAt,
+        cancelledAt,
       ];
 }

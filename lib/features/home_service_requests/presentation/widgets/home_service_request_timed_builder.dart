@@ -10,9 +10,13 @@ class HomeServiceRequestTimedBuilder extends StatefulWidget {
     super.key,
     required this.request,
     required this.builder,
+    this.sla,
+    this.serviceTypeKey,
   });
 
   final ProviderHomeServiceRequest request;
+  final OrderAcceptanceSla? sla;
+  final String? serviceTypeKey;
   final Widget Function(
     BuildContext context,
     Duration elapsed,
@@ -69,7 +73,12 @@ class _HomeServiceRequestTimedBuilderState
     final hasCreatedTime = createdAt != null;
     final elapsed = providerIncomingOrderElapsedSince(createdAt);
     final urgency = hasCreatedTime
-        ? providerIncomingOrderUrgencyFromElapsed(elapsed)
+        ? providerIncomingOrderUrgencyFromElapsed(
+            elapsed,
+            sla: widget.sla,
+            serviceTypeKey:
+                widget.serviceTypeKey ?? OrderAcceptanceSlaKeys.homeServices,
+          )
         : IncomingOrderUrgency.normal;
     return widget.builder(
       context,

@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/notifications/push_bootstrap.dart';
+import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/core/notifications/notification_router_holder.dart';
@@ -111,6 +112,9 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
         BlocProvider<AuthCubit>.value(value: getIt<AuthCubit>()),
         BlocProvider<OnboardingCubit>.value(value: getIt<OnboardingCubit>()),
         BlocProvider<SettingsCubit>.value(value: getIt<SettingsCubit>()),
+        BlocProvider<OrderAcceptanceSlaCubit>.value(
+          value: getIt<OrderAcceptanceSlaCubit>(),
+        ),
         BlocProvider<NotificationsCubit>.value(
           value: getIt<NotificationsCubit>(),
         ),

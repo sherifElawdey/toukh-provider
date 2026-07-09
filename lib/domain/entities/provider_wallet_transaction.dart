@@ -1,5 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 enum ProviderWalletTxDirection { debit, credit }
 
@@ -69,9 +69,7 @@ class ProviderWalletTransaction extends Equatable {
     String id,
     Map<String, dynamic> data,
   ) {
-    final ts = data['createdAt'];
-    DateTime? created;
-    if (ts is Timestamp) created = ts.toDate();
+    final created = ToukhFirestoreTimestamps.toDateTime(data['createdAt']);
 
     final amt = data['amountEgp'];
     final amount = amt is num ? amt.toDouble() : 0.0;

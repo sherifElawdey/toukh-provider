@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class FirestoreProviderGalleryRepository implements ProviderGalleryRepository {
   FirestoreProviderGalleryRepository(
@@ -25,13 +26,9 @@ class FirestoreProviderGalleryRepository implements ProviderGalleryRepository {
         .map((snap) {
       return snap.docs.map((d) {
         final data = d.data();
-        final ts = data['createdAt'];
-        DateTime createdAt;
-        if (ts is Timestamp) {
-          createdAt = ts.toDate();
-        } else {
-          createdAt = DateTime.now();
-        }
+        final createdAt =
+            ToukhFirestoreTimestamps.toDateTime(data['createdAt']) ??
+            DateTime.now();
         return ProviderGalleryItem(
           id: d.id,
           url: data['url'] as String? ?? '',

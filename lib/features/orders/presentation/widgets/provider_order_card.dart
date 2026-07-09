@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
+import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/incoming_order_wait_counter.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_label.dart';
@@ -41,10 +44,14 @@ class ProviderOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sla = context.watch<OrderAcceptanceSlaCubit>().state;
+    final serviceTypeKey = _serviceTypeKey(context, row.master);
     if (tab == ProviderOrdersTab.incoming) {
       return IncomingOrderTimedBuilder(
         key: ValueKey(row.id),
         row: row,
+        sla: sla,
+        serviceTypeKey: serviceTypeKey,
         builder: (context, elapsed, urgency, hasPlacementTime) => _buildCard(
           context,
           urgency: urgency,
@@ -54,6 +61,15 @@ class ProviderOrderCard extends StatelessWidget {
       );
     }
     return _buildCard(context);
+  }
+
+  String _serviceTypeKey(BuildContext context, MasterOrder master) {
+    if (master.isPharmacyRequest) return OrderAcceptanceSlaKeys.pharmacy;
+    final auth = context.read<AuthCubit>().state;
+    if (auth is Authenticated) {
+      return slaKeyForProviderServiceType(auth.profile.serviceType.wireValue);
+    }
+    return OrderAcceptanceSlaKeys.defaultKey;
   }
 
   Widget _buildCard(

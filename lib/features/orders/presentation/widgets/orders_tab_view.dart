@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
+import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
@@ -21,7 +23,16 @@ class OrdersTabView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
       builder: (context, state) {
-        final rows = state.forTab(tab);
+        final sla = context.watch<OrderAcceptanceSlaCubit>().state;
+        final auth = context.watch<AuthCubit>().state;
+        final serviceTypeKey = auth is Authenticated
+            ? slaKeyForProviderServiceType(auth.profile.serviceType.wireValue)
+            : OrderAcceptanceSlaKeys.defaultKey;
+        final rows = state.forTab(
+          tab,
+          acceptanceSla: sla,
+          serviceTypeKey: serviceTypeKey,
+        );
         if (state.loading && rows.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }

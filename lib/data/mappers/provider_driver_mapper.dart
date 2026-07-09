@@ -60,10 +60,7 @@ abstract final class ProviderDriverMapper {
     }
   }
 
-  static DateTime? _date(dynamic v) {
-    if (v is Timestamp) return v.toDate();
-    return ToukhFirestoreTimestamps.toDateTime(v);
-  }
+  static DateTime? _date(dynamic v) => ToukhFirestoreTimestamps.toDateTime(v);
 
   static String? _string(dynamic v) {
     if (v is String && v.trim().isNotEmpty) return v.trim();

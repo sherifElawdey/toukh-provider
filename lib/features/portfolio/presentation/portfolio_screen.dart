@@ -84,82 +84,84 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       appBar: AppBar(
         title: CustomText(AppStrings.Registration.portfolioTitle),
       ),
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: AppSizes.screenPadding.copyWith(
-              top: AppSizes.spaceSm,
-              bottom: AppSizes.spaceMd,
-            ),
-            child: CustomText(
-              AppStrings.Registration.portfolioHint,
-              style: TextStyle(
-                fontSize: AppSizes.fontBody,
-                height: 1.45,
-                color: scheme.onSurface.withValues(alpha: 0.75),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: AppSizes.screenPadding.copyWith(
+                top: AppSizes.spaceSm,
+                bottom: AppSizes.spaceMd,
+              ),
+              child: CustomText(
+                AppStrings.Registration.portfolioHint,
+                style: TextStyle(
+                  fontSize: AppSizes.fontBody,
+                  height: 1.45,
+                  color: scheme.onSurface.withValues(alpha: 0.75),
+                ),
               ),
             ),
-          ),
-          Expanded(
-            child: StreamBuilder<List<ProviderGalleryItem>>(
-              stream: galleryRepo.watchGallery(authState.profile.uid),
-              builder: (context, snapshot) {
-                final existing = snapshot.data ?? const [];
-                final totalCount = existing.length + _files.length;
-                final showAddSlot =
-                    totalCount < PortfolioScreen.kMaxPhotos;
-                final gridCount =
-                    existing.length + _files.length + (showAddSlot ? 1 : 0);
+            Expanded(
+              child: StreamBuilder<List<ProviderGalleryItem>>(
+                stream: galleryRepo.watchGallery(authState.profile.uid),
+                builder: (context, snapshot) {
+                  final existing = snapshot.data ?? const [];
+                  final totalCount = existing.length + _files.length;
+                  final showAddSlot =
+                      totalCount < PortfolioScreen.kMaxPhotos;
+                  final gridCount =
+                      existing.length + _files.length + (showAddSlot ? 1 : 0);
 
-                return GridView.builder(
-                  padding: AppSizes.screenPadding.copyWith(top: 0),
-                  gridDelegate:
-                      const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: AppSizes.spaceSm,
-                    mainAxisSpacing: AppSizes.spaceSm,
-                    childAspectRatio: 1,
-                  ),
-                  itemCount: gridCount,
-                  itemBuilder: (context, i) {
-                    if (i < existing.length) {
-                      final item = existing[i];
-                      return PortfolioImageTile(
-                        url: item.url,
-                        onRemove: () => galleryRepo.deleteImage(
-                          providerId: authState.profile.uid,
-                          item: item,
-                        ),
+                  return GridView.builder(
+                    padding: AppSizes.screenPadding.copyWith(top: 0),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: AppSizes.spaceSm,
+                      mainAxisSpacing: AppSizes.spaceSm,
+                      childAspectRatio: 1,
+                    ),
+                    itemCount: gridCount,
+                    itemBuilder: (context, i) {
+                      if (i < existing.length) {
+                        final item = existing[i];
+                        return PortfolioImageTile(
+                          url: item.url,
+                          onRemove: () => galleryRepo.deleteImage(
+                            providerId: authState.profile.uid,
+                            item: item,
+                          ),
+                        );
+                      }
+                      final localIndex = i - existing.length;
+                      if (localIndex < _files.length) {
+                        return PortfolioImageTile(
+                          file: _files[localIndex],
+                          onRemove: () =>
+                              setState(() => _files.removeAt(localIndex)),
+                        );
+                      }
+                      return PortfolioAddPlaceholder(
+                        currentCount: totalCount,
+                        maxCount: PortfolioScreen.kMaxPhotos,
+                        scheme: scheme,
+                        onTap: _add,
                       );
-                    }
-                    final localIndex = i - existing.length;
-                    if (localIndex < _files.length) {
-                      return PortfolioImageTile(
-                        file: _files[localIndex],
-                        onRemove: () =>
-                            setState(() => _files.removeAt(localIndex)),
-                      );
-                    }
-                    return PortfolioAddPlaceholder(
-                      currentCount: totalCount,
-                      maxCount: PortfolioScreen.kMaxPhotos,
-                      scheme: scheme,
-                      onTap: _add,
-                    );
-                  },
-                );
-              },
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-          Padding(
-            padding: AppSizes.screenPadding.copyWith(top: AppSizes.spaceSm),
-            child: AppFilledButton(
-              text: AppStrings.Common.save,
-              onTap: _save,
+            Padding(
+              padding: AppSizes.screenPadding.copyWith(top: AppSizes.spaceSm),
+              child: AppFilledButton(
+                text: AppStrings.Common.save,
+                onTap: _save,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -119,7 +119,7 @@ class ReviewEditCategoryBodyState extends State<ReviewEditCategoryBody> {
               crossAxisCount: 2,
               mainAxisSpacing: AppSizes.spaceMd,
               crossAxisSpacing: AppSizes.spaceMd,
-              childAspectRatio: 0.78,
+              childAspectRatio: 0.6,
             ),
             itemCount: categories.length,
             itemBuilder: (context, index) {

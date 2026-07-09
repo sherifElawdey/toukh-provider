@@ -103,3 +103,53 @@ extension HomeServiceScheduleListX on List<ProviderHomeServiceRequest> {
 
   int jobCountForDay(DateTime day) => jobsForDay(day).length;
 }
+
+DateTime _epochFallback(DateTime? value) =>
+    value ?? DateTime.fromMillisecondsSinceEpoch(0);
+
+/// Tab list ordering for the home-service requests screen.
+extension HomeServiceRequestsTabSortX on List<ProviderHomeServiceRequest> {
+  List<ProviderHomeServiceRequest> sortedForInProgressTab() {
+    final list = List<ProviderHomeServiceRequest>.from(this);
+    list.sort((a, b) {
+      if (a.isOnTheWay != b.isOnTheWay) {
+        return a.isOnTheWay ? -1 : 1;
+      }
+      final aScheduled = a.scheduledAt;
+      final bScheduled = b.scheduledAt;
+      if (aScheduled != null && bScheduled != null) {
+        final byVisit = aScheduled.compareTo(bScheduled);
+        if (byVisit != 0) return byVisit;
+      } else if (aScheduled != null) {
+        return -1;
+      } else if (bScheduled != null) {
+        return 1;
+      }
+      return _epochFallback(b.createdAt).compareTo(_epochFallback(a.createdAt));
+    });
+    return list;
+  }
+
+  List<ProviderHomeServiceRequest> sortedForHistoryTab() {
+    final list = List<ProviderHomeServiceRequest>.from(this);
+    list.sort(
+      (a, b) => _epochFallback(b.closedAt).compareTo(_epochFallback(a.closedAt)),
+    );
+    return list;
+  }
+
+  List<ProviderHomeServiceRequest> filteredForHistory(
+    HomeServiceHistoryFilter filter,
+  ) {
+    return where((r) {
+      if (!r.isTerminal) return false;
+      return switch (filter) {
+        HomeServiceHistoryFilter.all => true,
+        HomeServiceHistoryFilter.completed => r.isCompleted,
+        HomeServiceHistoryFilter.cancelled => r.isCancelled || r.isDeclined,
+      };
+    }).toList();
+  }
+}
+
+enum HomeServiceHistoryFilter { all, completed, cancelled }

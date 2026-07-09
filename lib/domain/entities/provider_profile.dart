@@ -7,6 +7,7 @@ import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class ProviderProfile extends Equatable {
   const ProviderProfile({
@@ -224,14 +225,10 @@ class ProviderProfile extends Equatable {
           .toList();
     }
 
-    final createdTs = data['createdAt'];
-    final updatedTs = data['updatedAt'];
-    final createdAt = createdTs is Timestamp
-        ? createdTs.toDate()
-        : DateTime.now();
-    final updatedAt = updatedTs is Timestamp
-        ? updatedTs.toDate()
-        : createdAt;
+    final createdAt =
+        ToukhFirestoreTimestamps.toDateTime(data['createdAt']) ?? DateTime.now();
+    final updatedAt =
+        ToukhFirestoreTimestamps.toDateTime(data['updatedAt']) ?? createdAt;
 
     return ProviderProfile(
       uid: uid ?? data['id'] as String? ?? data['providerId'] as String? ?? '',

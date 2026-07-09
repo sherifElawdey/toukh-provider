@@ -402,7 +402,15 @@ class AppTranslations extends Translations {
     'home_service_requests.tab_history': 'History',
     'home_service_requests.empty_incoming': 'No new service requests yet.',
     'home_service_requests.empty_in_progress': 'No active service jobs right now.',
-    'home_service_requests.empty_history': 'No completed service requests yet.',
+    'home_service_requests.empty_history':
+        'No completed or cancelled service requests yet.',
+    'home_service_requests.empty_history_completed':
+        'No completed service requests yet.',
+    'home_service_requests.empty_history_cancelled':
+        'No cancelled or declined service requests yet.',
+    'home_service_requests.history_filter_all': 'All',
+    'home_service_requests.history_filter_completed': 'Completed',
+    'home_service_requests.history_filter_cancelled': 'Cancelled',
     'home_service_requests.detail_title': 'Request details',
     'home_service_requests.not_found': 'Request not found.',
     'home_service_requests.accept': 'Accept',
@@ -1066,7 +1074,15 @@ class AppTranslations extends Translations {
     'home_service_requests.tab_history': 'السجل',
     'home_service_requests.empty_incoming': 'لا توجد طلبات خدمة جديدة بعد.',
     'home_service_requests.empty_in_progress': 'لا توجد مهام خدمة نشطة حالياً.',
-    'home_service_requests.empty_history': 'لا توجد طلبات خدمة مكتملة بعد.',
+    'home_service_requests.empty_history':
+        'لا توجد طلبات خدمة مكتملة أو ملغاة بعد.',
+    'home_service_requests.empty_history_completed':
+        'لا توجد طلبات خدمة مكتملة بعد.',
+    'home_service_requests.empty_history_cancelled':
+        'لا توجد طلبات خدمة ملغاة أو مرفوضة بعد.',
+    'home_service_requests.history_filter_all': 'الكل',
+    'home_service_requests.history_filter_completed': 'مكتملة',
+    'home_service_requests.history_filter_cancelled': 'ملغاة',
     'home_service_requests.detail_title': 'تفاصيل الطلب',
     'home_service_requests.not_found': 'الطلب غير موجود.',
     'home_service_requests.accept': 'قبول',

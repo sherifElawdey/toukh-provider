@@ -5,11 +5,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
+import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/core/storage/backblaze_b2_client.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/core/config/twilio_environment.dart';
+import 'package:toukh_provider/data/repositories/firestore_app_settings_repository.dart';
 import 'package:toukh_provider/data/repositories/firebase_auth_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_home_service_categories_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_dashboard_repository.dart';
@@ -23,12 +25,14 @@ import 'package:toukh_provider/data/repositories/firestore_provider_reviews_repo
 import 'package:toukh_provider/data/repositories/firestore_provider_wallet_repository.dart';
 import 'package:toukh_provider/data/services/customer_home_service_on_my_way_notify_service.dart';
 import 'package:toukh_provider/data/services/customer_home_service_quote_notify_service.dart';
+import 'package:toukh_provider/data/services/home_service_visit_reminder_coordinator.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
 import 'package:toukh_provider/data/services/otp_service_stub.dart';
 import 'package:toukh_provider/data/services/release_misconfigured_otp_repository.dart';
 import 'package:toukh_provider/data/services/twilio_verify_otp_repository.dart';
+import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/home_service_categories_repository.dart';
@@ -195,12 +199,28 @@ Future<void> configureDependencies() async {
     )..start(),
   );
 
+  getIt.registerLazySingleton<HomeServiceVisitReminderCoordinator>(
+    () => HomeServiceVisitReminderCoordinator(
+      getIt<AuthCubit>(),
+      getIt<ProviderHomeServiceRequestsRepository>(),
+    ),
+  );
+  // Start home-service visit-reminder restore/sync on auth.
+  getIt<HomeServiceVisitReminderCoordinator>();
+
   getIt.registerLazySingleton<CustomerHomeServiceQuoteNotifyService>(
     () => CustomerHomeServiceQuoteNotifyService(getIt<FirebaseFirestore>()),
   );
 
   getIt.registerLazySingleton<CustomerHomeServiceOnMyWayNotifyService>(
     () => CustomerHomeServiceOnMyWayNotifyService(getIt<FirebaseFirestore>()),
+  );
+
+  getIt.registerLazySingleton<AppSettingsRepository>(
+    () => FirestoreAppSettingsRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<OrderAcceptanceSlaCubit>(
+    () => OrderAcceptanceSlaCubit(getIt<AppSettingsRepository>()),
   );
 
   getIt.registerLazySingleton<ProviderOrdersCubit>(

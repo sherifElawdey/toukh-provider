@@ -10,12 +10,14 @@ class ProviderHomeServiceRequestsState extends Equatable {
     this.providerUid,
     this.requests = const [],
     this.errorMessage,
+    this.historyFilter = HomeServiceHistoryFilter.all,
   });
 
   final bool loading;
   final String? providerUid;
   final List<ProviderHomeServiceRequest> requests;
   final String? errorMessage;
+  final HomeServiceHistoryFilter historyFilter;
 
   int get pendingIncomingCount =>
       requests.where((r) => r.isIncoming).length;
@@ -29,10 +31,13 @@ class ProviderHomeServiceRequestsState extends Equatable {
     return switch (tab) {
       ProviderHomeServiceRequestsTab.incoming =>
         requests.where((r) => r.isIncoming).toList(),
-      ProviderHomeServiceRequestsTab.inProgress =>
-        requests.where((r) => r.isInProgress).toList(),
-      ProviderHomeServiceRequestsTab.history =>
-        requests.where((r) => r.isTerminal).toList(),
+      ProviderHomeServiceRequestsTab.inProgress => requests
+          .where((r) => r.isInProgress)
+          .toList()
+          .sortedForInProgressTab(),
+      ProviderHomeServiceRequestsTab.history => requests
+          .filteredForHistory(historyFilter)
+          .sortedForHistoryTab(),
     };
   }
 
@@ -63,6 +68,7 @@ class ProviderHomeServiceRequestsState extends Equatable {
     String? providerUid,
     List<ProviderHomeServiceRequest>? requests,
     String? errorMessage,
+    HomeServiceHistoryFilter? historyFilter,
     bool clearError = false,
   }) {
     return ProviderHomeServiceRequestsState(
@@ -70,9 +76,11 @@ class ProviderHomeServiceRequestsState extends Equatable {
       providerUid: providerUid ?? this.providerUid,
       requests: requests ?? this.requests,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
+      historyFilter: historyFilter ?? this.historyFilter,
     );
   }
 
   @override
-  List<Object?> get props => [loading, providerUid, requests, errorMessage];
+  List<Object?> get props =>
+      [loading, providerUid, requests, errorMessage, historyFilter];
 }
