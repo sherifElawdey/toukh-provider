@@ -1,0 +1,9 @@
+{
+  "dart.flutterRunAdditionalArgs": [
+    "--no-start-paused",
+    "--dart-define-from-file=secrets/dart_defines.json"
+  ],
+  "dart.flutterTestAdditionalArgs": [
+    "--dart-define-from-file=secrets/dart_defines.json"
+  ]
+}

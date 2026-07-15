@@ -5,6 +5,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/app.dart';
+import 'package:toukh_provider/core/media/safe_image_pick.dart';
 import 'package:toukh_provider/core/notifications/background_message_handler.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/firebase_options.dart';
@@ -14,6 +15,7 @@ import 'package:get/get.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  installImagePickErrorLogging();
   await initToukhMapsPlatform();
 
   try {

@@ -14,7 +14,10 @@ class SquareBrandImageBlock extends StatelessWidget {
 
   final File? file;
   final ValueChanged<File> onPicked;
-  final Future<void> Function(void Function(File) onPicked) onTapPick;
+  final Future<void> Function(
+    BuildContext context,
+    void Function(File) onPicked,
+  ) onTapPick;
 
   static const double _side = 128;
 
@@ -39,7 +42,7 @@ class SquareBrandImageBlock extends StatelessWidget {
             ),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
-              onTap: () => onTapPick(onPicked),
+              onTap: () => onTapPick(context, onPicked),
               child: SizedBox(
                 width: _side,
                 height: _side,

@@ -24,7 +24,10 @@ class IdPhotoPickerCard extends StatelessWidget {
   final File? file;
   final String placeholderLabel;
   final ValueChanged<File> onPicked;
-  final Future<void> Function(void Function(File) onPicked) onTapPick;
+  final Future<void> Function(
+    BuildContext context,
+    void Function(File) onPicked,
+  ) onTapPick;
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +61,7 @@ class IdPhotoPickerCard extends StatelessWidget {
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
-            onTap: () => onTapPick(onPicked),
+            onTap: () => onTapPick(context, onPicked),
             child: AspectRatio(
               aspectRatio: aspectRatio,
               child: file == null

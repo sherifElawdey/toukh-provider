@@ -111,13 +111,13 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
           ),
           SizedBox(height: AppSizes.spaceMd),
           SwitchListTile(
-            title: CustomText('Offers delivery'),
+            title: CustomText(AppStrings.Registration.deliveryOffers),
             value: _offers,
             onChanged: (v) => setState(() => _offers = v),
           ),
           if (_offers) ...[
             SwitchListTile(
-              title: CustomText('Free delivery'),
+              title: CustomText(AppStrings.Registration.reviewDeliveryFree),
               value: _free,
               onChanged: (v) => setState(() => _free = v),
             ),
@@ -126,11 +126,11 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
                 segments: [
                   ButtonSegment(
                     value: DeliveryPricingMode.fixed,
-                    label: CustomText('Fixed'),
+                    label: CustomText(AppStrings.Registration.deliveryModeFixed),
                   ),
                   ButtonSegment(
                     value: DeliveryPricingMode.perKm,
-                    label: CustomText('Per km'),
+                    label: CustomText(AppStrings.Registration.deliveryModePerKm),
                   ),
                 ],
                 selected: {_mode},
@@ -141,8 +141,8 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
               TextField(
                 controller: _price,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: 'Price (EGP)',
+                decoration: InputDecoration(
+                  labelText: AppStrings.Registration.deliveryPriceLabel.tr,
                 ),
               ),
             ],
@@ -152,8 +152,8 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
             TextField(
               controller: _prep,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Avg prep time (minutes)',
+              decoration: InputDecoration(
+                labelText: AppStrings.Registration.reviewPrepTime.tr,
               ),
             ),
           ],

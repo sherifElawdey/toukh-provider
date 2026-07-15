@@ -12,6 +12,8 @@
 	<string>We use the camera to take photos of your ID and business media.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We use your photo library to upload ID and business images.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We may save images to your photo library when you choose to.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>We use your location to set your business on the map and for delivery features.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

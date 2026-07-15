@@ -579,6 +579,8 @@ class _Registration {
   String get hoursSelectOneDay => 'registration.hours_select_one_day';
   String get hoursEndAfterStart => 'registration.hours_end_after_start';
   String get deliveryTitle => 'registration.delivery_title';
+  String get deliveryOffers => 'registration.delivery_offers';
+  String get deliveryPriceLabel => 'registration.delivery_price_label';
   String get deliveryPriceRequired => 'registration.delivery_price_required';
   String get reviewBusinessType => 'registration.review_business_type';
   String get reviewDeliveryNone => 'registration.review_delivery_none';

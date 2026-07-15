@@ -42,6 +42,12 @@ app.*.map.json
 # Local Twilio run helper (copy from tool/run_with_twilio.sh.example)
 tool/run_with_twilio.sh
 
+# Local Twilio dart-defines (never commit real tokens)
+secrets/*
+!secrets/.gitkeep
+!secrets/dart_defines.example.json
+**/lib/core/config/twilio_local_secrets.dart
+
 # Android Studio will place build artifacts here
 /android/app/debug
 /android/app/profile

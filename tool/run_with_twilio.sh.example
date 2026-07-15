@@ -1,11 +1,22 @@
 #!/usr/bin/env bash
-# Copy to run_with_twilio.sh (gitignored), fill in values from Twilio Console.
+# Optional CLI helper. Prefer Cursor/VS Code launch configs with
+# secrets/dart_defines.json (see tool/setup_dart_defines.sh).
+#
+# Usage:
+#   cp tool/run_with_twilio.sh.example tool/run_with_twilio.sh
+#   # Or export TWILIO_* then:
+#   ./tool/run_with_twilio.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-: "${TWILIO_ACCOUNT_SID:?Set TWILIO_ACCOUNT_SID}"
-: "${TWILIO_AUTH_TOKEN:?Set TWILIO_AUTH_TOKEN}"
-: "${TWILIO_VERIFY_SERVICE_SID:?Set TWILIO_VERIFY_SERVICE_SID}"
+if [[ -f secrets/dart_defines.json ]]; then
+  flutter run --dart-define-from-file=secrets/dart_defines.json "$@"
+  exit 0
+fi
+
+: "${TWILIO_ACCOUNT_SID:?Set TWILIO_ACCOUNT_SID or create secrets/dart_defines.json}"
+: "${TWILIO_AUTH_TOKEN:?Set TWILIO_AUTH_TOKEN or create secrets/dart_defines.json}"
+: "${TWILIO_VERIFY_SERVICE_SID:?Set TWILIO_VERIFY_SERVICE_SID or create secrets/dart_defines.json}"
 
 flutter run \
   --dart-define=TWILIO_ACCOUNT_SID="$TWILIO_ACCOUNT_SID" \

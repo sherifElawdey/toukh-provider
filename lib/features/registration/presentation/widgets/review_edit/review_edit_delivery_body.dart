@@ -103,26 +103,26 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         SwitchListTile(
-          title: const CustomText('Offers delivery'),
+          title: CustomText(AppStrings.Registration.deliveryOffers),
           value: _offers,
           onChanged: (v) => setState(() => _offers = v),
         ),
         if (_offers) ...[
           SwitchListTile(
-            title: const CustomText('Free delivery'),
+            title: CustomText(AppStrings.Registration.reviewDeliveryFree),
             value: _free,
             onChanged: (v) => setState(() => _free = v),
           ),
           if (!_free) ...[
             SegmentedButton<DeliveryPricingMode>(
-              segments: const [
+              segments: [
                 ButtonSegment(
                   value: DeliveryPricingMode.fixed,
-                  label: CustomText('Fixed'),
+                  label: CustomText(AppStrings.Registration.deliveryModeFixed),
                 ),
                 ButtonSegment(
                   value: DeliveryPricingMode.perKm,
-                  label: CustomText('Per km'),
+                  label: CustomText(AppStrings.Registration.deliveryModePerKm),
                 ),
               ],
               selected: {_mode},
@@ -132,8 +132,8 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
             TextField(
               controller: _price,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: 'Price (EGP)',
+              decoration: InputDecoration(
+                labelText: AppStrings.Registration.deliveryPriceLabel.tr,
               ),
             ),
           ],
@@ -143,8 +143,8 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
           TextField(
             controller: _prep,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Avg prep time (minutes)',
+            decoration: InputDecoration(
+              labelText: AppStrings.Registration.reviewPrepTime.tr,
             ),
           ),
         ],

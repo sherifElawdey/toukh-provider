@@ -4,8 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
+import 'package:toukh_provider/core/media/safe_image_pick.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/id_photo_picker_card.dart';
@@ -26,7 +25,6 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
   final _phone = TextEditingController();
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _picker = ImagePicker();
 
   File? _brand;
   File? _idFront;
@@ -51,52 +49,11 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
     super.dispose();
   }
 
-  Future<File?> _pickImage(ImageSource source) async {
-    try {
-      final res = await _picker.pickImage(
-        source: source,
-        maxWidth: 1600,
-        maxHeight: 1600,
-        imageQuality: 88,
-      );
-      return res == null ? null : File(res.path);
-    } catch (e) {
-      if (!mounted) return null;
-      AppSnack.show(
-        context,
-        message: appFirebaseError(e),
-        state: AppSnackState.error,
-        icon: PhosphorIconsRegular.imageBroken,
-      );
-      return null;
-    }
-  }
-
-  Future<void> _showPicker(void Function(File) onPicked) async {
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      builder: (ctx) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: Icon(ToukhIcons.camera),
-              title: const Text('Camera'),
-              onTap: () => Navigator.of(ctx).pop(ImageSource.camera),
-            ),
-            ListTile(
-              leading: Icon(ToukhIcons.gallery),
-              title: const Text('Gallery'),
-              onTap: () => Navigator.of(ctx).pop(ImageSource.gallery),
-            ),
-          ],
-        ),
-      ),
-    );
-    if (source == null) return;
-    final file = await _pickImage(source);
-    if (file != null) onPicked(file);
-  }
+  Future<void> _showPicker(
+    BuildContext cardContext,
+    void Function(File) onPicked,
+  ) =>
+      pickImageInto(cardContext, onPicked);
 
   void _continue() {
     if (!_formKey.currentState!.validate()) return;
@@ -212,4 +169,3 @@ class _RegisterCredentialsScreenState extends State<RegisterCredentialsScreen> {
     );
   }
 }
-

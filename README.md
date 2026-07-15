@@ -23,11 +23,28 @@ Configure Firebase for your bundle IDs (see `lib/firebase_options.dart`). For Go
 flutter run
 ```
 
-Without Twilio dart-defines (debug only), OTP uses `OtpServiceStub` with code `123456`.
+Without Twilio dart-defines (and without `twilio_local_secrets.dart`), OTP is not available.
 
 ## OTP (Twilio Verify)
 
 Registration, account phone verification, and forgot-password **send / verify / resend** use [Twilio Verify v2](https://www.twilio.com/docs/verify/api) when all three build-time defines are set. Implementation: `TwilioVerifyOtpRepository` + `TwilioVerifyClient` in [`packages/toukh_ui`](../packages/toukh_ui/README.md).
+
+### One-time setup (debug + release)
+
+```bash
+cd toukh_provider
+bash tool/setup_dart_defines.sh
+# Edit secrets/dart_defines.json, re-run script → writes twilio_local_secrets.dart
+flutter run   # no dart-define needed — real Twilio OTP always
+```
+
+There is **no OTP stub mode**. Missing credentials → configuration error.
+
+Live smoke (from `toukh/`):
+
+```bash
+dart run tool/test_twilio_otp.dart --to=+2010XXXXXXXX
+```
 
 ### Twilio Console (one-time)
 
@@ -36,35 +53,16 @@ Registration, account phone verification, and forgot-password **send / verify / 
 3. Create a **Verify Service** ([Verify → Services](https://console.twilio.com/us1/verify/services)) and copy the Service SID (`VA…`).
 4. **Trial**: add each test handset under [Verified Caller IDs](https://console.twilio.com/us1/develop/phone-numbers/verified-caller-ids).
 5. **Geo**: allow **Egypt (+20)** for SMS/WhatsApp in Verify/Messaging geo settings.
-6. Optional: enable WhatsApp on the Verify service for WhatsApp-first delivery (app falls back to SMS automatically).
+6. **WhatsApp**: attach a WhatsApp sender to the Verify Service (BYO). The app sends WhatsApp-first with SMS fallback; without a sender, SMS retry still works.
 
 Never commit credentials. Rotate the Auth Token if it was ever exposed.
 
-### Run / build with real OTP
-
-```bash
-cd toukh_provider
-flutter run \
-  --dart-define=TWILIO_ACCOUNT_SID=ACxxxxxxxx \
-  --dart-define=TWILIO_AUTH_TOKEN=xxxxxxxx \
-  --dart-define=TWILIO_VERIFY_SERVICE_SID=VAxxxxxxxx
-```
-
-Release builds (`flutter build apk` / `ipa`) must pass the same defines (e.g. CI secrets). **Release without defines fails OTP** with a clear error instead of the dev stub.
-
-Local helper (optional):
-
-```bash
-cp tool/run_with_twilio.sh.example tool/run_with_twilio.sh
-# Edit run_with_twilio.sh with your SIDs, then:
-./tool/run_with_twilio.sh
-```
+Release builds without credentials **fail OTP** with a clear error. Full checklist: [`../toukh/docs/twilio-otp-setup.md`](../toukh/docs/twilio-otp-setup.md).
 
 ### How to tell Twilio is active
 
-- Debug log does **not** print `using OtpServiceStub`.
-- After sending a code, the snack mentions **WhatsApp** or **SMS** (not only a generic message).
-- Codes are **not** `123456` unless you are on the stub.
+- Debug log prints `Twilio Verify configured — real OTP (WhatsApp/SMS).`
+- After sending a code, the snack mentions **WhatsApp** or **SMS**.
 
 ### Forgot password limitation
 
@@ -72,15 +70,14 @@ OTP send/verify/resend is real with Twilio. **Setting a new Firebase password** 
 
 ### Manual test checklist
 
-| Flow | Expected with Twilio defines |
-|------|------------------------------|
+| Flow | Expected |
+|------|----------|
 | Registration → review → send code | WhatsApp or SMS; 6-digit code from Twilio |
 | Verify OTP → submit | `phoneVerified: true` → request submitted |
 | Resend | After 60s, up to 2 resends; 90s cooldown after first resend |
 | Account verify phone | Same send/verify path → splash |
 | Forgot password | OTP send/verify; reset screen verifies once with Twilio |
-| Debug without defines | Stub code `123456` |
-| Release without defines | OTP errors with “not configured” message |
+| Missing credentials | OTP errors with “not configured” message |
 
 ## Analyze
 

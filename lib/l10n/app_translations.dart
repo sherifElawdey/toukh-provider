@@ -46,8 +46,8 @@ class AppTranslations extends Translations {
     'firebase.errors.try_again': 'Service temporarily unavailable. Try again.',
     'firebase.errors.service_unavailable': 'Service is unavailable right now.',
     'firebase.errors.action_not_allowed': "This action isn't allowed right now.",
-    'firebase.errors.auth_invalid_credentials': 'Incorrect email or password.',
-    'firebase.errors.auth_email_in_use': 'This email is already registered.',
+    'firebase.errors.auth_invalid_credentials': 'Incorrect phone number or password.',
+    'firebase.errors.auth_email_in_use': 'This phone number is already registered.',
     'firebase.errors.auth_too_many_requests': 'Too many attempts. Try again later.',
     'firebase.errors.auth_requires_recent_login': 'Sign in again to continue.',
     'firebase.errors.index_building': 'Data is still loading. Try again shortly.',
@@ -150,6 +150,8 @@ class AppTranslations extends Translations {
     'registration.hours_end_after_start':
         'End time must be after start time.',
     'registration.delivery_title': 'Delivery options',
+    'registration.delivery_offers': 'Offers delivery',
+    'registration.delivery_price_label': 'Price (EGP)',
     'registration.delivery_price_required':
         'Enter a valid delivery price (greater than 0) to continue.',
     'registration.review_business_type': 'Business type',
@@ -724,8 +726,8 @@ class AppTranslations extends Translations {
     'firebase.errors.try_again': 'الخدمة غير متاحة مؤقتًا. حاول مرة أخرى.',
     'firebase.errors.service_unavailable': 'الخدمة غير متاحة حاليًا.',
     'firebase.errors.action_not_allowed': 'لا يمكن تنفيذ هذا الإجراء الآن.',
-    'firebase.errors.auth_invalid_credentials': 'البريد الإلكتروني أو كلمة المرور غير صحيحة.',
-    'firebase.errors.auth_email_in_use': 'هذا البريد الإلكتروني مسجّل بالفعل.',
+    'firebase.errors.auth_invalid_credentials': 'رقم الهاتف أو كلمة المرور غير صحيحة.',
+    'firebase.errors.auth_email_in_use': 'رقم الهاتف هذا مسجّل بالفعل.',
     'firebase.errors.auth_too_many_requests': 'محاولات كثيرة. حاول لاحقًا.',
     'firebase.errors.auth_requires_recent_login': 'سجّل الدخول مرة أخرى للمتابعة.',
     'firebase.errors.index_building': 'البيانات ما زالت تُحمّل. حاول بعد قليل.',
@@ -826,6 +828,8 @@ class AppTranslations extends Translations {
     'registration.hours_end_after_start':
         'وقت الإغلاق يجب أن يكون بعد وقت الفتح.',
     'registration.delivery_title': 'خيارات التوصيل',
+    'registration.delivery_offers': 'يوفّر توصيلًا',
+    'registration.delivery_price_label': 'السعر (جنيه)',
     'registration.delivery_price_required':
         'أدخل سعر توصيل صالحًا (أكبر من صفر) للمتابعة.',
     'registration.review_business_type': 'نوع النشاط',

@@ -29,7 +29,6 @@ import 'package:toukh_provider/data/services/home_service_visit_reminder_coordin
 import 'package:toukh_provider/data/repositories/firestore_provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
-import 'package:toukh_provider/data/services/otp_service_stub.dart';
 import 'package:toukh_provider/data/services/release_misconfigured_otp_repository.dart';
 import 'package:toukh_provider/data/services/twilio_verify_otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
@@ -146,22 +145,19 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<OtpRepository>(() {
     final twilioConfig = twilioVerifyConfigFromEnvironment();
     if (twilioConfig.isComplete) {
+      debugPrint(
+        '[toukh_provider] Twilio Verify configured — real OTP (WhatsApp/SMS).',
+      );
       return TwilioVerifyOtpRepository(
         TwilioVerifyClient(config: twilioConfig),
       );
     }
-    if (kReleaseMode) {
-      debugPrint(
-        '[toukh_provider] Twilio Verify dart-defines missing in release build. '
-        'OTP will fail until TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and '
-        'TWILIO_VERIFY_SERVICE_SID are set at build time.',
-      );
-      return ReleaseMisconfiguredOtpRepository();
-    }
     debugPrint(
-      '[toukh_provider] Twilio not configured — using OtpServiceStub (code 123456).',
+      '[toukh_provider] Twilio Verify credentials missing. '
+      'Fill lib/core/config/twilio_local_secrets.dart '
+      '(or run bash tool/setup_dart_defines.sh). OTP will fail.',
     );
-    return OtpServiceStub();
+    return ReleaseMisconfiguredOtpRepository();
   });
 
   getIt.registerLazySingleton<RegistrationOtpArgsHolder>(
