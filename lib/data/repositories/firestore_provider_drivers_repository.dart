@@ -28,14 +28,22 @@ class FirestoreProviderDriversRepository implements ProviderDriversRepository {
     List<ProviderLinkedDriver> linked = [];
 
     void emit() {
-      if (!controller.isClosed) {
-        controller.add(
-          ProviderDriversSnapshot(
-            pendingRequests: List.unmodifiable(pending),
-            linkedDrivers: List.unmodifiable(linked),
-          ),
-        );
-      }
+      if (controller.isClosed) return;
+      final pendingIds = {for (final p in pending) p.uid};
+      // Awaiting approval: driver already has linkedProviderId + often status
+      // active, but should only show under pending until accept sets
+      // enabledByProvider true and clears the pending Delivery Request.
+      final approvedLinked = linked
+          .where(
+            (d) => d.enabledByProvider && !pendingIds.contains(d.uid),
+          )
+          .toList();
+      controller.add(
+        ProviderDriversSnapshot(
+          pendingRequests: List.unmodifiable(pending),
+          linkedDrivers: List.unmodifiable(approvedLinked),
+        ),
+      );
     }
 
     controller = StreamController<ProviderDriversSnapshot>(

@@ -35,6 +35,51 @@ class ManageDriversScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _confirmRemoveDriver(
+    BuildContext context, {
+    required String driverId,
+  }) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: CustomText(AppStrings.Drivers.removeConfirmTitle),
+        content: CustomText(
+          AppStrings.Drivers.removeConfirmBody.tr,
+          style: Theme.of(ctx).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(ctx)
+                    .colorScheme
+                    .onSurface
+                    .withValues(alpha: 0.8),
+              ),
+        ),
+        actions: [
+          AppTextButton(
+            text: AppStrings.Common.cancel,
+            onTap: () => Navigator.pop(ctx, false),
+          ),
+          AppFilledButton(
+            text: AppStrings.Drivers.remove,
+            color: Theme.of(ctx).colorScheme.error,
+            foregroundColor: Theme.of(ctx).colorScheme.onError,
+            onTap: () => Navigator.pop(ctx, true),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !context.mounted) return;
+    final removed = await context
+        .read<ManageDriversCubit>()
+        .removeLinkedDriver(driverId: driverId);
+    if (removed && context.mounted) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Drivers.driverRemoved.tr,
+        state: AppSnackState.success,
+        icon: ToukhIcons.check,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,6 +175,11 @@ class ManageDriversScreen extends StatelessWidget {
                     child: _LinkedDriverCard(
                       driver: d,
                       vehicleLabel: _vehicleLabel(d.vehicleType),
+                      busy: state.actionInProgress == d.uid,
+                      onRemove: () => _confirmRemoveDriver(
+                        context,
+                        driverId: d.uid,
+                      ),
                     ),
                   ),
                 ),
@@ -374,10 +424,14 @@ class _LinkedDriverCard extends StatelessWidget {
   const _LinkedDriverCard({
     required this.driver,
     required this.vehicleLabel,
+    required this.onRemove,
+    this.busy = false,
   });
 
   final ProviderLinkedDriver driver;
   final String vehicleLabel;
+  final VoidCallback onRemove;
+  final bool busy;
 
   @override
   Widget build(BuildContext context) {
@@ -395,53 +449,83 @@ class _LinkedDriverCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppSizes.radiusLg),
         side: BorderSide(color: AppColors.borderSubtle),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
           horizontal: AppSizes.spaceLg,
           vertical: AppSizes.spaceSm,
         ),
-        leading: CircleAvatar(
-          backgroundImage: driver.profilePhotoUrl != null
-              ? NetworkImage(driver.profilePhotoUrl!)
-              : null,
-          backgroundColor: scheme.primary.withValues(alpha: 0.15),
-          foregroundColor: scheme.primary,
-          child: driver.profilePhotoUrl == null
-              ? CustomText(
-                  initial,
-                  style: const TextStyle(fontWeight: FontWeight.w800),
-                )
-              : null,
-        ),
-        title: CustomText(
-          driver.displayName,
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-        subtitle: CustomText(
-          '${driver.phone} · $vehicleLabel',
-          style: TextStyle(
-            fontSize: 12,
-            color: scheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
-        trailing: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spaceSm,
-            vertical: 4,
-          ),
-          decoration: BoxDecoration(
-            color: (driver.online ? AppColors.success : scheme.outline)
-                .withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(AppSizes.radiusSm),
-          ),
-          child: CustomText(
-            onlineLabel,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              color: driver.online ? AppColors.success : scheme.onSurface.withValues(alpha: 0.55),
+        child: Row(
+          children: [
+            CircleAvatar(
+              backgroundImage: driver.profilePhotoUrl != null
+                  ? NetworkImage(driver.profilePhotoUrl!)
+                  : null,
+              backgroundColor: scheme.primary.withValues(alpha: 0.15),
+              foregroundColor: scheme.primary,
+              child: driver.profilePhotoUrl == null
+                  ? CustomText(
+                      initial,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    )
+                  : null,
             ),
-          ),
+            const SizedBox(width: AppSizes.spaceMd),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(
+                    driver.displayName,
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  CustomText(
+                    '${driver.phone} · $vehicleLabel',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: scheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSizes.spaceSm,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: (driver.online ? AppColors.success : scheme.outline)
+                          .withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(AppSizes.radiusSm),
+                    ),
+                    child: CustomText(
+                      onlineLabel,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: driver.online
+                            ? AppColors.success
+                            : scheme.onSurface.withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (busy)
+              const SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            else
+              IconButton(
+                tooltip: AppStrings.Drivers.remove.tr,
+                onPressed: onRemove,
+                icon: Icon(
+                  Icons.delete_outline,
+                  color: scheme.error,
+                ),
+              ),
+          ],
         ),
       ),
     );

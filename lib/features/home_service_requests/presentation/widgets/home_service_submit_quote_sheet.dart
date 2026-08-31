@@ -42,6 +42,8 @@ class _HomeServiceSubmitQuoteSheetState
   bool _useClientPrice = true;
   bool _submitting = false;
 
+  bool get _isTrip => widget.request.isTripCategory;
+
   @override
   void initState() {
     super.initState();
@@ -64,6 +66,13 @@ class _HomeServiceSubmitQuoteSheetState
   void _syncClientPrice() {
     final client = widget.request.clientPriceEgp ?? 0;
     _price.text = client.round().toString();
+  }
+
+  /// Noon on the calendar day of [date], or today at noon if null.
+  DateTime _scheduledAtNoon(DateTime? date) {
+    final now = DateTime.now();
+    final d = date?.toLocal() ?? now;
+    return DateTime(d.year, d.month, d.day, 12);
   }
 
   Future<void> _pickDateTime() async {
@@ -102,15 +111,22 @@ class _HomeServiceSubmitQuoteSheetState
       );
       return;
     }
-    final scheduled = _scheduledAt;
-    if (scheduled == null) {
-      AppSnack.show(
-        context,
-        message: AppStrings.HomeServiceRequests.quoteVisitDateRequired.tr,
-        state: AppSnackState.warning,
-        icon: ToukhIcons.clock,
-      );
-      return;
+
+    final DateTime scheduled;
+    if (_isTrip) {
+      scheduled = _scheduledAtNoon(widget.request.preferredDate);
+    } else {
+      final picked = _scheduledAt;
+      if (picked == null) {
+        AppSnack.show(
+          context,
+          message: AppStrings.HomeServiceRequests.quoteVisitDateRequired.tr,
+          state: AppSnackState.warning,
+          icon: ToukhIcons.clock,
+        );
+        return;
+      }
+      scheduled = picked;
     }
 
     setState(() => _submitting = true);
@@ -202,7 +218,6 @@ class _HomeServiceSubmitQuoteSheetState
           ],
           TextField(
             controller: _price,
-            enabled: !_useClientPrice,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
             decoration: InputDecoration(
               labelText: AppStrings.HomeServiceRequests.quotePriceLabel.tr,
@@ -217,12 +232,14 @@ class _HomeServiceSubmitQuoteSheetState
               }
             },
           ),
-          const SizedBox(height: AppSizes.spaceMd),
-          OutlinedButton.icon(
-            onPressed: _submitting ? null : _pickDateTime,
-            icon: Icon(ToukhIcons.calendar),
-            label: CustomText(scheduledLabel),
-          ),
+          if (!_isTrip) ...[
+            const SizedBox(height: AppSizes.spaceMd),
+            OutlinedButton.icon(
+              onPressed: _submitting ? null : _pickDateTime,
+              icon: Icon(ToukhIcons.calendar),
+              label: CustomText(scheduledLabel),
+            ),
+          ],
           const SizedBox(height: AppSizes.spaceLg),
           AppFilledButton(
             text: AppStrings.HomeServiceRequests.quoteSendToClient,

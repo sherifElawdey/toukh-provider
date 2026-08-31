@@ -10,6 +10,7 @@ import 'package:toukh_provider/features/registration/presentation/widgets/review
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_kind_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_location_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_phone_body.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_pre_service_questions_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_profile_body.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -58,6 +59,17 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
   final _locationKey = GlobalKey<ReviewEditLocationBodyState>();
   final _hoursKey = GlobalKey<ReviewEditHoursBodyState>();
   final _deliveryKey = GlobalKey<ReviewEditDeliveryBodyState>();
+  final _preServiceQuestionsKey =
+      GlobalKey<ReviewEditPreServiceQuestionsBodyState>();
+
+  late String _locationAddress;
+
+  @override
+  void initState() {
+    super.initState();
+    final draft = context.read<RegistrationCubit>().state;
+    _locationAddress = draft.formattedAddress.trim();
+  }
 
   String _titleKey(ReviewField field) {
     switch (field) {
@@ -79,6 +91,8 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         return AppStrings.Registration.hoursTitle;
       case ReviewField.delivery:
         return AppStrings.Registration.deliveryTitle;
+      case ReviewField.preServiceQuestions:
+        return AppStrings.Registration.preServiceQuestionsTitle;
     }
   }
 
@@ -89,6 +103,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
       case ReviewField.hours:
       case ReviewField.delivery:
       case ReviewField.category:
+      case ReviewField.preServiceQuestions:
         return true;
       case ReviewField.profile:
       case ReviewField.phone:
@@ -96,7 +111,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
     }
   }
 
-  bool _onSave(BuildContext sheetContext) {
+  Future<bool> _onSave(BuildContext sheetContext) async {
     final cubit = context.read<RegistrationCubit>();
     switch (widget.field) {
       case ReviewField.kind:
@@ -116,12 +131,27 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
       case ReviewField.phone:
         return _phoneKey.currentState?.save() ?? false;
       case ReviewField.location:
-        return _locationKey.currentState?.save(cubit) ?? false;
+        return await (_locationKey.currentState?.save(cubit) ??
+            Future.value(false));
       case ReviewField.hours:
         return _hoursKey.currentState?.save(sheetContext) ?? false;
       case ReviewField.delivery:
         return _deliveryKey.currentState?.save(sheetContext) ?? false;
+      case ReviewField.preServiceQuestions:
+        return _preServiceQuestionsKey.currentState?.save() ?? false;
     }
+  }
+
+  Future<void> _persistAndClose() async {
+    if (!await _onSave(context)) return;
+    if (!mounted) return;
+    final draft = context.read<RegistrationCubit>().state;
+    final persist = widget.onPersist;
+    if (persist != null) {
+      await context.withAppLoading(() => persist(draft));
+    }
+    if (!mounted) return;
+    Navigator.pop(context);
   }
 
   Widget _body() {
@@ -135,16 +165,96 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
       case ReviewField.phone:
         return ReviewEditPhoneBody(key: _phoneKey);
       case ReviewField.location:
-        return ReviewEditLocationBody(key: _locationKey);
+        return ReviewEditLocationBody(
+          key: _locationKey,
+          onAddressChanged: (address) {
+            if (!mounted || _locationAddress == address) return;
+            setState(() => _locationAddress = address);
+          },
+        );
       case ReviewField.hours:
         return ReviewEditHoursBody(key: _hoursKey);
       case ReviewField.delivery:
         return ReviewEditDeliveryBody(key: _deliveryKey);
+      case ReviewField.preServiceQuestions:
+        return ReviewEditPreServiceQuestionsBody(key: _preServiceQuestionsKey);
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildLocationSheet(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final height = MediaQuery.sizeOf(context).height * 0.92;
+
+    return SizedBox(
+      height: height,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppSizes.radiusXl),
+              ),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  _body(),
+                  Positioned(
+                    top: AppSizes.spaceSm,
+                    right: AppSizes.spaceSm,
+                    child: Material(
+                      color: scheme.surface.withValues(alpha: 0.92),
+                      shape: const CircleBorder(),
+                      elevation: 2,
+                      child: IconButton(
+                        tooltip: AppStrings.Common.cancel.tr,
+                        onPressed: () => Navigator.pop(context),
+                        icon: Icon(ToukhIcons.close, color: scheme.onSurface),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Material(
+            color: scheme.surface,
+            elevation: 8,
+            child: SafeArea(
+              top: false,
+              child: Padding(
+                padding: AppSizes.screenPadding.copyWith(
+                  top: AppSizes.spaceMd,
+                  bottom: AppSizes.spaceMd,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CustomText(
+                      _locationAddress.isEmpty ? '…' : _locationAddress,
+                      maxLines: 2,
+                      style: TextStyle(
+                        fontSize: AppSizes.fontBody,
+                        color: scheme.onSurface,
+                      ),
+                    ),
+                    SizedBox(height: AppSizes.spaceMd),
+                    AppFilledButton(
+                      text: AppStrings.Registration.reviewEditSave,
+                      onTap: _persistAndClose,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDefaultSheet(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height *
         (_tallSheet ? 0.88 : 0.55);
 
@@ -203,17 +313,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
                 Expanded(
                   child: AppFilledButton(
                     text: AppStrings.Registration.reviewEditSave,
-                    onTap: () async {
-                      if (!_onSave(context)) return;
-                      final draft = context.read<RegistrationCubit>().state;
-                      final persist = widget.onPersist;
-                      if (persist != null) {
-                        await context.withAppLoading(() => persist(draft));
-                      }
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                    },
+                    onTap: _persistAndClose,
                   ),
                 ),
               ],
@@ -222,5 +322,13 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         ],
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.field == ReviewField.location) {
+      return _buildLocationSheet(context);
+    }
+    return _buildDefaultSheet(context);
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
+import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/data/services/customer_home_service_on_my_way_notify_service.dart';
@@ -12,6 +14,7 @@ import 'package:toukh_provider/features/home_service_requests/cubit/home_service
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_contact_customer.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_trip_route_map_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_client_details_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -64,6 +67,31 @@ class _HomeServiceRequestDetailBody extends StatefulWidget {
 class _HomeServiceRequestDetailBodyState
     extends State<_HomeServiceRequestDetailBody> {
   bool _busy = false;
+  bool _leftForTerminal = false;
+
+  void _leaveDetail() {
+    if (!mounted) return;
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(AppRoutes.home);
+    }
+  }
+
+  void _goHomeForTerminal({required String message}) {
+    if (_leftForTerminal || !mounted) return;
+    _leftForTerminal = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      AppSnack.show(
+        context,
+        message: message,
+        state: AppSnackState.alert,
+        icon: ToukhIcons.info,
+      );
+      context.go(AppRoutes.home);
+    });
+  }
 
   Future<void> _respond(Future<void> Function() action) async {
     if (_busy) return;
@@ -106,6 +134,9 @@ class _HomeServiceRequestDetailBodyState
         }
         final request = snap.data;
         if (request == null || request.providerId != widget.providerId) {
+          _goHomeForTerminal(
+            message: AppStrings.HomeServiceRequests.notFound.tr,
+          );
           return Scaffold(
             backgroundColor: _pageBg,
             appBar: AppBar(
@@ -114,11 +145,34 @@ class _HomeServiceRequestDetailBodyState
               centerTitle: true,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: _leaveDetail,
               ),
             ),
             body: Center(
               child: CustomText(AppStrings.HomeServiceRequests.notFound.tr),
+            ),
+          );
+        }
+
+        if (request.isCancelled) {
+          _goHomeForTerminal(
+            message: AppStrings.Orders.detailCancelledByCustomer.tr,
+          );
+          return Scaffold(
+            backgroundColor: _pageBg,
+            appBar: AppBar(
+              backgroundColor: _pageBg,
+              title: CustomText(AppStrings.HomeServiceRequests.detailTitle.tr),
+              centerTitle: true,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: _leaveDetail,
+              ),
+            ),
+            body: Center(
+              child: CustomText(
+                AppStrings.Orders.detailCancelledByCustomer.tr,
+              ),
             ),
           );
         }
@@ -152,7 +206,7 @@ class _HomeServiceRequestDetailBodyState
             centerTitle: true,
             leading: IconButton(
               icon: const Icon(Icons.arrow_back),
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: _leaveDetail,
             ),
           ),
           bottomNavigationBar: showBottomBar
@@ -220,12 +274,20 @@ class _HomeServiceRequestDetailBodyState
                                   text: AppStrings.HomeServiceRequests.finishVisit,
                                   onTap: _busy
                                       ? null
-                                      : () => _respond(
+                                      : () async {
+                                          final code =
+                                              await showCompletionCodeSheet(context);
+                                          if (code == null || !mounted) return;
+                                          await _respond(
                                             () => context
                                                 .read<
                                                     ProviderHomeServiceRequestsCubit>()
-                                                .markCompleted(request.id),
-                                          ),
+                                                .markCompleted(
+                                                  request.id,
+                                                  completionCode: code,
+                                                ),
+                                          );
+                                        },
                                   status: _busy
                                       ? AppButtonStatus.loading
                                       : AppButtonStatus.enabled,
@@ -347,7 +409,7 @@ class _HomeServiceRequestDetailBodyState
                       value: '${request.quotedPriceEgp!.round()} EGP',
                       emphasized: true,
                     ),
-                  if (request.scheduledAt != null)
+                  if (request.scheduledAt != null && !request.isTripCategory)
                     _DetailRow(
                       label: AppStrings.HomeServiceRequests.fieldVisitDate.tr,
                       value: DateFormat.yMMMd()
@@ -376,12 +438,118 @@ class _HomeServiceRequestDetailBodyState
                       : AppStrings.HomeServiceRequests.customerFallback.tr,
                   phone: request.customerPhone,
                   photoUrl: request.customerPhotoUrl,
-                  addressTitle: request.addressTitle,
-                  addressFormatted: request.addressFormatted,
-                  lat: request.addressLat ?? 0,
-                  lng: request.addressLng ?? 0,
+                  addressTitle: request.startAddressTitle ?? request.addressTitle,
+                  addressFormatted: request.startAddressFormatted ??
+                      request.addressFormatted,
+                  lat: request.startLat ?? request.addressLat ?? 0,
+                  lng: request.startLng ?? request.addressLng ?? 0,
                 ),
               ),
+              if (request.destinationAddressFormatted != null &&
+                  request.destinationAddressFormatted!.trim().isNotEmpty) ...[
+                const SizedBox(height: AppSizes.spaceMd),
+                _InfoCard(
+                  children: [
+                    _DetailRow(
+                      label:
+                          AppStrings.HomeServiceRequests.fieldStartLocation.tr,
+                      value: [
+                        if ((request.startAddressTitle ?? request.addressTitle)
+                                ?.trim()
+                                .isNotEmpty ==
+                            true)
+                          (request.startAddressTitle ?? request.addressTitle)!
+                              .trim(),
+                        if ((request.startAddressFormatted ??
+                                    request.addressFormatted)
+                                ?.trim()
+                                .isNotEmpty ==
+                            true)
+                          (request.startAddressFormatted ??
+                                  request.addressFormatted)!
+                              .trim(),
+                      ].join('\n'),
+                    ),
+                    _DetailRow(
+                      label:
+                          AppStrings.HomeServiceRequests.fieldDestination.tr,
+                      value: [
+                        if (request.destinationAddressTitle
+                                ?.trim()
+                                .isNotEmpty ==
+                            true)
+                          request.destinationAddressTitle!.trim(),
+                        request.destinationAddressFormatted!.trim(),
+                      ].join('\n'),
+                    ),
+                    if (request.isTripCategory &&
+                        tripCoordsUsable(
+                          request.startLat ?? request.addressLat,
+                          request.startLng ?? request.addressLng,
+                        ) &&
+                        tripCoordsUsable(
+                          request.destinationLat,
+                          request.destinationLng,
+                        )) ...[
+                      const SizedBox(height: AppSizes.spaceMd),
+                      AppOutlinedButton(
+                        text: AppStrings.HomeServiceRequests.viewRouteOnMap.tr,
+                        onTap: () {
+                          showTripRouteMapSheet(
+                            context: context,
+                            startLat:
+                                (request.startLat ?? request.addressLat)!,
+                            startLng:
+                                (request.startLng ?? request.addressLng)!,
+                            destinationLat: request.destinationLat!,
+                            destinationLng: request.destinationLng!,
+                            startLabel: request.startAddressTitle ??
+                                request.addressTitle,
+                            destinationLabel: request.destinationAddressTitle,
+                          );
+                        },
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+              if (request.preferredDate != null) ...[
+                const SizedBox(height: AppSizes.spaceMd),
+                _InfoCard(
+                  children: [
+                    _DetailRow(
+                      label:
+                          AppStrings.HomeServiceRequests.fieldPreferredDate.tr,
+                      value: DateFormat.yMMMEd()
+                          .format(request.preferredDate!.toLocal()),
+                    ),
+                  ],
+                ),
+              ],
+              if (request.cargoDescription?.trim().isNotEmpty == true) ...[
+                const SizedBox(height: AppSizes.spaceMd),
+                _InfoCard(
+                  children: [
+                    _DetailRow(
+                      label: AppStrings.HomeServiceRequests.fieldCargo.tr,
+                      value: request.cargoDescription!.trim(),
+                    ),
+                  ],
+                ),
+              ],
+              if (request.withDriver != null) ...[
+                const SizedBox(height: AppSizes.spaceMd),
+                _InfoCard(
+                  children: [
+                    _DetailRow(
+                      label: AppStrings.HomeServiceRequests.fieldDriver.tr,
+                      value: request.withDriver!
+                          ? AppStrings.HomeServiceRequests.withDriver.tr
+                          : AppStrings.HomeServiceRequests.withoutDriver.tr,
+                    ),
+                  ],
+                ),
+              ],
               if (request.note?.isNotEmpty == true) ...[
                 const SizedBox(height: AppSizes.spaceMd),
                 _InfoCard(
@@ -397,6 +565,37 @@ class _HomeServiceRequestDetailBodyState
                       request.note!,
                       style: t.bodyLarge?.copyWith(height: 1.45),
                     ),
+                  ],
+                ),
+              ],
+              if (request.preServiceAnswers.isNotEmpty) ...[
+                const SizedBox(height: AppSizes.spaceMd),
+                _InfoCard(
+                  children: [
+                    CustomText(
+                      AppStrings.HomeServiceRequests.preServiceAnswersTitle.tr,
+                      style: t.labelLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    for (final a in request.preServiceAnswers) ...[
+                      const SizedBox(height: AppSizes.spaceMd),
+                      CustomText(
+                        a.question,
+                        style: t.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurface
+                              .withValues(alpha: 0.7),
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      CustomText(
+                        a.answer,
+                        style: t.bodyLarge?.copyWith(height: 1.4),
+                      ),
+                    ],
                   ],
                 ),
               ],
@@ -445,22 +644,7 @@ class _HomeServiceRequestDetailBodyState
   }
 
   String _statusLabel(String status) {
-    return switch (status) {
-      'pending' => AppStrings.HomeServiceRequests.statusPending.tr,
-      'tendering' => AppStrings.HomeServiceRequests.statusTendering.tr,
-      'quoted' => AppStrings.HomeServiceRequests.statusQuoted.tr,
-      'awaiting_customer' =>
-        AppStrings.HomeServiceRequests.statusAwaitingCustomer.tr,
-      'awaiting_provider' =>
-        AppStrings.HomeServiceRequests.statusAwaitingProvider.tr,
-      'accepted' => AppStrings.HomeServiceRequests.statusAccepted.tr,
-      'in_progress' => AppStrings.HomeServiceRequests.statusOnTheWay.tr,
-      'completed' => AppStrings.HomeServiceRequests.statusCompleted.tr,
-      'cancelled' => AppStrings.HomeServiceRequests.statusCancelled.tr,
-      'declined' || 'rejected' =>
-        AppStrings.HomeServiceRequests.statusDeclined.tr,
-      _ => status,
-    };
+    return ToukhStatusKeys.homeService(status).tr;
   }
 }
 

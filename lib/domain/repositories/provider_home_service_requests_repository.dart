@@ -25,5 +25,6 @@ abstract class ProviderHomeServiceRequestsRepository {
   Future<void> markCompleted({
     required String requestId,
     required String providerId,
+    required String completionCode,
   });
 }

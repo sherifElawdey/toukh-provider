@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_ui/toukh_ui.dart';
-import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
@@ -10,6 +9,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_sheet.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_app_version_footer.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_profile_header_card.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/reputation_stats_section.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -64,6 +64,12 @@ class SettingsScreen extends StatelessWidget {
                     profile: auth.profile,
                     onTap: () => context.push(AppRoutes.accountDetails),
                   ),
+                  SizedBox(height: AppSizes.spaceMd),
+                  ReputationMiniCardsRow(
+                    blackPointsTotal: auth.profile.blackPointsTotal,
+                    commitmentPercent: auth.profile.commitmentPercent,
+                    avgAcceptSeconds: auth.profile.avgAcceptSeconds,
+                  ),
                   SizedBox(height: AppSizes.spaceLg),
                 ],
                 SettingsTile(
@@ -89,6 +95,18 @@ class SettingsScreen extends StatelessWidget {
                         .withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.wallet),
+                ),
+                SettingsTile(
+                  icon: PhosphorIconsRegular.chartLine,
+                  titleKey: AppStrings.Settings.revenues,
+                  trailing: Icon(
+                    ToukhIcons.chevronRight,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.45),
+                  ),
+                  onTap: () => context.push(AppRoutes.revenues),
                 ),
                 SettingsTile(
                   icon: ToukhIcons.star,

@@ -8,7 +8,9 @@ import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/core/util/city_key.dart';
 import 'package:toukh_provider/core/utils/phone_auth_helpers.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
@@ -18,6 +20,7 @@ import 'package:toukh_provider/features/registration/cubit/registration_cubit.da
 import 'package:toukh_provider/features/registration/models/registration_submit_data.dart';
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/settings/domain/provider_profile_draft_mapper.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 export 'auth_state.dart';
 
@@ -181,9 +184,13 @@ class AuthCubit extends Cubit<AuthState> {
         lng: data.lng,
         address: data.formattedAddress,
         city: city,
+        serviceAreaId: data.serviceAreaId,
         workingHours: data.workingHours,
         deliveryConfig: data.deliveryConfig,
         avgPrepMinutes: data.avgPrepMinutes,
+        preServiceQuestions: data.kind == ServiceType.homeService
+            ? data.preServiceQuestions
+            : const [],
         status: ProviderAccountStatus.pending,
         b2FileIds: {
           'idFront': idFront.fileId,
@@ -367,7 +374,17 @@ class AuthCubit extends Cubit<AuthState> {
               lng: draft.lng!,
               formattedAddress: draft.formattedAddress,
             );
-      updated = updated.copyWith(city: city);
+      final area = await getIt<GeofenceService>().findContaining(
+        lat: draft.lat!,
+        lng: draft.lng!,
+      );
+      if (area == null) {
+        throw StateError('location_outside_service_area');
+      }
+      updated = updated.copyWith(
+        city: city,
+        serviceAreaId: area.id,
+      );
     }
     await _profileRepository.upsertProfile(updated);
     emit(Authenticated(user: current.user, profile: updated));

@@ -44,7 +44,17 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
 
     final uid = auth.user.uid;
     if (_boundUid == uid) return;
+    _subscribe(uid);
+  }
 
+  /// Re-subscribe to orders and clear any error banner.
+  void refresh() {
+    final auth = _authCubit.state;
+    if (auth is! Authenticated) return;
+    _subscribe(auth.user.uid);
+  }
+
+  void _subscribe(String uid) {
     _boundUid = uid;
     _ordersSub?.cancel();
     _alertedIncomingOrderIds.clear();
@@ -159,12 +169,42 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
         ));
   }
 
+  Future<void> assignStoreDriverAndDispatch({
+    required String orderId,
+    required String driverId,
+    required String driverName,
+    String? driverPhotoUrl,
+  }) async {
+    final auth = _authCubit.state;
+    if (auth is! Authenticated) return;
+    await _runAction(
+      orderId,
+      () => _ordersRepository.assignStoreDriverAndDispatch(
+        providerId: auth.user.uid,
+        orderId: orderId,
+        driverId: driverId,
+        driverName: driverName,
+        driverPhotoUrl: driverPhotoUrl,
+      ),
+    );
+  }
+
   Future<void> confirmHandoff(String orderId) async {
     final auth = _authCubit.state;
     if (auth is! Authenticated) return;
     await _runAction(orderId, () => _ordersRepository.confirmHandoffToCourier(
           providerId: auth.user.uid,
           orderId: orderId,
+        ));
+  }
+
+  Future<void> markDelivered(String orderId, {required String completionCode}) async {
+    final auth = _authCubit.state;
+    if (auth is! Authenticated) return;
+    await _runAction(orderId, () => _ordersRepository.markDelivered(
+          providerId: auth.user.uid,
+          orderId: orderId,
+          completionCode: completionCode,
         ));
   }
 

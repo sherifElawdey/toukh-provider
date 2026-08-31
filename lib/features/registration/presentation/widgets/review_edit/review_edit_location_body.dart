@@ -1,13 +1,25 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:toukh_provider/core/util/city_key.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class ReviewEditLocationBody extends StatefulWidget {
-  const ReviewEditLocationBody({super.key});
+  const ReviewEditLocationBody({
+    super.key,
+    this.onAddressChanged,
+  });
+
+  /// Live reverse-geocoded address for the sheet footer.
+  final ValueChanged<String>? onAddressChanged;
 
   @override
   State<ReviewEditLocationBody> createState() => ReviewEditLocationBodyState();
@@ -28,6 +40,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     final d = context.read<RegistrationCubit>().state;
     if (d.lat != null && d.lng != null) {
       _target = LatLng(d.lat!, d.lng!);
+      // Local only — parent already seeds footer; avoid setState during mount.
       _address = d.formattedAddress;
     } else {
       _target = const LatLng(30.0444, 31.2357);
@@ -38,6 +51,17 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     } else {
       _reverseGeocode(_target);
     }
+  }
+
+  void _setAddress(String value) {
+    _address = value;
+    final callback = widget.onAddressChanged;
+    if (callback == null) return;
+    // Defer so parent setState never runs during this widget's build/mount.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      callback(value);
+    });
   }
 
   Future<void> _initLocation() async {
@@ -109,7 +133,9 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .join(', ');
-      if (mounted) setState(() => _address = parts);
+      if (mounted) {
+        setState(() => _setAddress(parts));
+      }
     } catch (_) {}
   }
 
@@ -130,66 +156,89 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     }
   }
 
-  bool save(RegistrationCubit cubit) {
+  Future<bool> save(RegistrationCubit cubit) async {
+    final formattedAddress = _address.isEmpty
+        ? '${_target.latitude},${_target.longitude}'
+        : _address;
+    final area = await getIt<GeofenceService>().findContaining(
+      lat: _target.latitude,
+      lng: _target.longitude,
+    );
+    if (!mounted) return false;
+    if (area == null) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Registration.locationOutsideServiceArea.tr,
+        state: AppSnackState.warning,
+        icon: ToukhIcons.location,
+      );
+      return false;
+    }
+    final city = await resolveUserCityKey(
+      lat: _target.latitude,
+      lng: _target.longitude,
+      formattedAddress: formattedAddress,
+    );
     cubit.setLocation(
       lat: _target.latitude,
       lng: _target.longitude,
-      formattedAddress: _address.isEmpty
-          ? '${_target.latitude},${_target.longitude}'
-          : _address,
+      formattedAddress: formattedAddress,
+      city: city,
+      serviceAreaId: area.id,
     );
     return true;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return Stack(
+      fit: StackFit.expand,
       children: [
-        SizedBox(
-          height: 280,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              ToukhGoogleMap(
-                debugScreenName: 'review_edit_location',
-                initialCameraPosition: CameraPosition(
-                  target: _target,
-                  zoom: 14,
-                ),
-                myLocationEnabled: _hasLocationPermission,
-                myLocationButtonEnabled: _hasLocationPermission,
-                compassEnabled: true,
-                mapToolbarEnabled: false,
-                zoomControlsEnabled: false,
-                onMapCreated: (c) {
-                  _map = c;
-                  c.animateCamera(CameraUpdate.newLatLngZoom(_target, 14));
-                },
-                onCameraMove: (pos) => _target = pos.target,
-                onCameraIdle: _onCameraIdle,
+        ToukhGoogleMap(
+          debugScreenName: 'review_edit_location',
+          initialCameraPosition: CameraPosition(
+            target: _target,
+            zoom: 14,
+          ),
+          myLocationEnabled: _hasLocationPermission,
+          myLocationButtonEnabled: _hasLocationPermission,
+          compassEnabled: true,
+          mapToolbarEnabled: false,
+          zoomControlsEnabled: false,
+          scrollGesturesEnabled: true,
+          zoomGesturesEnabled: true,
+          gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
+            Factory<OneSequenceGestureRecognizer>(
+              () => EagerGestureRecognizer(),
+            ),
+          },
+          onMapCreated: (c) {
+            _map = c;
+            c.animateCamera(CameraUpdate.newLatLngZoom(_target, 14));
+          },
+          onCameraMove: (pos) => _target = pos.target,
+          onCameraIdle: _onCameraIdle,
+        ),
+        IgnorePointer(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 32),
+              child: Icon(
+                ToukhIcons.location,
+                size: 48,
+                color: ToukhMapColors.pickup,
               ),
-              Padding(
-                padding: EdgeInsets.only(bottom: 32),
-                child: Icon(ToukhIcons.location, size: 48, color: ToukhMapColors.pickup),
-              ),
-              if (_locating)
-                const Align(
-                  alignment: Alignment.topCenter,
-                  child: Padding(
-                    padding: EdgeInsets.only(top: AppSizes.spaceMd),
-                    child: AppLoadingMark(),
-                  ),
-                ),
-            ],
+            ),
           ),
         ),
-        SizedBox(height: AppSizes.spaceMd),
-        CustomText(
-          _address.isEmpty ? '…' : _address,
-          maxLines: 3,
-          style: const TextStyle(fontSize: AppSizes.fontBody),
-        ),
+        if (_locating)
+          const Align(
+            alignment: Alignment.topCenter,
+            child: Padding(
+              padding: EdgeInsets.only(top: AppSizes.spaceMd),
+              child: AppLoadingMark(),
+            ),
+          ),
       ],
     );
   }

@@ -45,6 +45,8 @@ class SettingsProfileHeaderCard extends StatelessWidget {
       }
     }
     if (t == ServiceType.homeService && profile.serviceCategoryId != null) {
+      final title = profile.serviceCategoryTitle?.trim();
+      if (title != null && title.isNotEmpty) return title;
       return profile.serviceCategoryId!;
     }
     switch (t) {

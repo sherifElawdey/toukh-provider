@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -132,6 +133,19 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     value: draft.description.trim(),
                     scheme: scheme,
                     onTap: () => _openEdit(context, ReviewField.profile),
+                  ),
+                if (draft.kind == ServiceType.homeService)
+                  RegisterReviewTile(
+                    icon: PhosphorIconsRegular.chatCircleDots,
+                    titleKey: AppStrings.Registration.preServiceQuestionsTitle,
+                    value: draft.preServiceQuestions.isEmpty
+                        ? AppStrings.Registration.preServiceQuestionsNone.tr
+                        : AppStrings.Registration.preServiceQuestionsCount.trParams({
+                            'count': '${draft.preServiceQuestions.length}',
+                          }),
+                    scheme: scheme,
+                    onTap: () =>
+                        _openEdit(context, ReviewField.preServiceQuestions),
                   ),
                 SizedBox(height: AppSizes.spaceLg),
                 SettingsSectionTitle(

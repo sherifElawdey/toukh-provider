@@ -6,52 +6,27 @@ import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
 import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
 
-enum WalletChartPeriod { week, month, year }
-
-class WalletChartPoint extends Equatable {
-  const WalletChartPoint({
-    required this.x,
-    required this.y,
-    required this.label,
-  });
-
-  final double x;
-  final double y;
-  final String label;
-
-  @override
-  List<Object?> get props => [x, y, label];
-}
-
 class WalletState extends Equatable {
   const WalletState({
     required this.balance,
     this.pendingEgp,
     required this.recent,
-    required this.chartPeriod,
-    required this.chartPoints,
-    required this.chartMaxY,
-    required this.chartLoading,
   });
 
   factory WalletState.initial() => const WalletState(
         balance: 0,
         recent: [],
-        chartPeriod: WalletChartPeriod.week,
-        chartPoints: [],
-        chartMaxY: 1,
-        chartLoading: true,
       );
 
   final double balance;
   final double? pendingEgp;
   final List<ProviderWalletTransaction> recent;
-  final WalletChartPeriod chartPeriod;
-  final List<WalletChartPoint> chartPoints;
-  final double chartMaxY;
-  final bool chartLoading;
 
-  ProviderWalletTransaction? get lastEarning {
+  /// Prefer last app fee; fall back to legacy earning credits.
+  ProviderWalletTransaction? get lastFeeOrEarning {
+    for (final t in recent) {
+      if (t.isAppFee) return t;
+    }
     for (final t in recent) {
       if (t.isEarning) return t;
     }
@@ -63,19 +38,11 @@ class WalletState extends Equatable {
     double? pendingEgp,
     bool clearPending = false,
     List<ProviderWalletTransaction>? recent,
-    WalletChartPeriod? chartPeriod,
-    List<WalletChartPoint>? chartPoints,
-    double? chartMaxY,
-    bool? chartLoading,
   }) {
     return WalletState(
       balance: balance ?? this.balance,
       pendingEgp: clearPending ? null : (pendingEgp ?? this.pendingEgp),
       recent: recent ?? this.recent,
-      chartPeriod: chartPeriod ?? this.chartPeriod,
-      chartPoints: chartPoints ?? this.chartPoints,
-      chartMaxY: chartMaxY ?? this.chartMaxY,
-      chartLoading: chartLoading ?? this.chartLoading,
     );
   }
 
@@ -84,101 +51,7 @@ class WalletState extends Equatable {
         balance,
         pendingEgp,
         recent,
-        chartPeriod,
-        chartPoints,
-        chartMaxY,
-        chartLoading,
       ];
-}
-
-DateTime _dateOnlyLocal(DateTime d) => DateTime(d.year, d.month, d.day);
-
-({DateTime start, DateTime end}) _chartBounds(WalletChartPeriod p) {
-  final now = DateTime.now();
-  final end = now;
-  switch (p) {
-    case WalletChartPeriod.week:
-      final today = _dateOnlyLocal(now);
-      final start = today.subtract(const Duration(days: 6));
-      return (start: start, end: end);
-    case WalletChartPeriod.month:
-      final start = DateTime(now.year, now.month, 1);
-      return (start: start, end: end);
-    case WalletChartPeriod.year:
-      final start = DateTime(now.year, 1, 1);
-      return (start: start, end: end);
-  }
-}
-
-({List<WalletChartPoint> points, double maxY}) _aggregateChart(
-  List<ProviderWalletTransaction> txs,
-  WalletChartPeriod period,
-) {
-  final now = DateTime.now();
-  switch (period) {
-    case WalletChartPeriod.week:
-      final today = _dateOnlyLocal(now);
-      final points = <WalletChartPoint>[];
-      var maxY = 0.0;
-      for (var i = 0; i < 7; i++) {
-        final day = today.subtract(Duration(days: 6 - i));
-        var sum = 0.0;
-        for (final t in txs) {
-          final c = t.createdAt;
-          if (c == null) continue;
-          if (_dateOnlyLocal(c) == day) sum += t.amountEgp;
-        }
-        if (sum > maxY) maxY = sum;
-        points.add(WalletChartPoint(
-          x: i.toDouble(),
-          y: sum,
-          label: '${day.day}/${day.month}',
-        ));
-      }
-      return (points: points, maxY: maxY > 0 ? maxY : 1);
-    case WalletChartPeriod.month:
-      final lastDay = now.day;
-      final points = <WalletChartPoint>[];
-      var maxY = 0.0;
-      for (var day = 1; day <= lastDay; day++) {
-        final bucket = DateTime(now.year, now.month, day);
-        var sum = 0.0;
-        for (final t in txs) {
-          final c = t.createdAt;
-          if (c == null) continue;
-          if (_dateOnlyLocal(c) == bucket) sum += t.amountEgp;
-        }
-        if (sum > maxY) maxY = sum;
-        points.add(WalletChartPoint(
-          x: (day - 1).toDouble(),
-          y: sum,
-          label: '$day',
-        ));
-      }
-      return (points: points, maxY: maxY > 0 ? maxY : 1);
-    case WalletChartPeriod.year:
-      final points = <WalletChartPoint>[];
-      var maxY = 0.0;
-      for (var m = 1; m <= 12; m++) {
-        if (m > now.month) break;
-        var sum = 0.0;
-        for (final t in txs) {
-          final c = t.createdAt;
-          if (c == null) continue;
-          if (c.year == now.year && c.month == m) sum += t.amountEgp;
-        }
-        if (sum > maxY) maxY = sum;
-        const monthShort = [
-          'J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D',
-        ];
-        points.add(WalletChartPoint(
-          x: (m - 1).toDouble(),
-          y: sum,
-          label: monthShort[m - 1],
-        ));
-      }
-      return (points: points, maxY: maxY > 0 ? maxY : 1);
-  }
 }
 
 class WalletCubit extends Cubit<WalletState> {
@@ -186,7 +59,6 @@ class WalletCubit extends Cubit<WalletState> {
     _summarySub = _repo.watchWalletSummary(_providerId).listen(_onSummary);
     _recentSub =
         _repo.watchRecentTransactions(_providerId, limit: 10).listen(_onRecent);
-    _refreshChart();
   }
 
   final ProviderWalletRepository _repo;
@@ -218,62 +90,6 @@ class WalletCubit extends Cubit<WalletState> {
         recent: List<ProviderWalletTransaction>.from(_latestRecent),
       ),
     );
-  }
-
-  Future<void> _refreshChart() async {
-    emit(state.copyWith(chartLoading: true));
-    final bounds = _chartBounds(state.chartPeriod);
-    try {
-      final txs = await _repo.fetchTransactionsForChart(
-        _providerId,
-        bounds.start,
-        bounds.end,
-      );
-      final agg = _aggregateChart(txs, state.chartPeriod);
-      emit(
-        state.copyWith(
-          chartPoints: agg.points,
-          chartMaxY: agg.maxY,
-          chartLoading: false,
-        ),
-      );
-    } catch (_) {
-      emit(
-        state.copyWith(
-          chartPoints: const [],
-          chartMaxY: 1,
-          chartLoading: false,
-        ),
-      );
-    }
-  }
-
-  Future<void> setChartPeriod(WalletChartPeriod p) async {
-    emit(state.copyWith(chartPeriod: p, chartLoading: true));
-    final bounds = _chartBounds(p);
-    try {
-      final txs = await _repo.fetchTransactionsForChart(
-        _providerId,
-        bounds.start,
-        bounds.end,
-      );
-      final agg = _aggregateChart(txs, p);
-      emit(
-        state.copyWith(
-          chartPoints: agg.points,
-          chartMaxY: agg.maxY,
-          chartLoading: false,
-        ),
-      );
-    } catch (_) {
-      emit(
-        state.copyWith(
-          chartPoints: const [],
-          chartMaxY: 1,
-          chartLoading: false,
-        ),
-      );
-    }
   }
 
   @override

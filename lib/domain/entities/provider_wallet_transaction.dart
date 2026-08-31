@@ -3,9 +3,9 @@ import 'package:toukh_ui/toukh_ui.dart';
 
 enum ProviderWalletTxDirection { debit, credit }
 
-enum ProviderWalletTxKind { orderEarning, payout, adjustment }
+enum ProviderWalletTxKind { orderEarning, payout, adjustment, appFee }
 
-enum ProviderWalletTxSource { order, manual }
+enum ProviderWalletTxSource { order, manual, homeService }
 
 class ProviderWalletTransaction extends Equatable {
   const ProviderWalletTransaction({
@@ -18,6 +18,9 @@ class ProviderWalletTransaction extends Equatable {
     this.detail,
     this.orderId,
     this.orderDetails,
+    this.balanceBefore,
+    this.balanceAfter,
+    this.lastTransactionId,
     required this.createdAt,
   });
 
@@ -30,11 +33,16 @@ class ProviderWalletTransaction extends Equatable {
   final String? detail;
   final String? orderId;
   final Map<String, dynamic>? orderDetails;
+  final double? balanceBefore;
+  final double? balanceAfter;
+  final String? lastTransactionId;
   final DateTime? createdAt;
 
   bool get isEarning =>
       direction == ProviderWalletTxDirection.credit &&
       kind == ProviderWalletTxKind.orderEarning;
+
+  bool get isAppFee => kind == ProviderWalletTxKind.appFee;
 
   static Map<String, dynamic>? _nestedMap(dynamic v) {
     if (v == null) return null;
@@ -47,6 +55,8 @@ class ProviderWalletTransaction extends Equatable {
     return null;
   }
 
+  static double? _num(dynamic v) => v is num ? v.toDouble() : null;
+
   static ProviderWalletTxDirection _directionFrom(String? s) =>
       s == 'debit' ? ProviderWalletTxDirection.debit : ProviderWalletTxDirection.credit;
 
@@ -56,14 +66,25 @@ class ProviderWalletTransaction extends Equatable {
         return ProviderWalletTxKind.payout;
       case 'adjustment':
         return ProviderWalletTxKind.adjustment;
+      case 'app_fee':
+        return ProviderWalletTxKind.appFee;
       case 'order_earning':
       default:
         return ProviderWalletTxKind.orderEarning;
     }
   }
 
-  static ProviderWalletTxSource _sourceFrom(String? s) =>
-      s == 'manual' ? ProviderWalletTxSource.manual : ProviderWalletTxSource.order;
+  static ProviderWalletTxSource _sourceFrom(String? s) {
+    switch (s) {
+      case 'manual':
+        return ProviderWalletTxSource.manual;
+      case 'home_service':
+        return ProviderWalletTxSource.homeService;
+      case 'order':
+      default:
+        return ProviderWalletTxSource.order;
+    }
+  }
 
   factory ProviderWalletTransaction.fromFirestore(
     String id,
@@ -73,6 +94,7 @@ class ProviderWalletTransaction extends Equatable {
 
     final amt = data['amountEgp'];
     final amount = amt is num ? amt.toDouble() : 0.0;
+    final lastId = data['lastTransactionId'];
 
     return ProviderWalletTransaction(
       id: id,
@@ -84,6 +106,11 @@ class ProviderWalletTransaction extends Equatable {
       detail: data['detail'] as String?,
       orderId: data['orderId'] as String?,
       orderDetails: _nestedMap(data['orderDetails']),
+      balanceBefore: _num(data['balanceBefore']),
+      balanceAfter: _num(data['balanceAfter']),
+      lastTransactionId: lastId is String && lastId.trim().isNotEmpty
+          ? lastId.trim()
+          : null,
       createdAt: created,
     );
   }
@@ -99,6 +126,9 @@ class ProviderWalletTransaction extends Equatable {
         detail,
         orderId,
         orderDetails,
+        balanceBefore,
+        balanceAfter,
+        lastTransactionId,
         createdAt,
       ];
 }

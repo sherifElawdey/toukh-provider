@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
+import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
@@ -23,9 +24,11 @@ class RegistrationSubmitData {
     required this.lng,
     required this.formattedAddress,
     this.city,
+    this.serviceAreaId,
     required this.workingHours,
     this.deliveryConfig,
     this.avgPrepMinutes,
+    this.preServiceQuestions = const [],
   });
 
   final String phone;
@@ -46,8 +49,10 @@ class RegistrationSubmitData {
   final double lng;
   final String formattedAddress;
   final String? city;
+  final String? serviceAreaId;
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
   final int? avgPrepMinutes;
+  final List<PreServiceQuestion> preServiceQuestions;
 }

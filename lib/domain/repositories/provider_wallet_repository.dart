@@ -9,6 +9,11 @@ abstract class ProviderWalletRepository {
     int limit = 10,
   });
 
+  Future<List<ProviderWalletTransaction>> fetchAppFeeTransactions(
+    String providerId, {
+    int docLimit = 400,
+  });
+
   Future<List<ProviderWalletTransaction>> fetchTransactionsForChart(
     String providerId,
     DateTime periodStart,

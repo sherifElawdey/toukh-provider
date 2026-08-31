@@ -42,7 +42,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
     if (!_offers) {
       return DeliveryConfig(
         offersDelivery: false,
-        isFree: true,
+        isFree: _free,
         avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
       );
     }
@@ -115,6 +115,21 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
             value: _offers,
             onChanged: (v) => setState(() => _offers = v),
           ),
+          if (!_offers) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Toukh courier delivery fees are priced from route distance '
+                '(admin price/km). Use Free delivery below only if you absorb the fee.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            SwitchListTile(
+              title: CustomText(AppStrings.Registration.reviewDeliveryFree),
+              value: _free,
+              onChanged: (v) => setState(() => _free = v),
+            ),
+          ],
           if (_offers) ...[
             SwitchListTile(
               title: CustomText(AppStrings.Registration.reviewDeliveryFree),
@@ -122,6 +137,11 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
               onChanged: (v) => setState(() => _free = v),
             ),
             if (!_free) ...[
+              Text(
+                'Your store-delivery price (not used for Toukh courier distance fees).',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              SizedBox(height: AppSizes.spaceSm),
               SegmentedButton<DeliveryPricingMode>(
                 segments: [
                   ButtonSegment(
@@ -142,7 +162,9 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
                 controller: _price,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: AppStrings.Registration.deliveryPriceLabel.tr,
+                  labelText: _mode == DeliveryPricingMode.perKm
+                      ? 'Price per km (EGP)'
+                      : AppStrings.Registration.deliveryPriceLabel.tr,
                 ),
               ),
             ],

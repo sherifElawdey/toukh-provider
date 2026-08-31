@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';

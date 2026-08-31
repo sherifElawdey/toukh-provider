@@ -95,11 +95,22 @@ class OrderDetailItemsCard extends StatelessWidget {
             label: AppStrings.Orders.detailSubtotal.tr,
             value: formatDashboardEgp(context, slice.orderPriceEgp),
           ),
-          if (slice.deliveryFeeEgp > 0) ...[
+          const SizedBox(height: AppSizes.spaceXs),
+          _SummaryRow(
+            label: AppStrings.Orders.detailDeliveryFee.tr,
+            value: formatDashboardEgp(context, slice.deliveryFeeEgp),
+          ),
+          if (slice.fulfillmentMode == FulfillmentMode.courier) ...[
             const SizedBox(height: AppSizes.spaceXs),
-            _SummaryRow(
-              label: AppStrings.Orders.detailDeliveryFee.tr,
-              value: formatDashboardEgp(context, slice.deliveryFeeEgp),
+            Text(
+              'Courier fee is calculated by Toukh from optimized route distance '
+              '(frozen at order time).',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.65),
+                  ),
             ),
           ],
           const SizedBox(height: AppSizes.spaceSm),

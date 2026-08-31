@@ -10,7 +10,6 @@ import 'package:toukh_provider/core/notifications/background_message_handler.dar
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/firebase_options.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
-import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:get/get.dart';
 
 Future<void> main() async {

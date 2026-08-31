@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/incoming_order_wait_counter.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_actions_bar.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_label.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -25,6 +25,7 @@ class ProviderOrderCard extends StatelessWidget {
     this.onReadyForPickup,
     this.onDeliver,
     this.onConfirmHandoff,
+    this.onFinish,
   });
 
   final ProviderMasterOrderRow row;
@@ -37,10 +38,9 @@ class ProviderOrderCard extends StatelessWidget {
   final VoidCallback? onReadyForPickup;
   final VoidCallback? onDeliver;
   final VoidCallback? onConfirmHandoff;
+  final VoidCallback? onFinish;
 
   ProviderOrderSlice get _slice => row.slice;
-
-  static const _compactButtonHeight = 45.0;
 
   @override
   Widget build(BuildContext context) {
@@ -155,12 +155,13 @@ class ProviderOrderCard extends StatelessWidget {
                 const SizedBox(height: 8),
                 _OutgoingMeta(row: row),
               ],
-              if (tab == ProviderOrdersTab.inProgress && _slice.hasAssignedDriver) ...[
+              if (tab == ProviderOrdersTab.inProgress &&
+                  row.hasAssignedDriverEffective) ...[
                 const SizedBox(height: 8),
                 _DriverChip(row: row),
               ],
               const SizedBox(height: 10),
-              _Actions(
+              ProviderOrderActionsBar(
                 row: row,
                 tab: tab,
                 busy: busy,
@@ -171,6 +172,9 @@ class ProviderOrderCard extends StatelessWidget {
                 onReadyForPickup: onReadyForPickup,
                 onDeliver: onDeliver,
                 onConfirmHandoff: onConfirmHandoff,
+                onFinish: onFinish,
+                onSeeDetails: () =>
+                    context.push(AppRoutes.orderDetailPath(row.id)),
               ),
             ],
           ),
@@ -401,151 +405,31 @@ class _DriverChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final slice = row.slice;
+    final assignment = row.master.driverAssignment;
+    final name = slice.driverName?.trim().isNotEmpty == true
+        ? slice.driverName!
+        : (assignment?.driverName?.trim().isNotEmpty == true
+            ? assignment!.driverName!
+            : AppStrings.Orders.courierAssignedLabel.tr);
+    final photo = slice.driverPhotoUrl ?? assignment?.driverPhotoUrl;
     return Row(
       children: [
         CircleAvatar(
           radius: 16,
           backgroundColor: scheme.primaryContainer,
-          backgroundImage: slice.driverPhotoUrl != null
-              ? NetworkImage(slice.driverPhotoUrl!)
-              : null,
-          child: slice.driverPhotoUrl == null
+          backgroundImage: photo != null ? NetworkImage(photo) : null,
+          child: photo == null
               ? Icon(ToukhIcons.profile, size: 18, color: scheme.primary)
               : null,
         ),
         const SizedBox(width: 8),
         Expanded(
           child: CustomText(
-            slice.driverName ?? AppStrings.Orders.courierAssignedLabel.tr,
+            name,
             style: const TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ],
-    );
-  }
-}
-
-class _Actions extends StatelessWidget {
-  const _Actions({
-    required this.row,
-    required this.tab,
-    required this.busy,
-    this.onApprove,
-    this.onReview,
-    this.onCancel,
-    this.onRequestDelivery,
-    this.onReadyForPickup,
-    this.onDeliver,
-    this.onConfirmHandoff,
-  });
-
-  final ProviderMasterOrderRow row;
-  final ProviderOrdersTab tab;
-  final bool busy;
-  final VoidCallback? onApprove;
-  final VoidCallback? onReview;
-  final VoidCallback? onCancel;
-  final VoidCallback? onRequestDelivery;
-  final VoidCallback? onReadyForPickup;
-  final VoidCallback? onDeliver;
-  final VoidCallback? onConfirmHandoff;
-
-  @override
-  Widget build(BuildContext context) {
-    final slice = row.slice;
-
-    if (tab == ProviderOrdersTab.incoming) {
-      return Row(
-        children: [
-          Expanded(
-            child: AppOutlinedButton(
-              text: AppStrings.Orders.actionCancel.tr,
-              size: AppButtonSize.small,
-              height: ProviderOrderCard._compactButtonHeight,
-              onTap: busy ? null : onCancel,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: AppFilledButton(
-              text: onReview != null
-                  ? AppStrings.Orders.pharmacyReviewOrder.tr
-                  : AppStrings.Orders.actionApprove.tr,
-              height: ProviderOrderCard._compactButtonHeight,
-              size: AppButtonSize.small,
-              onTap: busy ? null : (onReview ?? onApprove),
-            ),
-          ),
-        ],
-      );
-    }
-
-    if (tab == ProviderOrdersTab.inProgress) {
-      final buttons = <Widget>[];
-      if (slice.isAggregated && !slice.hasAssignedDriver) {
-        return CustomText(
-          'Driver will be assigned when all stores respond.',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: AppColors.onSurface.withValues(alpha: 0.65),
-              ),
-        );
-      }
-      if (slice.canRequestDelivery) {
-        buttons.add(
-          AppFilledButton(
-            text: AppStrings.Orders.actionRequestDelivery.tr,
-            height: ProviderOrderCard._compactButtonHeight,
-            size: AppButtonSize.small,
-            onTap: busy ? null : onRequestDelivery,
-          ),
-        );
-      }
-      if (slice.canMarkReadyForPickup) {
-        buttons.add(
-          AppFilledButton(
-            text: AppStrings.Orders.actionReadyForPickup.tr,
-            height: ProviderOrderCard._compactButtonHeight,
-            size: AppButtonSize.small,
-            onTap: busy ? null : onReadyForPickup,
-          ),
-        );
-      }
-      if (slice.canStoreDeliver) {
-        buttons.add(
-          AppFilledButton(
-            text: AppStrings.Orders.actionDeliver.tr,
-            height: ProviderOrderCard._compactButtonHeight,
-            size: AppButtonSize.small,
-            onTap: busy ? null : onDeliver,
-          ),
-        );
-      }
-      if (slice.canConfirmHandoff) {
-        buttons.add(
-          AppFilledButton(
-            text: AppStrings.Orders.actionConfirmHandoff.tr,
-            height: ProviderOrderCard._compactButtonHeight,
-            size: AppButtonSize.small,
-            onTap: busy ? null : onConfirmHandoff,
-          ),
-        );
-      }
-      if (buttons.isEmpty) return const SizedBox.shrink();
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          for (var i = 0; i < buttons.length; i++) ...[
-            if (i > 0) const SizedBox(height: 6),
-            buttons[i],
-          ],
-        ],
-      );
-    }
-
-    return AppTextButton(
-      text: AppStrings.Orders.seeDetails.tr,
-      size: AppButtonSize.small,
-      onTap: () => context.push(AppRoutes.orderDetailPath(row.id)),
     );
   }
 }

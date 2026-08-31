@@ -1,4 +1,5 @@
 import 'package:toukh_provider/core/utils/phone_e164.dart';
+import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -27,6 +28,7 @@ abstract final class ProviderProfileDraftMapper {
       kind: profile.serviceType,
       shopCategory: profile.shopCategory,
       serviceCategoryId: profile.serviceCategoryId,
+      serviceCategoryTitle: profile.serviceCategoryTitle,
       phoneNational: phoneNational,
       password: profile.password,
       name: profile.name,
@@ -35,9 +37,11 @@ abstract final class ProviderProfileDraftMapper {
       lng: profile.lng,
       formattedAddress: profile.address ?? '',
       city: profile.city,
+      serviceAreaId: profile.serviceAreaId,
       workingHours: wh,
       deliveryConfig: profile.deliveryConfig,
       avgPrepMinutes: profile.avgPrepMinutes,
+      preServiceQuestions: profile.preServiceQuestions,
     );
   }
 
@@ -64,6 +68,7 @@ abstract final class ProviderProfileDraftMapper {
               ? null
               : draft.formattedAddress.trim(),
           city: draft.city,
+          serviceAreaId: draft.serviceAreaId,
           updatedAt: now,
         );
       case ReviewField.hours:
@@ -75,6 +80,12 @@ abstract final class ProviderProfileDraftMapper {
         return base.copyWith(
           deliveryConfig: draft.deliveryConfig,
           avgPrepMinutes: draft.avgPrepMinutes,
+          updatedAt: now,
+        );
+      case ReviewField.preServiceQuestions:
+        return base.copyWith(
+          preServiceQuestions:
+              PreServiceQuestion.normalize(draft.preServiceQuestions),
           updatedAt: now,
         );
       case ReviewField.kind:

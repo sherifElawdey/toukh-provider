@@ -38,9 +38,24 @@ abstract class ProviderOrdersRepository {
     required String orderId,
   });
 
+  /// Assign a restaurant-linked driver and mark the slice out for delivery.
+  Future<void> assignStoreDriverAndDispatch({
+    required String providerId,
+    required String orderId,
+    required String driverId,
+    required String driverName,
+    String? driverPhotoUrl,
+  });
+
   Future<void> confirmHandoffToCourier({
     required String providerId,
     required String orderId,
+  });
+
+  Future<void> markDelivered({
+    required String providerId,
+    required String orderId,
+    required String completionCode,
   });
 
   Future<void> approvePharmacyRequest({

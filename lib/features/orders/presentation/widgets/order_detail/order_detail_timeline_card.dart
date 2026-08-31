@@ -29,7 +29,10 @@ class OrderDetailTimelineCard extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final fmt = DateFormat.yMMMd(locale).add_Hm();
 
-    final steps = [
+    final searchStarted = row.effectiveDeliveryRequestedAt;
+    final driverAssignedAt = row.master.driverAssignment?.assignedAt;
+
+    final steps = <_TimelineStep>[
       _TimelineStep(
         label: AppStrings.Orders.detailCreated.tr,
         at: slice.createdAt,
@@ -40,11 +43,25 @@ class OrderDetailTimelineCard extends StatelessWidget {
         at: slice.acceptedAt,
         icon: ToukhIcons.restaurant,
       ),
-      _TimelineStep(
-        label: AppStrings.Orders.statusReadyForPickup.tr,
-        at: slice.readyForPickupAt,
-        icon: PhosphorIconsRegular.package,
-      ),
+      if (!slice.isStoreDelivery && searchStarted != null)
+        _TimelineStep(
+          label: AppStrings.Orders.detailDriverSearchStarted.tr,
+          at: searchStarted,
+          icon: PhosphorIconsRegular.magnifyingGlass,
+        ),
+      if (!slice.isStoreDelivery &&
+          (driverAssignedAt != null || row.hasAssignedDriverEffective))
+        _TimelineStep(
+          label: AppStrings.Orders.detailDriverAssigned.tr,
+          at: driverAssignedAt ?? slice.acceptedAt,
+          icon: ToukhIcons.delivery,
+        ),
+      if (!slice.isStoreDelivery)
+        _TimelineStep(
+          label: AppStrings.Orders.statusReadyForPickup.tr,
+          at: slice.readyForPickupAt,
+          icon: PhosphorIconsRegular.package,
+        ),
       _TimelineStep(
         label: AppStrings.Orders.statusOutForDelivery.tr,
         at: slice.dispatchedAt,

@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 
 class ProviderHomeServiceRequest extends Equatable {
   const ProviderHomeServiceRequest({
@@ -15,9 +16,21 @@ class ProviderHomeServiceRequest extends Equatable {
     this.addressFormatted,
     this.addressLat,
     this.addressLng,
+    this.startAddressTitle,
+    this.startAddressFormatted,
+    this.startLat,
+    this.startLng,
+    this.destinationAddressTitle,
+    this.destinationAddressFormatted,
+    this.destinationLat,
+    this.destinationLng,
+    this.cargoDescription,
+    this.withDriver,
     this.preferredTimeRaw,
+    this.preferredDate,
     this.note,
     this.noteImageUrl,
+    this.preServiceAnswers = const [],
     this.clientPriceEgp,
     this.quotedPriceEgp,
     this.scheduledAt,
@@ -28,6 +41,7 @@ class ProviderHomeServiceRequest extends Equatable {
     this.onMyWayAt,
     this.completedAt,
     this.cancelledAt,
+    this.completionCode,
   });
 
   final String id;
@@ -43,9 +57,21 @@ class ProviderHomeServiceRequest extends Equatable {
   final String? addressFormatted;
   final double? addressLat;
   final double? addressLng;
+  final String? startAddressTitle;
+  final String? startAddressFormatted;
+  final double? startLat;
+  final double? startLng;
+  final String? destinationAddressTitle;
+  final String? destinationAddressFormatted;
+  final double? destinationLat;
+  final double? destinationLng;
+  final String? cargoDescription;
+  final bool? withDriver;
   final String? preferredTimeRaw;
+  final DateTime? preferredDate;
   final String? note;
   final String? noteImageUrl;
+  final List<PreServiceAnswer> preServiceAnswers;
   final double? clientPriceEgp;
   final double? quotedPriceEgp;
   final DateTime? scheduledAt;
@@ -56,6 +82,7 @@ class ProviderHomeServiceRequest extends Equatable {
   final DateTime? onMyWayAt;
   final DateTime? completedAt;
   final DateTime? cancelledAt;
+  final String? completionCode;
 
   static const _terminalStatuses = {
     'completed',
@@ -95,6 +122,13 @@ class ProviderHomeServiceRequest extends Equatable {
   bool get isDeclined =>
       statusNormalized == 'declined' || statusNormalized == 'rejected';
 
+  /// Client UI id may be `hs_private_car` / `hs_pickup_truck` or bare slug.
+  bool get isTripCategory {
+    final id = categoryId.trim().toLowerCase();
+    final slug = id.startsWith('hs_') ? id.substring(3) : id;
+    return slug == 'private_car' || slug == 'pickup_truck';
+  }
+
   DateTime? get closedAt => completedAt ?? cancelledAt ?? createdAt;
 
   String get preferredTimeLabel {
@@ -121,9 +155,21 @@ class ProviderHomeServiceRequest extends Equatable {
         addressFormatted,
         addressLat,
         addressLng,
+        startAddressTitle,
+        startAddressFormatted,
+        startLat,
+        startLng,
+        destinationAddressTitle,
+        destinationAddressFormatted,
+        destinationLat,
+        destinationLng,
+        cargoDescription,
+        withDriver,
         preferredTimeRaw,
+        preferredDate,
         note,
         noteImageUrl,
+        preServiceAnswers,
         clientPriceEgp,
         quotedPriceEgp,
         scheduledAt,
@@ -134,5 +180,6 @@ class ProviderHomeServiceRequest extends Equatable {
         onMyWayAt,
         completedAt,
         cancelledAt,
+        completionCode,
       ];
 }

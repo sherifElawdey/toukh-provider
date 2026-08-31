@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:toukh_provider/core/notifications/notification_navigation.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
@@ -116,23 +117,39 @@ class _OrderAlertBanner extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomText(
-                      notification.title,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: AppSizes.fontLabel,
-                        color: scheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    CustomText(
-                      _subtitle(),
-                      maxLines: 5,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 12,
-                        height: 1.3,
-                        color: scheme.onSurface.withValues(alpha: 0.75),
+                    InkWell(
+                      onTap: () async {
+                        await handleProviderNotificationTap(notification);
+                        ProviderOrderAlertController.instance.dismiss();
+                      },
+                      borderRadius: BorderRadius.circular(8),
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CustomText(
+                              notification.title,
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: AppSizes.fontLabel,
+                                color: scheme.onSurface,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            CustomText(
+                              _subtitle(),
+                              maxLines: 5,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 12,
+                                height: 1.3,
+                                color:
+                                    scheme.onSurface.withValues(alpha: 0.75),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const SizedBox(height: 10),

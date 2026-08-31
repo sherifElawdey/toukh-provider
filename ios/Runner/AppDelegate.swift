@@ -8,8 +8,9 @@ import UIKit
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    // Same key as `ios/Runner/Info.plist` → `GMSApiKey` (Maps SDK for iOS).
-    GMSServices.provideAPIKey("AIzaSyAHn4HkxQFz9gU2kyRuu9rXpn5YEsXfy9E")
+    // Dedicated Maps iOS key (`Toukh Maps iOS` in GCP) — not the Firebase API key.
+    // Same value as `ios/Runner/Info.plist` → `GMSApiKey`.
+    GMSServices.provideAPIKey("AIzaSyArN_FJmw4O5DneJ8ZGlK2zmkbeS1jqu1Y")
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 

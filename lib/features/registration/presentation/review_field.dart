@@ -7,4 +7,5 @@ enum ReviewField {
   location,
   hours,
   delivery,
+  preServiceQuestions,
 }

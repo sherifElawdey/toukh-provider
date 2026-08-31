@@ -18,6 +18,7 @@ abstract final class ProviderDriverMapper {
       profilePhotoUrl: _string(data['profilePhotoUrl']),
       status: _string(data['status']) ?? 'pending',
       online: data['online'] as bool? ?? false,
+      enabledByProvider: data['enabledByProvider'] as bool? ?? true,
     );
   }
 

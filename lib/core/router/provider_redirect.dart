@@ -1,7 +1,7 @@
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
-import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/di/service_locator.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_state.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
@@ -50,6 +50,18 @@ String? resolveProviderRedirect({
     logRedirect(null, 'mandatory app update screen');
     return null;
   }
+  if (!versionGate.checked) {
+    if (loc == AppRoutes.appUpdate) {
+      logRedirect(null, 'version gate pending on update screen');
+      return null;
+    }
+    if (loc != AppRoutes.splash) {
+      logRedirect(AppRoutes.splash, 'waiting for version gate');
+      return AppRoutes.splash;
+    }
+    logRedirect(null, 'waiting for version gate on splash');
+    return null;
+  }
 
   if (!settings.firstLaunchCompleted &&
       loc != AppRoutes.welcome &&
@@ -77,8 +89,12 @@ String? resolveProviderRedirect({
 
   if (auth is AuthFailure || auth is Unauthenticated) {
     if (loc == AppRoutes.requestSubmitted) return null;
-    if (loc == AppRoutes.postLoginStatus) {
-      logRedirect(AppRoutes.login, 'not authenticated while in post-login status');
+    if (loc == AppRoutes.postLoginStatus ||
+        loc == AppRoutes.accountVerifyPhone) {
+      logRedirect(
+        AppRoutes.login,
+        'not authenticated on post-login / verify-phone',
+      );
       return AppRoutes.login;
     }
     if (inRegisterWizard ||

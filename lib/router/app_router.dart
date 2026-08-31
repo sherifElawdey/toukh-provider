@@ -8,7 +8,6 @@ import 'package:toukh_provider/core/router/go_router_auth_refresh.dart';
 import 'package:toukh_provider/core/router/go_router_refresh.dart';
 import 'package:toukh_provider/core/router/provider_redirect.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
-import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/account_status/presentation/account_phone_verification_screen.dart';
 import 'package:toukh_provider/features/account_status/presentation/blocked_screen.dart';
@@ -46,6 +45,7 @@ import 'package:toukh_provider/features/registration/presentation/register_deliv
 import 'package:toukh_provider/features/registration/presentation/register_hours_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_kind_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_map_screen.dart';
+import 'package:toukh_provider/features/registration/presentation/register_pre_service_questions_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_profile_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_review_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/about_app_screen.dart';
@@ -55,6 +55,8 @@ import 'package:toukh_provider/features/settings/presentation/settings_screen.da
 import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
 import 'package:toukh_provider/features/wallet/cubit/wallet_cubit.dart';
 import 'package:toukh_provider/features/wallet/presentation/wallet_screen.dart';
+import 'package:toukh_provider/features/revenues/cubit/revenues_cubit.dart';
+import 'package:toukh_provider/features/revenues/presentation/revenues_screen.dart';
 import 'package:toukh_provider/domain/repositories/provider_drivers_repository.dart';
 import 'package:toukh_provider/features/drivers/cubit/manage_drivers_cubit.dart';
 import 'package:toukh_provider/features/drivers/presentation/manage_drivers_screen.dart';
@@ -116,19 +118,12 @@ GoRouter createAppRouter({
           final uri = extra is Uri
               ? extra
               : getIt<AppVersionGateService>().storeUri;
-          if (uri == null) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (context.mounted) GoRouter.of(context).go(AppRoutes.splash);
-            });
-            return const Scaffold(body: SizedBox.shrink());
-          }
           return AppMandatoryUpdateScreen(
             title: AppStrings.AppUpdate.title.tr,
             description: AppStrings.AppUpdate.description.tr,
             storeUri: uri,
+            remoteConfigKey: ToukhRemoteConfigKeys.toukhProviderVersion,
             updateButtonLabel: AppStrings.AppUpdate.openStore.tr,
-            imageAsset: 'assets/branding/app_icon_provider.png',
-            imagePackage: null,
           );
         },
       ),
@@ -315,6 +310,26 @@ GoRouter createAppRouter({
         },
       ),
       GoRoute(
+        path: AppRoutes.revenues,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = authCubit.state;
+          if (auth is! Authenticated) {
+            return Scaffold(
+              body: Center(child: CustomText(AppStrings.Common.error.tr)),
+            );
+          }
+          return BlocProvider(
+            create: (_) => RevenuesCubit(
+              dashboardRepository: getIt<ProviderDashboardRepository>(),
+              walletRepository: getIt<ProviderWalletRepository>(),
+              providerId: auth.user.uid,
+            ),
+            child: const RevenuesScreen(),
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.walletTransactions,
         parentNavigatorKey: providerRootNavigatorKey,
         builder: (context, state) {
@@ -411,6 +426,11 @@ GoRouter createAppRouter({
           GoRoute(
             path: AppRoutes.registerCategory,
             builder: (context, state) => const RegisterCategoryScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.registerPreServiceQuestions,
+            builder: (context, state) =>
+                const RegisterPreServiceQuestionsScreen(),
           ),
           GoRoute(
             path: AppRoutes.registerCredentials,

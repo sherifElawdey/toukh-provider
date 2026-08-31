@@ -9,6 +9,7 @@ class ProviderLinkedDriver extends Equatable {
     this.profilePhotoUrl,
     required this.status,
     required this.online,
+    this.enabledByProvider = true,
   });
 
   final String uid;
@@ -18,6 +19,7 @@ class ProviderLinkedDriver extends Equatable {
   final String? profilePhotoUrl;
   final String status;
   final bool online;
+  final bool enabledByProvider;
 
   @override
   List<Object?> get props => [
@@ -28,5 +30,6 @@ class ProviderLinkedDriver extends Equatable {
         profilePhotoUrl,
         status,
         online,
+        enabledByProvider,
       ];
 }

@@ -3,6 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/block_info.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
+import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
@@ -29,12 +30,14 @@ class ProviderProfile extends Equatable {
     this.lng,
     this.address,
     this.city,
+    this.serviceAreaId,
     this.workingHours = const {},
     this.deliveryConfig,
     /// Prep time for restaurants (minutes), independent of delivery toggle.
     this.avgPrepMinutes,
     this.menuItems,
     this.portfolioImageUrls,
+    this.preServiceQuestions = const [],
     required this.status,
     this.blockInfo,
     this.b2FileIds = const {},
@@ -42,6 +45,9 @@ class ProviderProfile extends Equatable {
     this.fcmTokens = const [],
     this.walletBalanceEgp,
     this.walletPendingEgp,
+    this.blackPointsTotal = 0,
+    this.commitmentPercent,
+    this.avgAcceptSeconds,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -66,6 +72,7 @@ class ProviderProfile extends Equatable {
   final double? lng;
   final String? address;
   final String? city;
+  final String? serviceAreaId;
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
@@ -73,6 +80,9 @@ class ProviderProfile extends Equatable {
 
   final List<MenuItemEntity>? menuItems;
   final List<String>? portfolioImageUrls;
+
+  /// Home-service only: questions asked before a client request (max 3).
+  final List<PreServiceQuestion> preServiceQuestions;
 
   final ProviderAccountStatus status;
   final BlockInfo? blockInfo;
@@ -88,6 +98,10 @@ class ProviderProfile extends Equatable {
 
   /// Optional pending payouts (EGP).
   final double? walletPendingEgp;
+
+  final int blackPointsTotal;
+  final int? commitmentPercent;
+  final double? avgAcceptSeconds;
 
   final DateTime createdAt;
   final DateTime updatedAt;
@@ -111,11 +125,13 @@ class ProviderProfile extends Equatable {
     double? lng,
     String? address,
     String? city,
+    String? serviceAreaId,
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
     int? avgPrepMinutes,
     List<MenuItemEntity>? menuItems,
     List<String>? portfolioImageUrls,
+    List<PreServiceQuestion>? preServiceQuestions,
     ProviderAccountStatus? status,
     BlockInfo? blockInfo,
     Map<String, String>? b2FileIds,
@@ -123,6 +139,9 @@ class ProviderProfile extends Equatable {
     List<String>? fcmTokens,
     double? walletBalanceEgp,
     double? walletPendingEgp,
+    int? blackPointsTotal,
+    int? commitmentPercent,
+    double? avgAcceptSeconds,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -145,11 +164,13 @@ class ProviderProfile extends Equatable {
       lng: lng ?? this.lng,
       address: address ?? this.address,
       city: city ?? this.city,
+      serviceAreaId: serviceAreaId ?? this.serviceAreaId,
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
       menuItems: menuItems ?? this.menuItems,
       portfolioImageUrls: portfolioImageUrls ?? this.portfolioImageUrls,
+      preServiceQuestions: preServiceQuestions ?? this.preServiceQuestions,
       status: status ?? this.status,
       blockInfo: blockInfo ?? this.blockInfo,
       b2FileIds: b2FileIds ?? this.b2FileIds,
@@ -158,6 +179,9 @@ class ProviderProfile extends Equatable {
       fcmTokens: fcmTokens ?? this.fcmTokens,
       walletBalanceEgp: walletBalanceEgp ?? this.walletBalanceEgp,
       walletPendingEgp: walletPendingEgp ?? this.walletPendingEgp,
+      blackPointsTotal: blackPointsTotal ?? this.blackPointsTotal,
+      commitmentPercent: commitmentPercent ?? this.commitmentPercent,
+      avgAcceptSeconds: avgAcceptSeconds ?? this.avgAcceptSeconds,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -186,11 +210,15 @@ class ProviderProfile extends Equatable {
       if (lng != null) 'lng': lng,
       if (address != null) 'address': address,
       if (city != null && city!.trim().isNotEmpty) 'city': city,
+      if (serviceAreaId != null && serviceAreaId!.trim().isNotEmpty)
+        'serviceAreaId': serviceAreaId,
       'workingHours': wh,
       if (deliveryConfig != null) 'deliveryConfig': deliveryConfig!.toFirestore(),
       if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
       // Menu items live under providers/{id}/Menu/{category}/items/{itemId}.
       if (portfolioImageUrls != null) 'portfolioImageUrls': portfolioImageUrls,
+      'preServiceQuestions':
+          preServiceQuestions.map((q) => q.toMap()).toList(),
       'status': status.wireValue,
       if (blockInfo != null) 'blockInfo': blockInfo!.toFirestore(),
       if (b2FileIds.isNotEmpty) 'b2FileIds': b2FileIds,
@@ -253,6 +281,9 @@ class ProviderProfile extends Equatable {
       city: (data['city'] as String?)?.trim().isNotEmpty == true
           ? (data['city'] as String).trim()
           : null,
+      serviceAreaId: (data['serviceAreaId'] as String?)?.trim().isNotEmpty == true
+          ? (data['serviceAreaId'] as String).trim()
+          : null,
       workingHours: wh,
       deliveryConfig: DeliveryConfig.fromFirestore(
         data['deliveryConfig'] as Map<String, dynamic>?,
@@ -261,6 +292,8 @@ class ProviderProfile extends Equatable {
       portfolioImageUrls: (data['portfolioImageUrls'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
+      preServiceQuestions:
+          PreServiceQuestion.listFromFirestore(data['preServiceQuestions']),
       status: ProviderAccountStatus.tryParse(data['status'] as String?) ??
           ProviderAccountStatus.pending,
       blockInfo: BlockInfo.fromFirestore(
@@ -276,6 +309,11 @@ class ProviderProfile extends Equatable {
               const [],
       walletBalanceEgp: (data['walletBalanceEgp'] as num?)?.toDouble(),
       walletPendingEgp: (data['walletPendingEgp'] as num?)?.toDouble(),
+      blackPointsTotal: (data['blackPointsTotal'] as num?)?.toInt() ?? 0,
+      commitmentPercent: data['commitmentPercent'] is num
+          ? (data['commitmentPercent'] as num).round()
+          : null,
+      avgAcceptSeconds: (data['avgAcceptSeconds'] as num?)?.toDouble(),
       createdAt: createdAt,
       updatedAt: updatedAt,
     );
@@ -311,14 +349,19 @@ class ProviderProfile extends Equatable {
         lng,
         address,
         city,
+        serviceAreaId,
         workingHours,
         deliveryConfig,
         avgPrepMinutes,
         menuItems,
         portfolioImageUrls,
+        preServiceQuestions,
         status,
         registrationExtrasComplete,
         walletBalanceEgp,
         walletPendingEgp,
+        blackPointsTotal,
+        commitmentPercent,
+        avgAcceptSeconds,
       ];
 }

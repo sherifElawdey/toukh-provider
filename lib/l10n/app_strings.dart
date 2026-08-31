@@ -27,6 +27,7 @@ abstract final class AppStrings {
   static const Notifications = _Notifications();
   static const Accepted = _Accepted();
   static const Settings = _Settings();
+  static const Revenues = _Revenues();
   static const Welcome = _Welcome();
   static const Registration = _Registration();
   static const Pending = _Pending();
@@ -288,8 +289,18 @@ class _HomeServiceRequests {
   String get fieldStatus => 'home_service_requests.field_status';
   String get fieldRequested => 'home_service_requests.field_requested';
   String get fieldAddress => 'home_service_requests.field_address';
+  String get fieldStartLocation => 'home_service_requests.field_start_location';
+  String get fieldDestination => 'home_service_requests.field_destination';
+  String get viewRouteOnMap => 'home_service_requests.view_route_on_map';
+  String get fieldPreferredDate => 'home_service_requests.field_preferred_date';
+  String get fieldCargo => 'home_service_requests.field_cargo';
+  String get fieldDriver => 'home_service_requests.field_driver';
+  String get withDriver => 'home_service_requests.with_driver';
+  String get withoutDriver => 'home_service_requests.without_driver';
   String get fieldPreferredTime => 'home_service_requests.field_preferred_time';
   String get fieldProblem => 'home_service_requests.field_problem';
+  String get preServiceAnswersTitle =>
+      'home_service_requests.pre_service_answers_title';
   String get noAddress => 'home_service_requests.no_address';
   String get dashboardPendingTitle =>
       'home_service_requests.dashboard_pending_title';
@@ -389,9 +400,24 @@ class _Orders {
   String get actionApprove => 'orders.action_approve';
   String get actionCancel => 'orders.action_cancel';
   String get actionRequestDelivery => 'orders.action_request_delivery';
+  String get actionRerequestDriver => 'orders.action_rerequest_driver';
   String get actionReadyForPickup => 'orders.action_ready_for_pickup';
+  String get searchingForDriver => 'orders.searching_for_driver';
+  String get searchingForDriverTimer => 'orders.searching_for_driver_timer';
+  String get detailDriverSearchStarted => 'orders.detail_driver_search_started';
+  String get detailDriverAssigned => 'orders.detail_driver_assigned';
   String get actionDeliver => 'orders.action_deliver';
   String get actionConfirmHandoff => 'orders.action_confirm_handoff';
+  String get actionFinishOrder => 'orders.action_finish_order';
+  String get completionCodeSheetTitle => 'orders.completion_code_sheet_title';
+  String get completionCodeWrong => 'orders.completion_code_wrong';
+  String get storeDriverPickTitle => 'orders.store_driver_pick_title';
+  String get storeDriverPickSubtitle => 'orders.store_driver_pick_subtitle';
+  String get storeDriverSearchHint => 'orders.store_driver_search_hint';
+  String get storeDriverEmpty => 'orders.store_driver_empty';
+  String get storeDriverLoadError => 'orders.store_driver_load_error';
+  String get storeDriverOnline => 'orders.store_driver_online';
+  String get storeDriverOffline => 'orders.store_driver_offline';
   String get storeDeliveryLabel => 'orders.store_delivery_label';
   String get courierAssignedLabel => 'orders.courier_assigned_label';
   String get elapsedSinceDispatch => 'orders.elapsed_since_dispatch';
@@ -505,6 +531,7 @@ class _Settings {
   String get appVersion => 'settings.app_version';
   String get ordersHistory => 'settings.orders_history';
   String get wallet => 'settings.wallet';
+  String get revenues => 'settings.revenues';
   String get reviews => 'settings.reviews';
   String get reviewsAverage => 'settings.reviews_average';
   String get reviewsCount => 'settings.reviews_count';
@@ -524,6 +551,10 @@ class _Settings {
   String get editProfileComingSoon => 'settings.edit_profile_coming_soon';
   String get walletComingSoon => 'settings.wallet_coming_soon';
   String get profileDriverFallback => 'settings.profile_driver_fallback';
+  String get blackPoints => 'settings.black_points';
+  String get blackPointsHint => 'settings.black_points_hint';
+  String get commitmentPercent => 'settings.commitment_percent';
+  String get avgAcceptTime => 'settings.avg_accept_time';
   String get accountDetails => 'settings.account_details';
   String get businessInfo => 'settings.business_info';
   String get contactInfo => 'settings.contact_info';
@@ -570,6 +601,8 @@ class _Registration {
   String get credentialsTitle => 'registration.credentials_title';
   String get profileTitle => 'registration.profile_title';
   String get mapTitle => 'registration.map_title';
+  String get locationOutsideServiceArea =>
+      'registration.location_outside_service_area';
   String get hoursTitle => 'registration.hours_title';
   String get hoursWorkingDays => 'registration.hours_working_days';
   String get hoursWorkingDaysHint => 'registration.hours_working_days_hint';
@@ -613,6 +646,25 @@ class _Registration {
   String get portfolioHint => 'registration.portfolio_hint';
   String get portfolioAddPhoto => 'registration.portfolio_add_photo';
   String get portfolioMinOne => 'registration.portfolio_min_one';
+
+  String get preServiceQuestionsTitle =>
+      'registration.pre_service_questions_title';
+  String get preServiceQuestionsSubtitle =>
+      'registration.pre_service_questions_subtitle';
+  String get preServiceQuestionsHint =>
+      'registration.pre_service_questions_hint';
+  String get preServiceQuestionsEmpty =>
+      'registration.pre_service_questions_empty';
+  String get preServiceQuestionsAdd =>
+      'registration.pre_service_questions_add';
+  String get preServiceQuestionsMax =>
+      'registration.pre_service_questions_max';
+  String get preServiceQuestionLabel =>
+      'registration.pre_service_question_label';
+  String get preServiceQuestionsNone =>
+      'registration.pre_service_questions_none';
+  String get preServiceQuestionsCount =>
+      'registration.pre_service_questions_count';
 
   /// Menu builder (categories + items)
   String get menuBuilderSubtitle =>
@@ -685,6 +737,21 @@ class _Wallet {
   String get total => 'wallet.total';
 }
 
+class _Revenues {
+  const _Revenues();
+  String get title => 'revenues.title';
+  String get monthFilter => 'revenues.month_filter';
+  String get revenue => 'revenues.revenue';
+  String get appFees => 'revenues.app_fees';
+  String get accepted => 'revenues.accepted';
+  String get rejected => 'revenues.rejected';
+  String get revenueTrend => 'revenues.revenue_trend';
+  String get statusBreakdown => 'revenues.status_breakdown';
+  String get feesBreakdown => 'revenues.fees_breakdown';
+  String get netAfterFees => 'revenues.net_after_fees';
+  String get noData => 'revenues.no_data';
+}
+
 class _Drivers {
   const _Drivers();
   String get pendingRequests => 'drivers.pending_requests';
@@ -693,6 +760,10 @@ class _Drivers {
   String get noLinkedDrivers => 'drivers.no_linked_drivers';
   String get accept => 'drivers.accept';
   String get reject => 'drivers.reject';
+  String get remove => 'drivers.remove';
+  String get removeConfirmTitle => 'drivers.remove_confirm_title';
+  String get removeConfirmBody => 'drivers.remove_confirm_body';
+  String get driverRemoved => 'drivers.driver_removed';
   String get online => 'drivers.online';
   String get offline => 'drivers.offline';
   String get requestAccepted => 'drivers.request_accepted';

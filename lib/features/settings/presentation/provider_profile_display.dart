@@ -44,9 +44,10 @@ String shopCategoryLabel(ShopCategory category) {
   if (kind == ServiceType.homeService &&
       draft.serviceCategoryId != null &&
       draft.serviceCategoryId!.trim().isNotEmpty) {
+    final title = draft.serviceCategoryTitle?.trim();
     return (
       AppStrings.Registration.serviceCategoryTitle,
-      draft.serviceCategoryId!.trim(),
+      (title != null && title.isNotEmpty) ? title : draft.serviceCategoryId!.trim(),
     );
   }
   final shopCategory = draft.shopCategory;
@@ -149,6 +150,8 @@ String serviceTypeSubtitle(ProviderProfile profile) {
     return shopCategoryLabel(profile.shopCategory!);
   }
   if (type == ServiceType.homeService && profile.serviceCategoryId != null) {
+    final title = profile.serviceCategoryTitle?.trim();
+    if (title != null && title.isNotEmpty) return title;
     return profile.serviceCategoryId!;
   }
   return providerKindLabelKey(type).tr;

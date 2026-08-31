@@ -86,15 +86,16 @@ class MainShellScaffold extends StatelessWidget {
           ],
         ),
         body: navigationShell,
-        bottomNavigationBar: SizedBox(
-          height: 100,
-          child: Material(
-            elevation: 8,
-            shadowColor: Colors.black.withValues(alpha: 0.12),
-            surfaceTintColor: Colors.transparent,
-            clipBehavior: Clip.antiAlias,
-            child: SafeArea(
-              top: false,
+        bottomNavigationBar: SafeArea(
+          top: false,
+          bottom: true,
+          child: SizedBox(
+            height: 100,
+            child: Material(
+              elevation: 8,
+              shadowColor: Colors.black.withValues(alpha: 0.12),
+              surfaceTintColor: Colors.transparent,
+              clipBehavior: Clip.antiAlias,
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
                 child: Row(

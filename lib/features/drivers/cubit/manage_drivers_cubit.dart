@@ -92,6 +92,9 @@ class ManageDriversCubit extends Cubit<ManageDriversState> {
   Future<bool> rejectRequest(String driverId) =>
       _respond(driverId: driverId, accept: false);
 
+  Future<bool> removeLinkedDriver({required String driverId}) =>
+      _respond(driverId: driverId, accept: false);
+
   Future<bool> _respond({
     required String driverId,
     required bool accept,

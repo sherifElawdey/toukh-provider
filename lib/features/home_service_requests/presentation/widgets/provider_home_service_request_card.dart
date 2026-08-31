@@ -204,26 +204,7 @@ class _StatusChip extends StatelessWidget {
   }
 
   String _statusLabel() {
-    return switch (status) {
-      'pending' => AppStrings.HomeServiceRequests.statusPending.tr,
-      'tendering' => AppStrings.HomeServiceRequests.statusTendering.tr,
-      'quoted' => AppStrings.HomeServiceRequests.statusQuoted.tr,
-      'awaiting_customer' =>
-        AppStrings.HomeServiceRequests.statusAwaitingCustomer.tr,
-      'awaiting_provider' =>
-        AppStrings.HomeServiceRequests.statusAwaitingProvider.tr,
-      'accepted' => AppStrings.HomeServiceRequests.statusAccepted.tr,
-      'in_progress' => AppStrings.HomeServiceRequests.statusOnTheWay.tr,
-      'completed' => AppStrings.HomeServiceRequests.statusCompleted.tr,
-      'cancelled' => AppStrings.HomeServiceRequests.statusCancelled.tr,
-      'declined' || 'rejected' =>
-        AppStrings.HomeServiceRequests.statusDeclined.tr,
-      _ => status
-          .split(RegExp(r'[_\s]+'))
-          .where((p) => p.isNotEmpty)
-          .map((p) => '${p[0].toUpperCase()}${p.substring(1).toLowerCase()}')
-          .join(' '),
-    };
+    return ToukhStatusKeys.homeService(status).tr;
   }
 
   Color _statusColor(ColorScheme scheme) {

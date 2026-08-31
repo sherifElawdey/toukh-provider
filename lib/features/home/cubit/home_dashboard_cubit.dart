@@ -224,7 +224,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     final completed = denomPool.where((o) => o.isDelivered).length;
     final ratio = denom == 0 ? 0.0 : completed / denom;
     final revenue =
-        window.where((o) => o.isDelivered).fold<double>(0, (a, o) => a + o.totalEgp);
+        window.where((o) => o.isDelivered).fold<double>(0, (a, o) => a + o.revenueEgp);
     final canceled = window.where((o) => o.isCancelled).length;
     return DashboardPeriodMetrics(
       ordersPlaced: placed,
@@ -263,13 +263,15 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
   }
 
   static List<BestsellerRow> _bestsellers(List<ProviderOrderDashboard> all, int days) {
-    final window = _ordersInRollingWindow(all, days).where((o) => o.isDelivered).toList();
+    final window = _ordersInRollingWindow(all, days)
+        .where((o) => o.isDelivered && !o.isHomeService)
+        .toList();
     final agg = <String, ({String label, int qty, double rev})>{};
 
     for (final o in window) {
       if (o.items.isEmpty) {
         final key = 'whole-${o.id}';
-        agg[key] = (label: o.customerName ?? '—', qty: 1, rev: o.totalEgp);
+        agg[key] = (label: o.customerName ?? '—', qty: 1, rev: o.revenueEgp);
         continue;
       }
       for (final line in o.items) {

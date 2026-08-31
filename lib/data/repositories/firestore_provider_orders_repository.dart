@@ -161,6 +161,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String providerId,
     required String masterOrderId,
     required Map<String, dynamic> patch,
+    String? completionCode,
   }) async {
     final functions = _functions;
     if (functions != null) {
@@ -169,6 +170,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
           'masterOrderId': masterOrderId,
           'providerId': providerId,
           'patch': patch,
+          if (completionCode != null) 'completionCode': completionCode,
         });
         return;
       } on FirebaseFunctionsException catch (e) {
@@ -208,6 +210,33 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
 
       slice.addAll(patch);
       slice['updatedAt'] = FieldValue.serverTimestamp();
+      final status = patch['status'] as String?;
+      if (status == 'cancelled') {
+        slice['cancelledAt'] = FieldValue.serverTimestamp();
+        slice['cancelledByRole'] =
+            patch['cancelledByRole'] as String? ??
+            slice['cancelledByRole'] as String? ??
+            'provider';
+        if (patch['cancelReason'] != null) {
+          slice['cancelReason'] = patch['cancelReason'];
+        }
+      }
+      if (status == 'preparing' || status == 'accepted') {
+        slice['acceptedAt'] = FieldValue.serverTimestamp();
+      }
+      if (status == 'ready_for_pickup') {
+        slice['readyForPickupAt'] = FieldValue.serverTimestamp();
+      }
+      if (status == 'out_for_delivery') {
+        slice['dispatchedAt'] = FieldValue.serverTimestamp();
+        if (patch['handedToCourier'] == true) {
+          slice['handedToCourierAt'] = FieldValue.serverTimestamp();
+        }
+      }
+      if (status == 'delivered' || status == 'completed') {
+        slice['deliveredAt'] ??= FieldValue.serverTimestamp();
+      }
+      slice.remove('handedToCourier');
       slices[providerId] = slice;
 
       final statusMap = Map<String, dynamic>.from(
@@ -219,16 +248,14 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         statusMap[providerId] = _mapWireToProviderState(patch['status'] as String);
       }
 
-      final status = patch['status'] as String?;
       final refsRaw = master['providerOrderRefs'] as List? ?? [];
       final refs = refsRaw.map((e) {
         final ref = Map<String, dynamic>.from(e as Map);
         if (ref['providerId'] == providerId) {
           ref['providerState'] = statusMap[providerId] ?? ref['providerState'];
           if (status == 'cancelled') {
-            if (slice['cancelledAt'] != null) {
-              ref['cancelledAt'] = slice['cancelledAt'];
-            }
+            // FieldValue.serverTimestamp() is invalid inside array elements.
+            ref['cancelledAt'] = Timestamp.now();
             if (slice['cancelReason'] != null) {
               ref['cancelReason'] = slice['cancelReason'];
             }
@@ -295,7 +322,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     final patch = <String, dynamic>{
       'status': ProviderOrderStatusWire.preparing,
       'providerState': 'preparing',
-      'acceptedAt': FieldValue.serverTimestamp(),
+      // Scalars only — CF sets slice.acceptedAt via FieldValue.
     };
     if (existingMode != 'pickup') {
       patch['fulfillmentMode'] = storeDelivers
@@ -317,6 +344,8 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     String? reason,
   }) async {
     final cancelReason = reason ?? 'unavailable';
+    // Scalars only for the callable — CF sets slice.cancelledAt via FieldValue.
+    // Never send FieldValue here: it must not be copied into providerOrderRefs[].
     await _patchSlice(
       providerId: providerId,
       masterOrderId: orderId,
@@ -324,7 +353,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         'status': ProviderOrderStatusWire.cancelled,
         'providerState': 'rejected',
         'cancelReason': cancelReason,
-        'cancelledAt': FieldValue.serverTimestamp(),
         'cancelledByRole': 'provider',
       },
     );
@@ -339,12 +367,14 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     int radiusMeters = 1000,
   }) async {
     final requestRef = _firestore.collection(deliveryRequestsCollection).doc();
-    final expiresAt = DateTime.now().add(const Duration(minutes: 15));
+    final now = DateTime.now();
+    final expiresAt = now.add(const Duration(minutes: 15));
 
-    String? deliveryTaskId;
+    late final String resultRequestId;
 
     await _firestore.runTransaction((tx) async {
-      final masterSnap = await tx.get(_masterRef(orderId));
+      final masterRef = _masterRef(orderId);
+      final masterSnap = await tx.get(masterRef);
       if (!masterSnap.exists) throw StateError('Order not found');
 
       final master = masterSnap.data()!;
@@ -354,7 +384,90 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       final slice = Map<String, dynamic>.from(
         slices[providerId] as Map? ?? {},
       );
-      deliveryTaskId = slice['deliveryTaskId'] as String?;
+      final deliveryTaskId = slice['deliveryTaskId'] as String? ??
+          master['deliveryTaskId'] as String?;
+
+      final existingSearchId =
+          (master['driverSearchRequestId'] as String?)?.trim();
+      final requestedAt = ToukhFirestoreTimestamps.toDateTime(
+            master['deliveryRequestedAt'],
+          ) ??
+          ToukhFirestoreTimestamps.toDateTime(slice['deliveryRequestedAt']);
+      final searchExpired = requestedAt == null
+          ? true
+          : now.toUtc().difference(requestedAt.toUtc()) >=
+              const Duration(minutes: 15);
+      final hasDriver = (master['driverAssignment'] is Map &&
+              ((master['driverAssignment'] as Map)['driverId'] as String?)
+                      ?.trim()
+                      .isNotEmpty ==
+                  true) ||
+          (slice['driverId'] as String?)?.trim().isNotEmpty == true;
+
+      if (hasDriver) {
+        throw StateError('A driver is already assigned.');
+      }
+
+      // Join an active shared search instead of creating a parallel request.
+      if (existingSearchId != null &&
+          existingSearchId.isNotEmpty &&
+          !searchExpired) {
+        final existingRef =
+            _firestore.collection(deliveryRequestsCollection).doc(existingSearchId);
+        final existingSnap = await tx.get(existingRef);
+        final existingStatus = existingSnap.data()?['status'] as String?;
+        if (existingSnap.exists && existingStatus == 'open') {
+          slice['status'] = ProviderOrderStatusWire.courierRequested;
+          slice['deliveryRequestId'] = existingSearchId;
+          slice['storeLocation'] = _locationToMap(searchCenter);
+          slice['deliveryRequestedAt'] = master['deliveryRequestedAt'] ??
+              Timestamp.fromDate(requestedAt);
+          slice['updatedAt'] = FieldValue.serverTimestamp();
+          slices[providerId] = slice;
+          tx.update(masterRef, {
+            'providerSlices': slices,
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+          resultRequestId = existingSearchId;
+          return;
+        }
+      }
+
+      // Expire previous open request on re-request.
+      if (existingSearchId != null && existingSearchId.isNotEmpty) {
+        final oldRef =
+            _firestore.collection(deliveryRequestsCollection).doc(existingSearchId);
+        final oldSnap = await tx.get(oldRef);
+        if (oldSnap.exists && oldSnap.data()?['status'] == 'open') {
+          tx.update(oldRef, {
+            'status': 'expired',
+            'candidateDriverIds': <String>[],
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+      final priorSliceRequestId =
+          (slice['deliveryRequestId'] as String?)?.trim();
+      if (priorSliceRequestId != null &&
+          priorSliceRequestId.isNotEmpty &&
+          priorSliceRequestId != existingSearchId) {
+        final oldSliceRef = _firestore
+            .collection(deliveryRequestsCollection)
+            .doc(priorSliceRequestId);
+        final oldSliceSnap = await tx.get(oldSliceRef);
+        if (oldSliceSnap.exists && oldSliceSnap.data()?['status'] == 'open') {
+          tx.update(oldSliceRef, {
+            'status': 'expired',
+            'candidateDriverIds': <String>[],
+            'updatedAt': FieldValue.serverTimestamp(),
+          });
+        }
+      }
+
+      final deliveryAddress = master['deliveryAddress'];
+      final serviceAreaId = deliveryAddress is Map
+          ? (deliveryAddress['serviceAreaId'] as String?)?.trim()
+          : null;
 
       tx.set(requestRef, {
         'providerId': providerId,
@@ -363,6 +476,9 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         if (deliveryTaskId != null) 'deliveryTaskId': deliveryTaskId,
         'storeLocation': GeoPoint(searchCenter.lat, searchCenter.lng),
         'searchCenter': _locationToMap(searchCenter),
+        if (deliveryAddress is Map) 'deliveryLocation': deliveryAddress,
+        if (serviceAreaId != null && serviceAreaId.isNotEmpty)
+          'serviceAreaId': serviceAreaId,
         'radiusMeters': radiusMeters,
         'status': 'open',
         'candidateDriverIds': <String>[],
@@ -373,17 +489,22 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       slice['status'] = ProviderOrderStatusWire.courierRequested;
       slice['deliveryRequestId'] = requestRef.id;
       slice['storeLocation'] = _locationToMap(searchCenter);
+      slice['deliveryRequestedAt'] = FieldValue.serverTimestamp();
       slice['updatedAt'] = FieldValue.serverTimestamp();
       slices[providerId] = slice;
 
-      tx.update(_masterRef(orderId), {
+      tx.update(masterRef, {
         'providerSlices': slices,
+        'globalStatus': 'searching_driver',
+        'driverSearchRequestId': requestRef.id,
+        'deliveryRequestedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),
       });
+      resultRequestId = requestRef.id;
     });
 
     await _notifyCustomer(providerId, orderId);
-    return requestRef.id;
+    return resultRequestId;
   }
 
   @override
@@ -396,7 +517,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       masterOrderId: orderId,
       patch: {
         'status': ProviderOrderStatusWire.readyForPickup,
-        'readyForPickupAt': FieldValue.serverTimestamp(),
+        // CF sets readyForPickupAt on the slice map.
       },
     );
     await _notifyCustomer(providerId, orderId);
@@ -412,7 +533,30 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       masterOrderId: orderId,
       patch: {
         'status': ProviderOrderStatusWire.outForDelivery,
-        'dispatchedAt': FieldValue.serverTimestamp(),
+        // CF sets dispatchedAt on the slice map.
+      },
+    );
+    await _notifyCustomer(providerId, orderId);
+  }
+
+  @override
+  Future<void> assignStoreDriverAndDispatch({
+    required String providerId,
+    required String orderId,
+    required String driverId,
+    required String driverName,
+    String? driverPhotoUrl,
+  }) async {
+    await _patchSlice(
+      providerId: providerId,
+      masterOrderId: orderId,
+      patch: {
+        'status': ProviderOrderStatusWire.outForDelivery,
+        'providerState': 'picked_up',
+        'driverId': driverId,
+        'driverName': driverName,
+        if (driverPhotoUrl != null && driverPhotoUrl.trim().isNotEmpty)
+          'driverPhotoUrl': driverPhotoUrl.trim(),
       },
     );
     await _notifyCustomer(providerId, orderId);
@@ -428,9 +572,27 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       masterOrderId: orderId,
       patch: {
         'status': ProviderOrderStatusWire.outForDelivery,
-        'dispatchedAt': FieldValue.serverTimestamp(),
-        'handedToCourierAt': FieldValue.serverTimestamp(),
+        'handedToCourier': true,
+        // CF sets dispatchedAt + handedToCourierAt on the slice map.
       },
+    );
+    await _notifyCustomer(providerId, orderId);
+  }
+
+  @override
+  Future<void> markDelivered({
+    required String providerId,
+    required String orderId,
+    required String completionCode,
+  }) async {
+    await _patchSlice(
+      providerId: providerId,
+      masterOrderId: orderId,
+      patch: {
+        'status': ProviderOrderStatusWire.delivered,
+        'providerState': 'picked_up',
+      },
+      completionCode: completionCode,
     );
     await _notifyCustomer(providerId, orderId);
   }

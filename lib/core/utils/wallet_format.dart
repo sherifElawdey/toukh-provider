@@ -11,10 +11,14 @@ String walletEarningLabel(ProviderWalletTransaction transaction) {
   }
   switch (transaction.kind) {
     case ProviderWalletTxKind.orderEarning:
-      return 'Order earning';
+      return transaction.source == ProviderWalletTxSource.homeService
+          ? 'Service earning'
+          : 'Order earning';
     case ProviderWalletTxKind.payout:
       return 'Payout';
     case ProviderWalletTxKind.adjustment:
       return 'Adjustment';
+    case ProviderWalletTxKind.appFee:
+      return 'App fee';
   }
 }

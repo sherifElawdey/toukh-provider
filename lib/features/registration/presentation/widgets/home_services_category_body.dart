@@ -72,7 +72,7 @@ class HomeServicesCategoryBody extends StatelessWidget {
                 scheme: scheme,
                 onTap: () {
                   cubit.setServiceCategoryId(s.id,s.title);
-                  context.push(AppRoutes.registerCredentials);
+                  context.push(AppRoutes.registerPreServiceQuestions);
                 },
               );
             },

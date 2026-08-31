@@ -7,7 +7,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
 import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
-import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/core/storage/backblaze_b2_client.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/core/config/twilio_environment.dart';
@@ -67,6 +66,9 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<FirebaseFirestore>(
     () => FirebaseFirestore.instance,
   );
+  getIt.registerLazySingleton<GeofenceService>(
+    () => GeofenceService(firestore: getIt<FirebaseFirestore>()),
+  );
   getIt.registerLazySingleton<FirebaseFunctions>(
     () => FirebaseFunctions.instanceFor(
       app: Firebase.app(),
@@ -122,6 +124,7 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<ProviderHomeServiceRequestsRepository>(
     () => FirestoreProviderHomeServiceRequestsRepository(
       getIt<FirebaseFirestore>(),
+      functions: getIt<FirebaseFunctions>(),
     ),
   );
   getIt.registerLazySingleton<ProviderOrdersRepository>(
@@ -135,6 +138,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<ProviderReviewsRepository>(
     () => FirestoreProviderReviewsRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<OrderQrService>(
+    () => OrderQrService(functions: getIt<FirebaseFunctions>()),
   );
   getIt.registerLazySingleton<ProviderDriversRepository>(
     () => FirestoreProviderDriversRepository(
@@ -185,7 +191,9 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<SettingsCubit>(SettingsCubit.new);
 
   getIt.registerLazySingleton<AppVersionGateService>(
-    AppVersionGateService.new,
+    () => AppVersionGateService(
+      minimumVersionKey: ToukhRemoteConfigKeys.toukhProviderVersion,
+    ),
   );
 
   getIt.registerLazySingleton<ProviderHomeServiceRequestsCubit>(

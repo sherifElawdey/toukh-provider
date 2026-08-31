@@ -1,3 +1,4 @@
+import 'package:flutter/scheduler.dart';
 import 'package:toukh_provider/core/notifications/notification_router_holder.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/di/service_locator.dart';
@@ -34,5 +35,31 @@ Future<void> handleProviderNotificationTap(ToukhNotification notification) async
               ? ToukhNotificationRoutes.providerOrderDetail(orderId)
               : AppRoutes.home));
 
-  NotificationRouterHolder.router?.go(route);
+  final router = NotificationRouterHolder.router;
+  if (router == null) return;
+
+  final isHsrDetail = route.startsWith('/home-service-request/');
+  final isOrderDetail = route.startsWith('${AppRoutes.orders}/') &&
+      route != AppRoutes.orders;
+
+  if (isOrderDetail) {
+    // Nested under shell — push preserves inbox; go keeps [Shell, Detail].
+    if (router.canPop()) {
+      router.push(route);
+    } else {
+      router.go(route);
+    }
+  } else if (isHsrDetail) {
+    // Root-only route — never leave detail alone on the stack.
+    if (router.canPop()) {
+      router.push(route);
+    } else {
+      router.go(AppRoutes.home);
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        NotificationRouterHolder.router?.push(route);
+      });
+    }
+  } else {
+    router.go(route);
+  }
 }

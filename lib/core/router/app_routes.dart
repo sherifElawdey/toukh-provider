@@ -8,6 +8,7 @@ abstract final class AppRoutes {
 
   static const registerKind = '/register/kind';
   static const registerCategory = '/register/category';
+  static const registerPreServiceQuestions = '/register/pre-service-questions';
   static const registerCredentials = '/register/credentials';
   static const registerProfile = '/register/profile';
   static const registerMap = '/register/map';
@@ -54,6 +55,7 @@ abstract final class AppRoutes {
   static const aboutApp = '/settings/about';
 
   static const wallet = '/wallet';
+  static const revenues = '/revenues';
   static const walletTransactions = '/wallet-transactions';
   static const reviews = '/reviews';
   static const manageDrivers = '/manage-drivers';
@@ -62,6 +64,7 @@ abstract final class AppRoutes {
   static const Set<String> registerWizardPaths = {
     registerKind,
     registerCategory,
+    registerPreServiceQuestions,
     registerCredentials,
     registerProfile,
     registerMap,
@@ -77,6 +80,7 @@ abstract final class AppRoutes {
       return true;
     }
     if (matchedLocation == wallet ||
+        matchedLocation == revenues ||
         matchedLocation == walletTransactions ||
         matchedLocation == reviews ||
         matchedLocation == manageDrivers ||

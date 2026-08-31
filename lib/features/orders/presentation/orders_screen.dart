@@ -45,13 +45,40 @@ class _MasterOrdersScreen extends StatelessWidget {
                   top: AppSizes.spaceLg,
                   bottom: AppSizes.spaceSm,
                 ),
-                child: CustomText(
-                  AppStrings.Orders.title.tr,
-                  style: TextStyle(
-                    fontSize: AppSizes.fontHeadline,
-                    fontWeight: FontWeight.w800,
-                    color: scheme.onSurface,
-                  ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: CustomText(
+                        AppStrings.Orders.title.tr,
+                        style: TextStyle(
+                          fontSize: AppSizes.fontHeadline,
+                          fontWeight: FontWeight.w800,
+                          color: scheme.onSurface,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      tooltip: 'Refresh',
+                      onPressed: state.loading ||
+                              state.actionInFlightId != null
+                          ? null
+                          : () =>
+                              context.read<ProviderOrdersCubit>().refresh(),
+                      icon: state.loading
+                          ? SizedBox(
+                              width: 22,
+                              height: 22,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: scheme.onSurface,
+                              ),
+                            )
+                          : Icon(
+                              Icons.refresh,
+                              color: scheme.onSurface,
+                            ),
+                    ),
+                  ],
                 ),
               ),
               if (state.errorMessage != null)

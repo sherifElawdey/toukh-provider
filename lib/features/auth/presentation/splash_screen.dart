@@ -9,7 +9,6 @@ import 'package:toukh_provider/core/router/provider_redirect.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
-import 'package:toukh_provider/core/updates/app_version_gate_service.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -149,7 +148,7 @@ class _SplashScreenState extends State<SplashScreen>
       final gate = getIt<AppVersionGateService>();
       final result = await gate.ensureChecked();
       if (!mounted) return;
-      if (result.needsUpdate && gate.storeUri != null) {
+      if (result.needsUpdate) {
         if (router.state.matchedLocation == AppRoutes.splash) {
           router.go(AppRoutes.appUpdate, extra: gate.storeUri);
         }

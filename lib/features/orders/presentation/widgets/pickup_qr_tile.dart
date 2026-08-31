@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -14,10 +16,12 @@ class PickupQrTile extends StatefulWidget {
     super.key,
     required this.masterOrderId,
     required this.providerId,
+    this.driverId,
   });
 
   final String masterOrderId;
   final String providerId;
+  final String? driverId;
 
   @override
   State<PickupQrTile> createState() => _PickupQrTileState();
@@ -26,35 +30,88 @@ class PickupQrTile extends StatefulWidget {
 class _PickupQrTileState extends State<PickupQrTile> {
   String? _token;
   bool _loading = true;
+  String? _error;
+  Timer? _refreshTimer;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _refreshTimer = Timer.periodic(const Duration(minutes: 4), (_) => _load());
+  }
+
+  @override
+  void didUpdateWidget(covariant PickupQrTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.driverId != widget.driverId ||
+        oldWidget.masterOrderId != widget.masterOrderId) {
+      _load();
+    }
+  }
+
+  @override
+  void dispose() {
+    _refreshTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _load() async {
+    if (!mounted) return;
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final token = await getIt<OrderQrService>().fetchPickupToken(
         masterOrderId: widget.masterOrderId,
         providerId: widget.providerId,
+        driverId: widget.driverId,
       );
-      if (mounted) setState(() => _token = token);
-    } catch (_) {
-      // ignore
-    } finally {
-      if (mounted) setState(() => _loading = false);
+      if (!mounted) return;
+      setState(() {
+        _token = token;
+        _loading = false;
+        if (token == null || token.isEmpty) {
+          _error = AppStrings.Common.error.tr;
+        }
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _error = AppStrings.Common.error.tr;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) {
+    if (_loading && (_token == null || _token!.isEmpty)) {
       return const OrderDetailSurfaceCard(
         child: Center(child: AppLoadingMark()),
       );
     }
-    if (_token == null) return const SizedBox.shrink();
+    if (_error != null && (_token == null || _token!.isEmpty)) {
+      return OrderDetailSurfaceCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            OrderDetailSectionTitle(
+              label: AppStrings.Orders.detailPickupQrTitle.tr,
+              icon: ToukhIcons.qrCode,
+            ),
+            const SizedBox(height: AppSizes.spaceMd),
+            CustomText(_error!),
+            const SizedBox(height: AppSizes.spaceSm),
+            AppTextButton(
+              text: AppStrings.Common.retry,
+              onTap: _load,
+            ),
+          ],
+        ),
+      );
+    }
+    if (_token == null || _token!.isEmpty) return const SizedBox.shrink();
 
     return OrderDetailSurfaceCard(
       child: Column(

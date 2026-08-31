@@ -60,9 +60,10 @@ String _shopCatLabel(ShopCategory c) {
   if (k == ServiceType.homeService &&
       d.serviceCategoryId != null &&
       d.serviceCategoryId!.trim().isNotEmpty) {
+    final title = d.serviceCategoryTitle?.trim();
     return (
       AppStrings.Registration.serviceCategoryTitle,
-      d.serviceCategoryId!.trim(),
+      (title != null && title.isNotEmpty) ? title : d.serviceCategoryId!.trim(),
     );
   }
   final sc = d.shopCategory;

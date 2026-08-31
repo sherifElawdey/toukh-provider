@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>GMSApiKey</key>
-	<string>AIzaSyAHn4HkxQFz9gU2kyRuu9rXpn5YEsXfy9E</string>
+	<string>AIzaSyArN_FJmw4O5DneJ8ZGlK2zmkbeS1jqu1Y</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We use the camera to take photos of your ID and business media.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

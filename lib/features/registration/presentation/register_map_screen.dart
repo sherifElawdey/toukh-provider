@@ -6,10 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:toukh_provider/core/util/city_key.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:get/get.dart';
 
 class RegisterMapScreen extends StatefulWidget {
   const RegisterMapScreen({super.key});
@@ -132,6 +134,20 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     final formattedAddress = _address.isEmpty
         ? '${_target.latitude},${_target.longitude}'
         : _address;
+    final area = await getIt<GeofenceService>().findContaining(
+      lat: _target.latitude,
+      lng: _target.longitude,
+    );
+    if (!mounted) return;
+    if (area == null) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Registration.locationOutsideServiceArea.tr,
+        state: AppSnackState.warning,
+        icon: ToukhIcons.location,
+      );
+      return;
+    }
     final city = await resolveUserCityKey(
       lat: _target.latitude,
       lng: _target.longitude,
@@ -143,6 +159,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           lng: _target.longitude,
           formattedAddress: formattedAddress,
           city: city,
+          serviceAreaId: area.id,
         );
     context.push(AppRoutes.registerHours);
   }

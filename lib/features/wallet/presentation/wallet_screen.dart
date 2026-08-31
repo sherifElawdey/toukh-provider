@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -44,26 +43,7 @@ class WalletScreen extends StatelessWidget {
                 pendingEgp: state.pendingEgp,
               ),
               const SizedBox(height: AppSizes.spaceXl),
-              _LastEarningSection(transaction: state.lastEarning),
-              const SizedBox(height: AppSizes.spaceXl),
-              CustomText(
-                AppStrings.Wallet.earningsOverview.tr,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-              const SizedBox(height: AppSizes.spaceSm),
-              _ChartPeriodSelector(
-                period: state.chartPeriod,
-                onChanged: (p) => context.read<WalletCubit>().setChartPeriod(p),
-              ),
-              const SizedBox(height: AppSizes.spaceMd),
-              _EarningsChart(
-                loading: state.chartLoading,
-                points: state.chartPoints,
-                maxY: state.chartMaxY,
-                period: state.chartPeriod,
-              ),
+              _LastEarningSection(transaction: state.lastFeeOrEarning),
               const SizedBox(height: AppSizes.spaceXl),
               Row(
                 children: [
@@ -278,10 +258,14 @@ class _LastEarningSection extends StatelessWidget {
                   ),
                 ),
                 CustomText(
-                  '+EGP ${formatWalletMoney(transaction!.amountEgp)}',
+                  transaction!.isAppFee
+                      ? '-EGP ${formatWalletMoney(transaction!.amountEgp)}'
+                      : '+EGP ${formatWalletMoney(transaction!.amountEgp)}',
                   style: t.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: AppColors.success,
+                    color: transaction!.isAppFee
+                        ? AppColors.error
+                        : AppColors.success,
                   ),
                 ),
               ],
@@ -298,245 +282,6 @@ class _LastEarningSection extends StatelessWidget {
             ],
           ],
         ],
-      ),
-    );
-  }
-}
-
-class _ChartPeriodSelector extends StatelessWidget {
-  const _ChartPeriodSelector({
-    required this.period,
-    required this.onChanged,
-  });
-
-  final WalletChartPeriod period;
-  final ValueChanged<WalletChartPeriod> onChanged;
-
-  int get _index => switch (period) {
-        WalletChartPeriod.week => 0,
-        WalletChartPeriod.month => 1,
-        WalletChartPeriod.year => 2,
-      };
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final labels = [
-      AppStrings.Wallet.week.tr,
-      AppStrings.Wallet.month.tr,
-      AppStrings.Wallet.year.tr,
-    ];
-    const values = [
-      WalletChartPeriod.week,
-      WalletChartPeriod.month,
-      WalletChartPeriod.year,
-    ];
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final segmentW = constraints.maxWidth / 3;
-        return Container(
-          height: 48,
-          decoration: BoxDecoration(
-            color: scheme.surfaceContainerHighest.withValues(alpha: 0.42),
-            borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-            border: Border.all(color: AppColors.borderSubtle),
-          ),
-          child: Stack(
-            children: [
-              AnimatedPositionedDirectional(
-                duration: const Duration(milliseconds: 240),
-                curve: Curves.easeOutCubic,
-                start: _index * segmentW + 4,
-                top: 4,
-                width: segmentW - 8,
-                height: 40,
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppColors.appColor,
-                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                  ),
-                ),
-              ),
-              Row(
-                children: List.generate(3, (i) {
-                  final selected = _index == i;
-                  return Expanded(
-                    child: Material(
-                      color: Colors.transparent,
-                      child: InkWell(
-                        onTap: () => onChanged(values[i]),
-                        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                        child: Center(
-                          child: CustomText(
-                            labels[i],
-                            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: selected
-                                      ? AppColors.surface
-                                      : (isDark
-                                          ? Colors.grey.shade400
-                                          : AppColors.onSurface.withValues(
-                                              alpha: 0.58,
-                                            )),
-                                ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _EarningsChart extends StatelessWidget {
-  const _EarningsChart({
-    required this.loading,
-    required this.points,
-    required this.maxY,
-    required this.period,
-  });
-
-  final bool loading;
-  final List<WalletChartPoint> points;
-  final double maxY;
-  final WalletChartPeriod period;
-
-  @override
-  Widget build(BuildContext context) {
-    if (loading) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: AppLoadingMark()),
-      );
-    }
-    final total = points.fold<double>(0, (a, b) => a + b.y);
-    if (points.isEmpty || total == 0) {
-      return Container(
-        height: 200,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: Theme.of(context)
-              .colorScheme
-              .surfaceContainerHighest
-              .withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-          border: Border.all(color: AppColors.borderSubtle),
-        ),
-        child: CustomText(
-          AppStrings.Wallet.noEarningsInPeriod.tr,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.onSurface.withValues(alpha: 0.55),
-              ),
-        ),
-      );
-    }
-
-    final spots = points.map((e) => FlSpot(e.x, e.y)).toList();
-    return Container(
-      height: 220,
-      padding: const EdgeInsets.only(right: 12, top: 16, left: 4, bottom: 8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        border: Border.all(color: AppColors.borderSubtle),
-      ),
-      child: LineChart(
-        LineChartData(
-          minX: spots.first.x,
-          maxX: spots.last.x,
-          minY: 0,
-          maxY: maxY * 1.15,
-          gridData: FlGridData(
-            show: true,
-            drawVerticalLine: false,
-            getDrawingHorizontalLine: (_) => FlLine(
-              color: AppColors.borderSubtle.withValues(alpha: 0.5),
-              strokeWidth: 1,
-            ),
-          ),
-          borderData: FlBorderData(show: false),
-          titlesData: FlTitlesData(
-            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 36,
-                getTitlesWidget: (v, _) => CustomText(
-                  v >= 1000 ? '${(v / 1000).toStringAsFixed(1)}k' : v.toInt().toString(),
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: AppColors.onSurface.withValues(alpha: 0.45),
-                  ),
-                ),
-              ),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                interval: period == WalletChartPeriod.month && points.length > 10
-                    ? (points.length / 5).ceilToDouble()
-                    : 1,
-                getTitlesWidget: (v, _) {
-                  final i = v.round();
-                  if (i < 0 || i >= points.length) return const SizedBox.shrink();
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: CustomText(
-                      points[i].label,
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: AppColors.onSurface.withValues(alpha: 0.55),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-          lineBarsData: [
-            LineChartBarData(
-              spots: spots,
-              isCurved: true,
-              color: AppColors.appColor,
-              barWidth: 3,
-              dotData: const FlDotData(show: true),
-              belowBarData: BarAreaData(
-                show: true,
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    AppColors.appColor.withValues(alpha: 0.25),
-                    AppColors.appColor.withValues(alpha: 0),
-                  ],
-                ),
-              ),
-            ),
-          ],
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              getTooltipItems: (touched) => touched.map((s) {
-                return LineTooltipItem(
-                  'EGP ${formatWalletMoney(s.y)}',
-                  const TextStyle(
-                    color: AppColors.surface,
-                    fontWeight: FontWeight.w700,
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ),
-        duration: Duration.zero,
       ),
     );
   }

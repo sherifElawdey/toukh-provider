@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
+import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
@@ -44,9 +45,11 @@ class RegistrationDraft extends Equatable {
     this.lng,
     this.formattedAddress = '',
     this.city,
+    this.serviceAreaId,
     this.workingHours = const {},
     this.deliveryConfig,
     this.avgPrepMinutes,
+    this.preServiceQuestions = const [],
   });
 
   final ServiceType? kind;
@@ -68,10 +71,12 @@ class RegistrationDraft extends Equatable {
   final double? lng;
   final String formattedAddress;
   final String? city;
+  final String? serviceAreaId;
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
   final int? avgPrepMinutes;
+  final List<PreServiceQuestion> preServiceQuestions;
 
   RegistrationDraft copyWith({
     ServiceType? kind,
@@ -92,9 +97,12 @@ class RegistrationDraft extends Equatable {
     String? formattedAddress,
     String? city,
     bool clearCity = false,
+    String? serviceAreaId,
+    bool clearServiceAreaId = false,
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
     int? avgPrepMinutes,
+    List<PreServiceQuestion>? preServiceQuestions,
   }) {
     return RegistrationDraft(
       kind: kind ?? this.kind,
@@ -115,9 +123,13 @@ class RegistrationDraft extends Equatable {
       lng: lng ?? this.lng,
       formattedAddress: formattedAddress ?? this.formattedAddress,
       city: clearCity ? null : (city ?? this.city),
+      serviceAreaId: clearServiceAreaId
+          ? null
+          : (serviceAreaId ?? this.serviceAreaId),
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
+      preServiceQuestions: preServiceQuestions ?? this.preServiceQuestions,
     );
   }
 
@@ -136,6 +148,7 @@ class RegistrationDraft extends Equatable {
     if (k == null) return null;
     if (idFront == null || idBack == null || brandImage == null) return null;
     if (lat == null || lng == null) return null;
+    if (serviceAreaId == null || serviceAreaId!.trim().isEmpty) return null;
     if (name.trim().isEmpty) return null;
     final raw = phoneNational.replaceAll(RegExp(r'\D'), '');
     final ten =
@@ -162,9 +175,13 @@ class RegistrationDraft extends Equatable {
       lng: lng!,
       formattedAddress: formattedAddress.trim(),
       city: city,
+      serviceAreaId: serviceAreaId,
       workingHours: workingHours,
       deliveryConfig: deliveryConfig,
       avgPrepMinutes: avgPrepMinutes,
+      preServiceQuestions: k == ServiceType.homeService
+          ? PreServiceQuestion.normalize(preServiceQuestions)
+          : const [],
     );
   }
 
@@ -185,9 +202,11 @@ class RegistrationDraft extends Equatable {
         lng,
         formattedAddress,
         city,
+        serviceAreaId,
         workingHours,
         deliveryConfig,
         avgPrepMinutes,
+        preServiceQuestions,
       ];
 }
 
@@ -294,6 +313,7 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
     required double lng,
     required String formattedAddress,
     String? city,
+    String? serviceAreaId,
   }) {
     emit(state.copyWith(
       lat: lat,
@@ -301,6 +321,8 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
       formattedAddress: formattedAddress,
       city: city,
       clearCity: city == null,
+      serviceAreaId: serviceAreaId,
+      clearServiceAreaId: serviceAreaId == null,
     ));
   }
 
@@ -314,6 +336,12 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
     emit(state.copyWith(
       deliveryConfig: deliveryConfig,
       avgPrepMinutes: avgPrepMinutes,
+    ));
+  }
+
+  void setPreServiceQuestions(List<PreServiceQuestion> questions) {
+    emit(state.copyWith(
+      preServiceQuestions: PreServiceQuestion.normalize(questions),
     ));
   }
 
