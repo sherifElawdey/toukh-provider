@@ -24,6 +24,12 @@ class AppTranslations extends Translations {
 
     'common.continue': 'Continue',
     'common.cancel': 'Cancel',
+    'common.media_gallery_rationale_title': 'Choose a photo',
+    'common.media_gallery_rationale_body':
+        "You'll pick a photo from your gallery to upload. Toukh only accesses the image you select.",
+    'common.media_camera_rationale_title': 'Take a photo',
+    'common.media_camera_rationale_body':
+        'Toukh needs camera access so you can take a photo to upload.',
     'common.delete': 'Delete',
     'common.confirm': 'Confirm',
     'common.retry': 'Retry',
@@ -819,6 +825,12 @@ class AppTranslations extends Translations {
 
     'common.continue': 'متابعة',
     'common.cancel': 'إلغاء',
+    'common.media_gallery_rationale_title': 'اختر صورة',
+    'common.media_gallery_rationale_body':
+        'ستختار صورة من معرض الصور للرفع. يصل طوخ فقط إلى الصورة التي تختارها.',
+    'common.media_camera_rationale_title': 'التقاط صورة',
+    'common.media_camera_rationale_body':
+        'يحتاج طوخ إلى الوصول للكاميرا لالتقاط صورة للرفع.',
     'common.delete': 'حذف',
     'common.confirm': 'تأكيد',
     'common.retry': 'إعادة المحاولة',

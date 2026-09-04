@@ -76,6 +76,10 @@ class _Common {
   String get dark => 'common.dark';
   String get english => 'common.english';
   String get arabic => 'common.arabic';
+  String get mediaGalleryRationaleTitle => 'common.media_gallery_rationale_title';
+  String get mediaGalleryRationaleBody => 'common.media_gallery_rationale_body';
+  String get mediaCameraRationaleTitle => 'common.media_camera_rationale_title';
+  String get mediaCameraRationaleBody => 'common.media_camera_rationale_body';
 }
 
 class _Auth {

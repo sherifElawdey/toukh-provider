@@ -4,7 +4,9 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -36,15 +38,91 @@ void installImagePickErrorLogging() {
   debugPrint('$_tag error logging installed');
 }
 
+Future<bool> _showAccessRationale(
+  BuildContext context, {
+  required String title,
+  required String body,
+}) async {
+  final proceed = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: CustomText(title),
+      content: CustomText(body),
+      actions: [
+        AppTextButton(
+          text: AppStrings.Common.cancel.tr,
+          onTap: () => Navigator.pop(ctx, false),
+        ),
+        AppTextButton(
+          text: AppStrings.Common.continueLabel.tr,
+          onTap: () => Navigator.pop(ctx, true),
+        ),
+      ],
+    ),
+  );
+  return proceed == true;
+}
+
+Future<bool> _ensureCameraAccess(
+  BuildContext context, {
+  bool showRationale = true,
+}) async {
+  if (!Platform.isIOS && !Platform.isAndroid) return true;
+
+  var status = await Permission.camera.status;
+  if (status.isGranted) return true;
+
+  if (status.isDenied) {
+    if (showRationale &&
+        context.mounted &&
+        !await _showAccessRationale(
+          context,
+          title: AppStrings.Common.mediaCameraRationaleTitle.tr,
+          body: AppStrings.Common.mediaCameraRationaleBody.tr,
+        )) {
+      return false;
+    }
+    status = await Permission.camera.request();
+    return status.isGranted;
+  }
+
+  return false;
+}
+
 /// Picks an image from [source] with logging. No Flutter modal underneath.
 Future<File?> pickImageFromSource(
   BuildContext context,
-  ImageSource source,
-) async {
+  ImageSource source, {
+  bool showAccessRationale = true,
+}) async {
   _log('pickImageFromSource start source=$source mounted=${context.mounted}');
   if (!context.mounted) {
     _log('aborted: context not mounted before pick');
     return null;
+  }
+
+  if (showAccessRationale &&
+      source == ImageSource.gallery &&
+      Platform.isAndroid &&
+      !await _showAccessRationale(
+        context,
+        title: AppStrings.Common.mediaGalleryRationaleTitle.tr,
+        body: AppStrings.Common.mediaGalleryRationaleBody.tr,
+      )) {
+    _log('gallery rationale declined');
+    return null;
+  }
+
+  if (source == ImageSource.camera) {
+    if (!context.mounted) return null;
+    final allowed = await _ensureCameraAccess(
+      context,
+      showRationale: showAccessRationale,
+    );
+    if (!allowed) {
+      _log('camera permission denied');
+      return null;
+    }
   }
 
   try {
@@ -179,7 +257,11 @@ Future<File?> pickImageWithSourceSheet(BuildContext context) async {
     return null;
   }
 
-  return pickImageFromSource(context, source);
+  return pickImageFromSource(
+    context,
+    source,
+    showAccessRationale: source == ImageSource.camera,
+  );
 }
 
 /// Convenience for registration cards that pass an [onPicked] callback.

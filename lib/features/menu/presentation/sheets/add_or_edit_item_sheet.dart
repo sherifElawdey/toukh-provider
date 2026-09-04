@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:toukh_provider/core/media/safe_image_pick.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -43,7 +44,6 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
   final _titleCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
   final _uuid = const Uuid();
-  final _picker = ImagePicker();
 
   late String? _selectedCategory;
   final _rows = <_SizeRow>[];
@@ -100,14 +100,10 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
   }
 
   Future<void> _pickImage() async {
-    final res = await _picker.pickImage(
-      source: ImageSource.gallery,
-      maxWidth: 1600,
-      imageQuality: 88,
-    );
-    if (res == null) return;
+    final file = await pickImageFromSource(context, ImageSource.gallery);
+    if (file == null) return;
     setState(() {
-      _pickedImage = File(res.path);
+      _pickedImage = file;
       _removedImage = false;
     });
   }

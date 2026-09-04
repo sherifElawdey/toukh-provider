@@ -1,8 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker_android/image_picker_android.dart';
+import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/app.dart';
 import 'package:toukh_provider/core/media/safe_image_pick.dart';
@@ -12,8 +15,17 @@ import 'package:toukh_provider/firebase_options.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:get/get.dart';
 
+void _initAndroidPhotoPicker() {
+  if (!Platform.isAndroid) return;
+  final platform = ImagePickerPlatform.instance;
+  if (platform is ImagePickerAndroid) {
+    platform.useAndroidPhotoPicker = true;
+  }
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  _initAndroidPhotoPicker();
   installImagePickErrorLogging();
   await initToukhMapsPlatform();
 

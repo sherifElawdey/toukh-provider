@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:toukh_provider/core/media/safe_image_pick.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
@@ -23,13 +24,12 @@ class PortfolioScreen extends StatefulWidget {
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
   final _files = <File>[];
-  final _picker = ImagePicker();
 
   Future<void> _add() async {
     if (_files.length >= PortfolioScreen.kMaxPhotos) return;
-    final r = await _picker.pickImage(source: ImageSource.gallery);
-    if (r == null) return;
-    setState(() => _files.add(File(r.path)));
+    final file = await pickImageFromSource(context, ImageSource.gallery);
+    if (file == null) return;
+    setState(() => _files.add(file));
   }
 
   Future<void> _save() async {
