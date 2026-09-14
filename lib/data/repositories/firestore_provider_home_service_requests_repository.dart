@@ -7,7 +7,7 @@ import 'package:toukh_provider/domain/repositories/provider_home_service_request
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
-const _kCollection = 'homeServiceRequests';
+const _kCollection = ToukhFirestoreCollections.homeServiceRequests;
 
 class FirestoreProviderHomeServiceRequestsRepository
     implements ProviderHomeServiceRequestsRepository {

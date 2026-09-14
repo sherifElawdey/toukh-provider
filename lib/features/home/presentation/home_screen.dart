@@ -70,9 +70,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _syncFcmToken() async {
     final auth = getIt<AuthCubit>().state;
     if (auth is! Authenticated) return;
-    await ToukhFcmTokenSync.syncIfNeeded(
+    await ToukhFcmTokenSync.syncOnAppOpen(
       uid: auth.user.uid,
-      existingFcmTokens: auth.profile.fcmTokens,
       firestore: FirebaseFirestore.instance,
       recipient: ToukhNotificationRecipient.provider,
     );

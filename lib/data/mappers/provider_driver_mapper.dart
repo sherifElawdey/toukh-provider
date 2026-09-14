@@ -56,6 +56,8 @@ abstract final class ProviderDriverMapper {
       case 'tuktuk':
       case 'tuk-tuk':
         return 'tuk_tuk';
+      case 'car':
+        return 'car';
       default:
         return v ?? 'motorcycle';
     }

@@ -1,3 +1,5 @@
+import 'package:toukh_ui/toukh_ui.dart';
+
 abstract final class AppConstants {
   AppConstants._();
 
@@ -5,13 +7,13 @@ abstract final class AppConstants {
   static const syntheticEmailDomain = 'toukh.com';
 
   /// Firestore collection for shop/service provider profiles.
-  static const providersCollection = 'providers';
+  static const providersCollection = ToukhFirestoreCollections.providers;
 
   /// Driver profiles (courier app).
-  static const driversCollection = 'drivers';
+  static const driversCollection = ToukhFirestoreCollections.drivers;
 
   /// Driver registration applications (courier app).
-  static const deliveryRequestsCollection = 'Delivery Requests';
+  static const deliveryRequestsCollection = ToukhFirestoreCollections.deliveryRequestsOnboarding;
 
   static const mockOtpPhone = '0123456789';
   static const mockOtpCode = '123456';

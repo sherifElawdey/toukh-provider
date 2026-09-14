@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/domain/entities/home_service_category.dart';
 import 'package:toukh_provider/domain/repositories/home_service_categories_repository.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 /// Firestore collection `HomeServices` (read during unauthenticated registration).
 class FirestoreHomeServiceCategoriesRepository
@@ -9,7 +10,7 @@ class FirestoreHomeServiceCategoriesRepository
 
   final FirebaseFirestore _firestore;
 
-  static const String collectionName = 'HomeServices';
+  static const String collectionName = ToukhFirestoreCollections.homeServicesCatalog;
 
   @override
   Stream<List<HomeServiceCategory>> watchActiveCategories() {

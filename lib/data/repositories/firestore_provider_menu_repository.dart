@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/firestore/menu_category_slug.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class FirestoreProviderMenuRepository implements ProviderMenuRepository {
   FirestoreProviderMenuRepository(this._firestore);
@@ -11,7 +12,7 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
   final FirebaseFirestore _firestore;
 
   CollectionReference<Map<String, dynamic>> _menuRef(String providerId) {
-    return _firestore.collection('providers').doc(providerId).collection('Menu');
+    return _firestore.collection(ToukhFirestoreCollections.providers).doc(providerId).collection(ToukhFirestoreCollections.menu);
   }
 
   @override
@@ -58,7 +59,7 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
           final catId = catDoc.id;
           itemsByCategory[catId] = const [];
           itemSubs[catId] = catDoc.reference
-              .collection('items')
+              .collection(ToukhFirestoreCollections.menuItems)
               .snapshots()
               .listen((itemsSnap) {
             itemsByCategory[catId] = itemsSnap.docs
@@ -132,7 +133,7 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
       ..['category'] = categoryName
       ..['providerId'] = providerId
       ..['updatedAt'] = FieldValue.serverTimestamp();
-    await catRef.collection('items').doc(item.id).set(data, SetOptions(merge: true));
+    await catRef.collection(ToukhFirestoreCollections.menuItems).doc(item.id).set(data, SetOptions(merge: true));
   }
 
   @override
@@ -141,8 +142,8 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
     if (categoryName == null || categoryName.isEmpty) return;
     final catRef = await _categoryRefByDisplayName(providerId, categoryName);
     if (catRef == null) return;
-    await catRef.collection('items').doc(item.id).delete();
-    final remaining = await catRef.collection('items').limit(1).get();
+    await catRef.collection(ToukhFirestoreCollections.menuItems).doc(item.id).delete();
+    final remaining = await catRef.collection(ToukhFirestoreCollections.menuItems).limit(1).get();
     if (remaining.docs.isEmpty) {
       await catRef.delete();
     }
@@ -153,7 +154,7 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
     final catRef = await _categoryRefByDisplayName(providerId, displayName);
     if (catRef == null) return;
     final batch = _firestore.batch();
-    final items = await catRef.collection('items').get();
+    final items = await catRef.collection(ToukhFirestoreCollections.menuItems).get();
     for (final doc in items.docs) {
       batch.delete(doc.reference);
     }
@@ -177,7 +178,7 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
       'updatedAt': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
 
-    final items = await catRef.collection('items').get();
+    final items = await catRef.collection(ToukhFirestoreCollections.menuItems).get();
     final batch = _firestore.batch();
     for (final doc in items.docs) {
       batch.update(doc.reference, {
@@ -192,7 +193,7 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
   Future<bool> hasAnyItems(String providerId) async {
     final cats = await _menuRef(providerId).get();
     for (final cat in cats.docs) {
-      final items = await cat.reference.collection('items').limit(1).get();
+      final items = await cat.reference.collection(ToukhFirestoreCollections.menuItems).limit(1).get();
       if (items.docs.isNotEmpty) return true;
     }
     return false;

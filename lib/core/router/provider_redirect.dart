@@ -157,7 +157,6 @@ String? resolveProviderRedirect({
             AppRoutes.accountVerifyPhone,
             AppRoutes.verifyOtp,
             AppRoutes.postLoginStatus,
-            AppRoutes.registerReview,
           };
           if (allowed.contains(loc)) {
             logRedirect(null, 'pending/unverified phone not verified on allowed route');

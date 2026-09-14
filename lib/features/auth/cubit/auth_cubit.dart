@@ -390,7 +390,17 @@ class AuthCubit extends Cubit<AuthState> {
     emit(Authenticated(user: current.user, profile: updated));
   }
 
-  Future<void> signOut() => _authRepository.signOut();
+  Future<void> signOut() async {
+    final uid = _authRepository.currentUser?.uid;
+    if (uid != null && uid.isNotEmpty) {
+      try {
+        await ToukhPushMessaging.instance.removeDeviceTokenOnSignOut(uid);
+      } catch (_) {
+        // Never block sign-out on FCM cleanup.
+      }
+    }
+    await _authRepository.signOut();
+  }
 
   /// Appends a version query param so [Image.network] fetches the new file
   /// when the underlying B2 object path is unchanged.

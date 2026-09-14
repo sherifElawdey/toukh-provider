@@ -10,6 +10,7 @@ import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 /// Password for all seeded provider accounts (matches CLI seed tool).
 const String kProviderSeedPassword = '1234567890';
@@ -379,10 +380,10 @@ Future<void> _seedMenuSubcollection({
   required List<MenuItemEntity> items,
 }) async {
   final menuCol =
-      firestore.collection(AppConstants.providersCollection).doc(providerId).collection('Menu');
+      firestore.collection(AppConstants.providersCollection).doc(providerId).collection(ToukhFirestoreCollections.menu);
   final existing = await menuCol.get();
   for (final cat in existing.docs) {
-    final itemDocs = await cat.reference.collection('items').get();
+    final itemDocs = await cat.reference.collection(ToukhFirestoreCollections.menuItems).get();
     for (final doc in itemDocs.docs) {
       await doc.reference.delete();
     }

@@ -50,13 +50,17 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
     final notificationsCubit = getIt<NotificationsCubit>();
     final badgeCubit = getIt<ProviderNotificationBadgeCubit>();
     void onAuth(AuthState state) {
-      if (state is Authenticated &&
-          state.profile.status == ProviderAccountStatus.active) {
-        notificationsCubit.bindUser(state.user.uid);
-        unawaited(_syncFcmForActiveProvider(state.user.uid));
-        final unread =
-            notificationsCubit.state.items.where((n) => !n.opened).length;
-        badgeCubit.setNotificationCount(unread);
+      if (state is Authenticated) {
+        unawaited(_syncFcmForProvider(state.user.uid));
+        if (state.profile.status == ProviderAccountStatus.active) {
+          notificationsCubit.bindUser(state.user.uid);
+          final unread =
+              notificationsCubit.state.items.where((n) => !n.opened).length;
+          badgeCubit.setNotificationCount(unread);
+        } else {
+          notificationsCubit.bindUser(null);
+          badgeCubit.setNotificationCount(0);
+        }
       } else {
         notificationsCubit.bindUser(null);
         badgeCubit.setNotificationCount(0);
@@ -66,8 +70,12 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
     onAuth(authCubit.state);
     _authSub = authCubit.stream.listen(onAuth);
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(configureProviderPush());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await configureProviderPush();
+      final auth = getIt<AuthCubit>().state;
+      if (auth is Authenticated) {
+        unawaited(_syncFcmForProvider(auth.user.uid));
+      }
     });
   }
 
@@ -87,15 +95,12 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
 
   Future<void> _onAppResumed() async {
     final auth = getIt<AuthCubit>().state;
-    if (auth is! Authenticated ||
-        auth.profile.status != ProviderAccountStatus.active) {
-      return;
-    }
+    if (auth is! Authenticated) return;
     await ToukhPushMessaging.instance.requestPermission();
-    await _syncFcmForActiveProvider(auth.user.uid);
+    await _syncFcmForProvider(auth.user.uid);
   }
 
-  Future<void> _syncFcmForActiveProvider(String uid) async {
+  Future<void> _syncFcmForProvider(String uid) async {
     final auth = getIt<AuthCubit>().state;
     final tokens =
         auth is Authenticated ? auth.profile.fcmTokens : const <String>[];

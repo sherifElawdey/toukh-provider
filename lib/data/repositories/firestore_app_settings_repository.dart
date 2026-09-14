@@ -9,7 +9,7 @@ class FirestoreAppSettingsRepository implements AppSettingsRepository {
 
   @override
   Stream<OrderAcceptanceSla> watchAcceptanceSla() {
-    return _fs.collection('appSettings').doc('global').snapshots().map(
+    return _fs.collection(ToukhFirestoreCollections.appSettings).doc(ToukhFirestoreDocs.appSettingsGlobal).snapshots().map(
           (snap) => OrderAcceptanceSla.fromFirestore(
             snap.data()?['orderAcceptanceSla'] as Map<String, dynamic>?,
           ),

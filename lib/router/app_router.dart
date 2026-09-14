@@ -8,6 +8,7 @@ import 'package:toukh_provider/core/router/go_router_auth_refresh.dart';
 import 'package:toukh_provider/core/router/go_router_refresh.dart';
 import 'package:toukh_provider/core/router/provider_redirect.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
+import 'package:toukh_provider/core/widgets/require_phone_verified.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/account_status/presentation/account_phone_verification_screen.dart';
 import 'package:toukh_provider/features/account_status/presentation/blocked_screen.dart';
@@ -213,11 +214,15 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.registrationMenu,
-        builder: (context, state) => const MenuBuilderScreen(),
+        builder: (context, state) => const RequirePhoneVerified(
+          child: MenuBuilderScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.registrationPortfolio,
-        builder: (context, state) => const PortfolioScreen(),
+        builder: (context, state) => const RequirePhoneVerified(
+          child: PortfolioScreen(),
+        ),
       ),
       GoRoute(
         path: AppRoutes.pendingApproval,

@@ -14,7 +14,7 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
   final FirebaseFirestore _firestore;
 
   CollectionReference<Map<String, dynamic>> _reviewsCol(String providerUid) =>
-      _firestore.collection('providers').doc(providerUid).collection('reviews');
+      _firestore.collection(ToukhFirestoreCollections.providers).doc(providerUid).collection(ToukhFirestoreCollections.reviews);
 
   @override
   Stream<DashboardFirestorePayload> watchFirestorePayload(String providerUid) {
@@ -115,7 +115,7 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
             );
 
         hsSub = _firestore
-            .collection('homeServiceRequests')
+            .collection(ToukhFirestoreCollections.homeServiceRequests)
             .where('providerId', isEqualTo: providerUid)
             .limit(500)
             .snapshots()

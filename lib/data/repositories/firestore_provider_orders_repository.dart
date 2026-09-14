@@ -19,7 +19,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
   final CustomerOrderNotifyService? _customerNotify;
   final FirebaseFunctions? _functions;
 
-  static const deliveryRequestsCollection = 'deliveryRequests';
+  static const deliveryRequestsCollection = ToukhFirestoreCollections.deliveryRequests;
   static final _epoch = DateTime.fromMillisecondsSinceEpoch(0);
 
   Future<void> _notifyCustomer(String providerId, String masterOrderId) async {

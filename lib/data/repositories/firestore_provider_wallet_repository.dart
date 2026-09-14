@@ -2,13 +2,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
 import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class FirestoreProviderWalletRepository implements ProviderWalletRepository {
   FirestoreProviderWalletRepository(this._firestore);
 
   final FirebaseFirestore _firestore;
 
-  static const _transactions = 'transactions';
+  static const _transactions = ToukhFirestoreCollections.transactions;
 
   DocumentReference<Map<String, dynamic>> _providerRef(String providerId) =>
       _firestore.collection(AppConstants.providersCollection).doc(providerId);

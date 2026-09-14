@@ -155,14 +155,15 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
       if (!mounted) return;
       context.pushReplacement(AppRoutes.verifyOtp, extra: args);
     } catch (e) {
-      if (mounted) {
-        AppSnack.show(
-          context,
-          message: otpOrFirebaseError(e),
-          state: AppSnackState.error,
-          icon: PhosphorIconsRegular.chatCircleDots,
-        );
-      }
+      if (!mounted) return;
+      AppSnack.show(
+        context,
+        message: otpOrFirebaseError(e),
+        state: AppSnackState.error,
+        icon: PhosphorIconsRegular.chatCircleDots,
+      );
+      // OTP send failed — still force verify flow; user can resend from there.
+      context.go(AppRoutes.accountVerifyPhone);
     }
   }
 
@@ -200,11 +201,7 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
 
     if (authState is! Authenticated) return;
 
-    if (authState.profile.phoneVerified) {
-      context.go(AppRoutes.requestSubmitted);
-      return;
-    }
-
+    // Never skip phone verification after account create.
     final phone = phoneE164FromProfileStored(authState.profile.phone);
     if (phone == null) {
       AppSnack.show(
@@ -213,6 +210,12 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
         state: AppSnackState.error,
         icon: PhosphorIconsRegular.phoneSlash,
       );
+      context.go(AppRoutes.accountVerifyPhone);
+      return;
+    }
+
+    if (authState.profile.phoneVerified) {
+      context.go(AppRoutes.requestSubmitted);
       return;
     }
 

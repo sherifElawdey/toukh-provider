@@ -15,7 +15,7 @@ class FirestoreProviderGalleryRepository implements ProviderGalleryRepository {
   final MediaUploadService _media;
 
   CollectionReference<Map<String, dynamic>> _galleryRef(String providerId) {
-    return _firestore.collection('providers').doc(providerId).collection('gallery');
+    return _firestore.collection(ToukhFirestoreCollections.providers).doc(providerId).collection(ToukhFirestoreCollections.gallery);
   }
 
   @override
