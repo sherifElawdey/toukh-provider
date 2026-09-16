@@ -36,7 +36,6 @@ class NotificationsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -97,7 +96,7 @@ class NotificationsScreen extends StatelessWidget {
               bottom: AppSizes.space2xl,
             ),
             itemCount: items.length,
-            separatorBuilder: (_, __) => const SizedBox(height: 10),
+            separatorBuilder: (_, _) => const SizedBox(height: 10),
             itemBuilder: (context, index) {
               final item = items[index];
               final cubit = context.read<NotificationsCubit>();

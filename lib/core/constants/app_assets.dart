@@ -1,9 +1,7 @@
 abstract final class AppAssets {
   AppAssets._();
 
-  /// Legacy consumer-style mark (avoid for new provider UI).
-
-  /// Provider app mark (welcome, auth, splash, in-app branding).
+  /// Havit Partner mark (welcome, auth, splash, in-app branding).
   static const String brandingProviderAppIcon =
       'assets/branding/app_icon_provider.png';
 

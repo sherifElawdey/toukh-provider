@@ -1,11 +1,11 @@
 {
-    "name": "Toukh Service",
-    "short_name": "Toukh",
+    "name": "Havit Partner",
+    "short_name": "Havit Partner",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0a1628",
+    "background_color": "#FFFFFF",
     "theme_color": "#0284c7",
-    "description": "Toukh Service — manage your business on Toukh.",
+    "description": "Havit Partner — manage your business on Havit.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

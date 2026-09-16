@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:toukh_provider/core/constants/app_assets.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
-/// Toukh Service wordmark-free mark (provider artwork).
+/// Havit brand mark used across provider auth, registration, and status UI.
 class ToukhServiceLogo extends StatelessWidget {
   const ToukhServiceLogo({
     super.key,
@@ -16,19 +16,10 @@ class ToukhServiceLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.asset(
-      AppAssets.brandingProviderAppIcon,
-      width: size,
-      height: size,
+    return HavitBrandIcon(
+      size: size,
       fit: fit,
-      filterQuality: FilterQuality.high,
+      borderRadius: borderRadius,
     );
-    if (borderRadius != null) {
-      return ClipRRect(
-        borderRadius: borderRadius!,
-        child: image,
-      );
-    }
-    return image;
   }
 }

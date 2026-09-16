@@ -103,7 +103,7 @@ class OrderDetailItemsCard extends StatelessWidget {
           if (slice.fulfillmentMode == FulfillmentMode.courier) ...[
             const SizedBox(height: AppSizes.spaceXs),
             Text(
-              'Courier fee is calculated by Toukh from optimized route distance '
+              'Courier fee is calculated by Havit from optimized route distance '
               '(frozen at order time).',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: Theme.of(context)

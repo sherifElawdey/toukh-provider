@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:toukh_provider/core/constants/app_assets.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
@@ -40,20 +39,7 @@ class MainShellScaffold extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: navigationShell.currentIndex == 0
-              ? Image.asset(
-                  AppAssets.brandingAppText,
-                  height: 26,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (_, _, _) => CustomText(
-                    AppStrings.App.title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 20,
-                      color: AppColors.secondColor,
-                    ),
-                  ),
-                )
+              ? const HavitAppBarLogo(height: 32)
               : CustomText(
                   navItems[selectedNavIndex.clamp(0, navItems.length - 1)]
                       .label,

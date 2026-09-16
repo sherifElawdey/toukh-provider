@@ -10,7 +10,7 @@ class AppTranslations extends Translations {
   };
 
   static const Map<String, String> _en = {
-    'app.title': 'Toukh Service',
+    'app.title': 'Havit Partner',
     'app.logout_confirm_title': 'Sign out?',
     'app.logout_confirm_body': 'You will need to sign in again to receive trips.',
 
@@ -19,17 +19,17 @@ class AppTranslations extends Translations {
 
     'app_update.title': 'Update required',
     'app_update.description':
-        'A newer version of the Toukh Service app is available. Please update from the store to continue.',
+        'A newer version of the Havit Partner app is available. Please update from the store to continue.',
     'app_update.open_store': 'Open store',
 
     'common.continue': 'Continue',
     'common.cancel': 'Cancel',
     'common.media_gallery_rationale_title': 'Choose a photo',
     'common.media_gallery_rationale_body':
-        "You'll pick a photo from your gallery to upload. Toukh only accesses the image you select.",
+        "You'll pick a photo from your gallery to upload. Havit only accesses the image you select.",
     'common.media_camera_rationale_title': 'Take a photo',
     'common.media_camera_rationale_body':
-        'Toukh needs camera access so you can take a photo to upload.',
+        'Havit needs camera access so you can take a photo to upload.',
     'common.delete': 'Delete',
     'common.confirm': 'Confirm',
     'common.retry': 'Retry',
@@ -66,7 +66,7 @@ class AppTranslations extends Translations {
     'auth.password': 'Password',
     'auth.sign_in': 'Sign in',
     'auth.create_account': 'Create an account',
-    'auth.create_account_title': 'Become a Toukh courier',
+    'auth.create_account_title': 'Become a Havit partner',
     'auth.create_account_subtitle':
         'Submit your details to start delivering. We\'ll review your application and reply soon.',
     'auth.first_name': 'First name',
@@ -127,9 +127,9 @@ class AppTranslations extends Translations {
     'auth.profile_pending_subtitle':
         'We\'re loading your provider profile. If this takes too long, check your connection or sign out and try again.',
     'auth.phone_not_registered':
-        'No Toukh Service account is registered with this phone number.',
+        'No Havit Partner account is registered with this phone number.',
 
-    'welcome.title': 'Welcome to Toukh Service',
+    'welcome.title': 'Welcome to Havit Partner',
     'welcome.subtitle': 'Choose your language and theme to get started.',
     'welcome.choose_language': 'Language',
     'welcome.choose_theme': 'Theme',
@@ -254,7 +254,7 @@ class AppTranslations extends Translations {
 
     'permissions.title': 'Enable access',
     'permissions.intro':
-        'Toukh Service needs notifications and your location while using the app so customers can find your business and you receive order updates.',
+        'Havit Partner needs notifications and your location while using the app so customers can find your business and you receive order updates.',
     'permissions.notifications': 'Notifications',
     'permissions.notifications_subtitle':
         'New trip alerts and order updates',
@@ -704,7 +704,7 @@ class AppTranslations extends Translations {
     'settings.profile_driver_fallback': 'Driver',
     'settings.black_points': 'Black points',
     'settings.black_points_hint':
-        'Black points are disciplinary marks added by Toukh admin when rules are broken.',
+        'Black points are disciplinary marks added by Havit admin when rules are broken.',
     'settings.commitment_percent': 'Commitment',
     'settings.avg_accept_time': 'Avg accept time',
     'settings.account_details': 'Account details',
@@ -723,9 +723,9 @@ class AppTranslations extends Translations {
     'settings.status_blocked': 'Blocked',
     'settings.status_deleted': 'Deleted',
     'settings.about_tagline':
-        'Manage your business, orders, and deliveries with Toukh Service.',
+        'Manage your business, orders, and deliveries with Havit Partner.',
     'settings.support': 'Support',
-    'settings.copyright': '© Toukh. All rights reserved.',
+    'settings.copyright': '© Havit. All rights reserved.',
     'settings.copied': 'Copied to clipboard',
     'settings.field_locked':
         'This field cannot be changed here. Contact support if you need help.',
@@ -760,7 +760,7 @@ class AppTranslations extends Translations {
     'revenues.fees_breakdown': 'Revenue vs fees',
     'revenues.net_after_fees': 'Net after fees',
     'revenues.no_data': 'No data for this month',
-    'wallet.toukh_service_wallet': 'Toukh Service Wallet',
+    'wallet.toukh_service_wallet': 'Havit Partner Wallet',
     'wallet.available_balance': 'Available balance',
     'wallet.pending_balance': 'Pending',
     'wallet.card_mask': '···· ···· ···· 0428',
@@ -810,7 +810,7 @@ class AppTranslations extends Translations {
   };
 
   static const Map<String, String> _ar = {
-    'app.title': 'خدمة طوخ',
+    'app.title': 'حافيت بارتنر',
     'app.logout_confirm_title': 'تسجيل الخروج؟',
     'app.logout_confirm_body':
         'ستحتاج إلى تسجيل الدخول مرة أخرى لاستلام الرحلات.',
@@ -820,17 +820,17 @@ class AppTranslations extends Translations {
 
     'app_update.title': 'يلزم التحديث',
     'app_update.description':
-        'يتوفر إصدار أحدث من تطبيق Toukh Service. يُرجى التحديث من المتجر للمتابعة.',
+        'يتوفر إصدار أحدث من تطبيق Havit Partner. يُرجى التحديث من المتجر للمتابعة.',
     'app_update.open_store': 'فتح المتجر',
 
     'common.continue': 'متابعة',
     'common.cancel': 'إلغاء',
     'common.media_gallery_rationale_title': 'اختر صورة',
     'common.media_gallery_rationale_body':
-        'ستختار صورة من معرض الصور للرفع. يصل طوخ فقط إلى الصورة التي تختارها.',
+        'ستختار صورة من معرض الصور للرفع. يصل حافيت فقط إلى الصورة التي تختارها.',
     'common.media_camera_rationale_title': 'التقاط صورة',
     'common.media_camera_rationale_body':
-        'يحتاج طوخ إلى الوصول للكاميرا لالتقاط صورة للرفع.',
+        'يحتاج حافيت إلى الوصول للكاميرا لالتقاط صورة للرفع.',
     'common.delete': 'حذف',
     'common.confirm': 'تأكيد',
     'common.retry': 'إعادة المحاولة',
@@ -927,9 +927,9 @@ class AppTranslations extends Translations {
     'auth.profile_pending_subtitle':
         'نحمّل ملف مقدّم الخدمة. إذا استغرق ذلك وقتًا طويلًا، تحقق من الاتصال أو سجّل الخروج وأعد المحاولة.',
     'auth.phone_not_registered':
-        'لا يوجد حساب في خدمة طوخ مسجّل بهذا الرقم.',
+        'لا يوجد حساب في حافيت بارتنر مسجّل بهذا الرقم.',
 
-    'welcome.title': 'مرحبًا بك في خدمة طوخ',
+    'welcome.title': 'مرحبًا بك في حافيت بارتنر',
     'welcome.subtitle': 'اختر لغتك وسمة العرض للبدء.',
     'welcome.choose_language': 'اللغة',
     'welcome.choose_theme': 'المظهر',
@@ -1051,7 +1051,7 @@ class AppTranslations extends Translations {
 
     'permissions.title': 'تفعيل الأذونات',
     'permissions.intro':
-        'يحتاج تطبيق خدمة طوخ إلى الإشعارات وموقعك أثناء استخدام التطبيق حتى يتمكّن العملاء من العثور على نشاطك وتصلك تحديثات الطلبات.',
+        'يحتاج تطبيق حافيت بارتنر إلى الإشعارات وموقعك أثناء استخدام التطبيق حتى يتمكّن العملاء من العثور على نشاطك وتصلك تحديثات الطلبات.',
     'permissions.notifications': 'الإشعارات',
     'permissions.notifications_subtitle': 'تنبيهات الرحلات وتحديثات الطلب',
     'permissions.location': 'الموقع',
@@ -1499,7 +1499,7 @@ class AppTranslations extends Translations {
     'settings.profile_driver_fallback': 'سائق',
     'settings.black_points': 'النقاط السوداء',
     'settings.black_points_hint':
-        'النقاط السوداء علامات تأديبية يضيفها مشرف طوخ عند مخالفة القواعد.',
+        'النقاط السوداء علامات تأديبية يضيفها مشرف حافيت عند مخالفة القواعد.',
     'settings.commitment_percent': 'نسبة الالتزام',
     'settings.avg_accept_time': 'متوسط وقت القبول',
     'settings.account_details': 'تفاصيل الحساب',
@@ -1518,9 +1518,9 @@ class AppTranslations extends Translations {
     'settings.status_blocked': 'محظور',
     'settings.status_deleted': 'محذوف',
     'settings.about_tagline':
-        'أدِر نشاطك وطلباتك وتوصيلاتك مع خدمة طوخ.',
+        'أدِر نشاطك وطلباتك وتوصيلاتك مع حافيت بارتنر.',
     'settings.support': 'الدعم',
-    'settings.copyright': '© طوخ. جميع الحقوق محفوظة.',
+    'settings.copyright': '© حافيت. جميع الحقوق محفوظة.',
     'settings.copied': 'تم النسخ',
     'settings.field_locked':
         'لا يمكن تغيير هذا الحقل من هنا. تواصل مع الدعم إذا احتجت مساعدة.',
@@ -1555,7 +1555,7 @@ class AppTranslations extends Translations {
     'revenues.fees_breakdown': 'الإيرادات مقابل الرسوم',
     'revenues.net_after_fees': 'الصافي بعد الرسوم',
     'revenues.no_data': 'لا بيانات لهذا الشهر',
-    'wallet.toukh_service_wallet': 'محفظة خدمة طوخ',
+    'wallet.toukh_service_wallet': 'محفظة حافيت بارتنر',
     'wallet.available_balance': 'الرصيد المتاح',
     'wallet.pending_balance': 'قيد الانتظار',
     'wallet.card_mask': '···· ···· ···· 0428',

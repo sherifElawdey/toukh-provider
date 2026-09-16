@@ -603,18 +603,11 @@ class _HomeServiceRequestDetailBodyState
                 const SizedBox(height: AppSizes.spaceMd),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-                  child: Image.network(
-                    request.noteImageUrl!,
+                  child: HavitNetworkImage(
+                    imageUrl: request.noteImageUrl!,
                     height: 220,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, _, _) => ColoredBox(
-                      color: AppColors.thirdColor.withValues(alpha: 0.4),
-                      child: SizedBox(
-                        height: 220,
-                        child: Center(child: Icon(ToukhIcons.gallery)),
-                      ),
-                    ),
                   ),
                 ),
               ],

@@ -119,7 +119,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               child: Text(
-                'Toukh courier delivery fees are priced from route distance '
+                'Havit courier delivery fees are priced from route distance '
                 '(admin price/km). Use Free delivery below only if you absorb the fee.',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
@@ -138,7 +138,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
             ),
             if (!_free) ...[
               Text(
-                'Your store-delivery price (not used for Toukh courier distance fees).',
+                'Your store-delivery price (not used for Havit courier distance fees).',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               SizedBox(height: AppSizes.spaceSm),

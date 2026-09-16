@@ -170,7 +170,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
           'masterOrderId': masterOrderId,
           'providerId': providerId,
           'patch': patch,
-          if (completionCode != null) 'completionCode': completionCode,
+          'completionCode': ?completionCode,
         });
         return;
       } on FirebaseFunctionsException catch (e) {
@@ -473,7 +473,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         'providerId': providerId,
         'orderId': orderId,
         'masterOrderId': orderId,
-        if (deliveryTaskId != null) 'deliveryTaskId': deliveryTaskId,
+        'deliveryTaskId': ?deliveryTaskId,
         'storeLocation': GeoPoint(searchCenter.lat, searchCenter.lng),
         'searchCenter': _locationToMap(searchCenter),
         if (deliveryAddress is Map) 'deliveryLocation': deliveryAddress,

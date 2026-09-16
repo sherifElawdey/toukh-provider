@@ -25,25 +25,9 @@ Future<void> showNetworkImageZoomSheet(
                 minScale: 1,
                 maxScale: 4,
                 child: Center(
-                  child: Image.network(
-                    imageUrl,
+                  child: HavitNetworkImage(
+                    imageUrl: imageUrl,
                     fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(color: Colors.white),
-                      );
-                    },
-                    errorBuilder: (_, _, _) => Center(
-                      child: Padding(
-                        padding: AppSizes.screenPadding,
-                        child: CustomText(
-                          AppStrings.Orders.imageLoadFailed.tr,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(color: Colors.white70),
-                        ),
-                      ),
-                    ),
                   ),
                 ),
               ),
@@ -83,12 +67,11 @@ class TappableNetworkImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final image = Image.network(
-      imageUrl,
+    final image = HavitNetworkImage(
+      imageUrl: imageUrl,
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (_, _, _) => const SizedBox.shrink(),
     );
 
     final child = borderRadius != null

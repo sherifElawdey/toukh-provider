@@ -101,13 +101,11 @@ class _OrderAlertBanner extends StatelessWidget {
               if (imageUrl != null && imageUrl.isNotEmpty)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    imageUrl,
+                  child: HavitNetworkImage(
+                    imageUrl: imageUrl,
                     width: 48,
                     height: 48,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        _placeholderIcon(scheme, isHomeService: isHomeService),
                   ),
                 )
               else

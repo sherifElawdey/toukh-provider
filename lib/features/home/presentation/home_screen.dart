@@ -58,8 +58,6 @@ class _HomeScreenState extends State<HomeScreen> {
       description: AppStrings.AppUpdate.description.tr,
       storeUri: storeUri,
       updateButtonLabel: AppStrings.AppUpdate.openStore.tr,
-      imageAsset: 'assets/branding/app_icon_provider.png',
-      imagePackage: null,
     );
     if (mounted) {
       _updateDialogVisible = false;

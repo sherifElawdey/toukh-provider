@@ -40,32 +40,9 @@ class MenuItemTile extends StatelessWidget {
                   width: _thumbSize,
                   height: _thumbSize,
                   child: url != null && url.isNotEmpty
-                      ? Image.network(
-                          url,
+                      ? HavitNetworkImage(
+                          imageUrl: url,
                           fit: BoxFit.cover,
-                          loadingBuilder: (context, child, progress) {
-                            if (progress == null) return child;
-                            return ColoredBox(
-                              color: scheme.surfaceContainerHighest,
-                              child: Center(
-                                child: SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: scheme.primary,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                          errorBuilder: (_, _, _) => ColoredBox(
-                            color: scheme.surfaceContainerHighest,
-                            child: Icon(
-                              ToukhIcons.restaurant,
-                              color: scheme.onSurface.withValues(alpha: 0.35),
-                            ),
-                          ),
                         )
                       : ColoredBox(
                           color: scheme.surfaceContainerHighest,

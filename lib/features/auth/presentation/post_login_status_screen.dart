@@ -26,7 +26,7 @@ class _PostLoginStatusScreenState extends State<PostLoginStatusScreen> {
 
   Future<void> _openSupportEmail() async {
     final uri = Uri.parse(
-      'mailto:${AppConstants.supportServicesEmail}?subject=${Uri.encodeComponent('Toukh Service — Support')}',
+      'mailto:${AppConstants.supportServicesEmail}?subject=${Uri.encodeComponent('Havit Partner — Support')}',
     );
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);

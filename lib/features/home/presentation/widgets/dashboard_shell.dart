@@ -3,7 +3,6 @@ import 'package:toukh_ui/toukh_ui.dart';
 
 /// Soft rounded surface without outline borders (dashboard cards).
 Decoration dashboardSoftDecoration(BuildContext context) {
-  final scheme = Theme.of(context).colorScheme;
   return BoxDecoration(
     color: Theme.of(context).cardColor,
     // border: Border.all(

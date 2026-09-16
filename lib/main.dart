@@ -27,7 +27,6 @@ Future<void> main() async {
   _initAndroidPhotoPicker();
   installImagePickErrorLogging();
   await initToukhMapsPlatform();
-
   try {
     if (Firebase.apps.isEmpty) {
       await Firebase.initializeApp(

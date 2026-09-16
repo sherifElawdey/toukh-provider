@@ -40,7 +40,6 @@ import 'package:toukh_provider/domain/repositories/provider_orders_repository.da
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
-import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/domain/services/order_qr_service.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';

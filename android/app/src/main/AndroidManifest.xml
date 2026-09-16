@@ -30,7 +30,7 @@
         android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED"
         tools:node="remove" />
     <application
-        android:label="Toukh Service"
+        android:label="Havit Partner"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

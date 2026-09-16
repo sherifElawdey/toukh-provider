@@ -19,7 +19,7 @@
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
 	<string>We use your location while the app is open so we can show your position on the map.</string>
 	<key>CFBundleDisplayName</key>
-	<string>Toukh Service</string>
+	<string>Havit Partner</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,7 +27,7 @@
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>Toukh Service</string>
+	<string>Havit Partner</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>

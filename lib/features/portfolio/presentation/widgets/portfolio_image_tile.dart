@@ -19,8 +19,8 @@ class PortfolioImageTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final imageWidget = file != null
         ? Image.file(file!, fit: BoxFit.cover)
-        : (url != null
-            ? Image.network(url!, fit: BoxFit.cover)
+        : (url != null && url!.isNotEmpty
+            ? HavitNetworkImage(imageUrl: url!, fit: BoxFit.cover)
             : const SizedBox.shrink());
 
     return Stack(

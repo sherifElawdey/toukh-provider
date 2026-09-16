@@ -81,18 +81,10 @@ class _EditableProviderAvatarState extends State<EditableProviderAvatar> {
 
     final url = widget.imageUrl;
     if (url != null && url.isNotEmpty) {
-      return Image.network(
-        url,
+      return HavitNetworkImage(
+        imageUrl: url,
         key: ValueKey(url),
         fit: BoxFit.cover,
-        errorBuilder: (_, _, _) => ColoredBox(
-          color: AppColors.thirdColor.withValues(alpha: 0.6),
-          child: Icon(
-            widget.fallbackIcon,
-            size: widget.size * 0.45,
-            color: scheme.onSurface.withValues(alpha: 0.45),
-          ),
-        ),
       );
     }
 

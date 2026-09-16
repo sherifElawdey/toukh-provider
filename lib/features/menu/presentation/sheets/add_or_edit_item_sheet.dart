@@ -282,29 +282,9 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                           ? ClipRRect(
                               borderRadius:
                                   BorderRadius.circular(AppSizes.radiusMd),
-                              child: Image.network(
-                                remoteUrl,
+                              child: HavitNetworkImage(
+                                imageUrl: remoteUrl,
                                 fit: BoxFit.cover,
-                                loadingBuilder: (context, child, progress) {
-                                  if (progress == null) return child;
-                                  return Center(
-                                    child: SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: scheme.primary,
-                                      ),
-                                    ),
-                                  );
-                                },
-                                errorBuilder: (_, _, _) => Center(
-                                  child: Icon(
-                                    PhosphorIconsRegular.imageBroken,
-                                    color: scheme.onSurface
-                                        .withValues(alpha: 0.4),
-                                  ),
-                                ),
                               ),
                             )
                           : Column(

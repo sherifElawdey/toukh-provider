@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/router/provider_redirect.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
@@ -41,14 +40,7 @@ String _splashStatusLine(AuthState auth, OnboardingGate gate) {
   }
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with TickerProviderStateMixin {
-  late final AnimationController _entrance;
-  late final AnimationController _breathing;
-  late final Animation<double> _fade;
-  late final Animation<double> _scaleUp;
-  late final Animation<double> _breathe;
-
+class _SplashScreenState extends State<SplashScreen> {
   /// Prevents welcome / auth redirects until Remote Config version check finishes.
   bool _versionGateCompleted = false;
 
@@ -57,7 +49,11 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   void _leaveSplashIfNeeded(BuildContext context) {
-    if (!_versionGateCompleted || !context.mounted) return;
+    if (!_versionGateCompleted ||
+        !HavitSplashHold.instance.elapsed ||
+        !context.mounted) {
+      return;
+    }
 
     final router = GoRouter.maybeOf(context);
     if (router == null) return;
@@ -108,34 +104,7 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    _entrance = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1100),
-    );
-    _breathing = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2800),
-    );
-
-    _fade = CurvedAnimation(
-      parent: _entrance,
-      curve: const Interval(0.0, 0.75, curve: Curves.easeOutCubic),
-    );
-
-    _scaleUp = Tween<double>(
-      begin: 0.9,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _entrance, curve: Curves.easeOutCubic));
-
-    _breathe = Tween<double>(
-      begin: 1.0,
-      end: 1.045,
-    ).animate(CurvedAnimation(parent: _breathing, curve: Curves.easeInOut));
-
-    _entrance.forward().then((_) {
-      if (mounted) _breathing.repeat(reverse: true);
-    });
-
+    HavitSplashHold.instance.start();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       unawaited(_bootstrapAfterFirstFrame());
     });
@@ -146,8 +115,12 @@ class _SplashScreenState extends State<SplashScreen>
     final router = GoRouter.of(context);
     try {
       final gate = getIt<AppVersionGateService>();
-      final result = await gate.ensureChecked();
+      final results = await Future.wait<Object?>([
+        gate.ensureChecked(),
+        HavitSplashHold.instance.waitUntilElapsed(),
+      ]);
       if (!mounted) return;
+      final result = results[0] as AppUpdateGateResult;
       if (result.needsUpdate) {
         if (router.state.matchedLocation == AppRoutes.splash) {
           router.go(AppRoutes.appUpdate, extra: gate.storeUri);
@@ -160,13 +133,6 @@ class _SplashScreenState extends State<SplashScreen>
         _leaveSplashIfNeeded(context);
       }
     }
-  }
-
-  @override
-  void dispose() {
-    _entrance.dispose();
-    _breathing.dispose();
-    super.dispose();
   }
 
   @override
@@ -184,19 +150,14 @@ class _SplashScreenState extends State<SplashScreen>
         ),
       ],
       child: Scaffold(
-        body: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                AppColors.thirdColor.withValues(alpha: 0.65),
-                AppColors.surface,
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Center(
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            const HavitSplashView(),
+            Positioned(
+              left: 24,
+              right: 24,
+              bottom: 48,
               child: BlocBuilder<AuthCubit, AuthState>(
                 builder: (context, authState) {
                   return BlocBuilder<OnboardingCubit, OnboardingState>(
@@ -205,73 +166,20 @@ class _SplashScreenState extends State<SplashScreen>
                         authState,
                         onboardingState.gate,
                       );
-                      return Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedBuilder(
-                            animation:
-                                Listenable.merge([_entrance, _breathing]),
-                            builder: (context, child) {
-                              final breatheFactor =
-                                  _entrance.isCompleted ? _breathe.value : 1.0;
-                              final scale = _scaleUp.value * breatheFactor;
-                              return FadeTransition(
-                                opacity: _fade,
-                                child: Transform.scale(
-                                  scale: scale,
-                                  child: child,
-                                ),
-                              );
-                            },
-                            child: ToukhServiceLogo(
-                              size: 140,
+                      return CustomText(
+                        statusKey,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Colors.white.withValues(alpha: 0.85),
+                              height: 1.35,
                             ),
-                          ),
-                          const SizedBox(height: 28),
-                          FadeTransition(
-                            opacity: _fade,
-                            child: CustomText(
-                              AppStrings.App.title,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineSmall
-                                  ?.copyWith(
-                                    fontWeight: FontWeight.w800,
-                                    letterSpacing: 0.5,
-                                    fontSize: 32,
-                                    color: AppColors.splashTitle,
-                                  ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          FadeTransition(
-                            opacity: _fade,
-                            child: Padding(
-                              padding: AppSizes.screenHorizontal,
-                              child: CustomText(
-                                statusKey,
-                                textAlign: TextAlign.center,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      color: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withValues(alpha: 0.62),
-                                      height: 1.35,
-                                    ),
-                              ),
-                            ),
-                          ),
-                        ],
                       );
                     },
                   );
                 },
               ),
             ),
-          ),
+          ],
         ),
       ),
     );

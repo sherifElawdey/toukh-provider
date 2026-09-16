@@ -47,7 +47,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
     final uri = Uri(
       scheme: 'mailto',
       path: AppConstants.supportEmail,
-      queryParameters: {'subject': 'Toukh Service support'},
+      queryParameters: {'subject': 'Havit Partner support'},
     );
     final ok = await launchUrl(uri);
     if (!context.mounted) return;

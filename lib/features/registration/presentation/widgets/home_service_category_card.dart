@@ -49,17 +49,10 @@ class HomeServiceCategoryCard extends StatelessWidget {
                           .withValues(alpha: 0.5),
                       child: category.imageUrl != null &&
                               category.imageUrl!.isNotEmpty
-                          ? Image.network(
-                              category.imageUrl!,
+                          ? HavitNetworkImage(
+                              imageUrl: category.imageUrl!,
                               fit: BoxFit.cover,
                               filterQuality: FilterQuality.medium,
-                              errorBuilder: (_, _, _) => Center(
-                                child: Icon(
-                                  PhosphorIconsRegular.wrench,
-                                  size: 40,
-                                  color: AppColors.secondColor,
-                                ),
-                              ),
                             )
                           : Center(
                               child: Icon(
