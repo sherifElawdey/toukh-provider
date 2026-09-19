@@ -30,13 +30,16 @@ class MenuCategorySectionCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return Material(
-      elevation: 1,
-      shadowColor: scheme.shadow.withValues(alpha: 0.12),
-      color: scheme.surface,
-      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+    final t = Theme.of(context).textTheme;
+
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: scheme.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        border: Border.all(color: AppColors.borderSubtle, width: 0.6),
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.fromLTRB(14, 12, 8, 8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -48,23 +51,27 @@ class MenuCategorySectionCard extends StatelessWidget {
                     children: [
                       CustomText(
                         category,
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
+                        style: t.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       CustomText(
                         '$itemCount items',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurface.withValues(alpha: 0.55),
-                            ),
+                        style: t.bodySmall?.copyWith(
+                          color: scheme.onSurface.withValues(alpha: 0.5),
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 IconButton(
                   tooltip: AppStrings.Registration.addItem.tr,
-                  icon: Icon(ToukhIcons.add),
+                  icon: Icon(
+                    ToukhIcons.add,
+                    color: AppColors.secondColor,
+                  ),
                   onPressed: onAddItem,
                 ),
                 PopupMenuButton<String>(
@@ -77,7 +84,8 @@ class MenuCategorySectionCard extends StatelessWidget {
                       value: 'rename',
                       child: ListTile(
                         leading: Icon(ToukhIcons.edit),
-                        title: CustomText(AppStrings.Registration.renameCategory),
+                        title:
+                            CustomText(AppStrings.Registration.renameCategory),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
@@ -98,27 +106,26 @@ class MenuCategorySectionCard extends StatelessWidget {
             ),
             if (items.isEmpty)
               Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 20),
                 child: Center(
                   child: CustomText(
                     AppStrings.Registration.noItemsInCategory,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.5),
-                        ),
+                    style: t.bodyMedium?.copyWith(
+                      color: scheme.onSurface.withValues(alpha: 0.45),
+                    ),
                   ),
                 ),
               )
             else
-              ...items.map(
-                (item) => Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: MenuItemTile(
-                    item: item,
-                    onTap: () => onEditItem(item),
-                    onDelete: () => onDeleteItem(item),
+              ...[
+                for (var i = 0; i < items.length; i++)
+                  MenuItemTile(
+                    item: items[i],
+                    showDivider: i < items.length - 1,
+                    onTap: () => onEditItem(items[i]),
+                    onDelete: () => onDeleteItem(items[i]),
                   ),
-                ),
-              ),
+              ],
           ],
         ),
       ),

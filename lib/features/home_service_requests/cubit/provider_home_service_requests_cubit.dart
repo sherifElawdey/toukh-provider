@@ -47,9 +47,20 @@ class ProviderHomeServiceRequestsCubit
 
     final uid = auth.user.uid;
     if (_boundUid == uid) return;
+    _subscribe(uid);
+  }
 
+  /// Re-subscribe to requests and clear any error banner.
+  void refresh() {
+    final auth = _authCubit.state;
+    if (auth is! Authenticated) return;
+    _subscribe(auth.user.uid);
+  }
+
+  void _subscribe(String uid) {
     _boundUid = uid;
     _sub?.cancel();
+    _requestsStreamPrimed = false;
     emit(state.copyWith(loading: true, providerUid: uid, clearError: true));
 
     _sub = _requestsRepository.watchRequests(uid).listen(

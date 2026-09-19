@@ -123,7 +123,7 @@ class _PickupQrTileState extends State<PickupQrTile> {
           ),
           const SizedBox(height: AppSizes.spaceXs),
           CustomText(
-            AppStrings.Orders.detailPickupQrHint.tr,
+            AppStrings.Orders.detailPickupQrDriverScanHint.tr,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: AppColors.onSurface.withValues(alpha: 0.6),
                 ),

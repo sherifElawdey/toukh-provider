@@ -24,7 +24,7 @@ class ProviderOrderCard extends StatelessWidget {
     this.onRequestDelivery,
     this.onReadyForPickup,
     this.onDeliver,
-    this.onConfirmHandoff,
+    this.onShowPickupQr,
     this.onFinish,
   });
 
@@ -37,7 +37,7 @@ class ProviderOrderCard extends StatelessWidget {
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onReadyForPickup;
   final VoidCallback? onDeliver;
-  final VoidCallback? onConfirmHandoff;
+  final VoidCallback? onShowPickupQr;
   final VoidCallback? onFinish;
 
   ProviderOrderSlice get _slice => row.slice;
@@ -171,7 +171,7 @@ class ProviderOrderCard extends StatelessWidget {
                 onRequestDelivery: onRequestDelivery,
                 onReadyForPickup: onReadyForPickup,
                 onDeliver: onDeliver,
-                onConfirmHandoff: onConfirmHandoff,
+                onShowPickupQr: onShowPickupQr,
                 onFinish: onFinish,
                 onSeeDetails: () =>
                     context.push(AppRoutes.orderDetailPath(row.id)),

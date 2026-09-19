@@ -56,31 +56,42 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             return const Center(child: AppLoadingMark());
           }
 
+          final onRefresh = context.read<OrderHistoryCubit>().loadInitial;
+
           if (state.error != null && state.items.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: AppSizes.screenPadding,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomText(
-                      AppStrings.OrderHistory.loadError.tr,
-                      textAlign: TextAlign.center,
+            return ToukhRefresh(
+              onRefresh: onRefresh,
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: AppSizes.screenPadding,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CustomText(
+                            AppStrings.OrderHistory.loadError.tr,
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: AppSizes.spaceMd),
+                          AppFilledButton(
+                            text: AppStrings.Common.retry.tr,
+                            onTap: onRefresh,
+                          ),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: AppSizes.spaceMd),
-                    AppFilledButton(
-                      text: AppStrings.Common.retry.tr,
-                      onTap: () =>
-                          context.read<OrderHistoryCubit>().loadInitial(),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           }
 
-          return ListView.builder(
+          final content = ListView.builder(
             controller: _scroll,
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: AppSizes.screenPadding.copyWith(
               top: AppSizes.spaceMd,
               bottom: AppSizes.space2xl,
@@ -136,6 +147,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               return OrderHistoryListTile(row: state.items[listIndex]);
             },
           );
+          return ToukhRefresh(onRefresh: onRefresh, child: content);
         },
       ),
     );

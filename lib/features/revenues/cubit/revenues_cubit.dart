@@ -151,6 +151,15 @@ class RevenuesCubit extends Cubit<RevenuesState> {
   List<ProviderOrderDashboard> _jobs = const [];
   List<ProviderWalletTransaction> _fees = const [];
 
+  /// Re-subscribe to dashboard orders and re-fetch app fees.
+  Future<void> reload() async {
+    await _dashSub?.cancel();
+    _dashSub = _dashboardRepository
+        .watchFirestorePayload(_providerId)
+        .listen(_onJobs);
+    await _loadFees();
+  }
+
   Future<void> _loadFees() async {
     try {
       _fees = await _walletRepository.fetchAppFeeTransactions(_providerId);

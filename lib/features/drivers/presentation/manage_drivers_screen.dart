@@ -12,6 +12,11 @@ import 'package:toukh_ui/toukh_ui.dart';
 class ManageDriversScreen extends StatelessWidget {
   const ManageDriversScreen({super.key});
 
+  Future<void> _refresh(BuildContext context) async {
+    context.read<ManageDriversCubit>().retry();
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+  }
+
   void _copyProviderId(BuildContext context, String providerId) {
     Clipboard.setData(ClipboardData(text: providerId));
     AppSnack.show(
@@ -112,7 +117,8 @@ class ManageDriversScreen extends StatelessWidget {
           final locale = Localizations.localeOf(context).toLanguageTag();
           final dateFmt = DateFormat.yMMMd(locale);
 
-          return ListView(
+          final content = ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: AppSizes.screenPadding,
             children: [
               _ProviderIdCard(
@@ -185,6 +191,10 @@ class ManageDriversScreen extends StatelessWidget {
                 ),
               const SizedBox(height: AppSizes.space2xl),
             ],
+          );
+          return ToukhRefresh(
+            onRefresh: () => _refresh(context),
+            child: content,
           );
         },
       ),

@@ -414,6 +414,16 @@ class AuthCubit extends Cubit<AuthState> {
     ).toString();
   }
 
+  /// Re-fetch the provider profile without dropping the current state.
+  Future<void> refreshProfile() async {
+    final user = _authRepository.currentUser;
+    if (user == null) {
+      emit(const Unauthenticated());
+      return;
+    }
+    await _bootstrapProfile(user.uid);
+  }
+
   Future<void> dismissFailure() async {
     final user = _authRepository.currentUser;
     if (user == null) {

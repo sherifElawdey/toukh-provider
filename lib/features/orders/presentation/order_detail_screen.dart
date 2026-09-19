@@ -17,7 +17,9 @@ import 'package:toukh_provider/features/orders/presentation/widgets/order_detail
 import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_actions_bar.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_cancel_ui.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/pickup_qr_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pickup_qr_tile.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_location.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/store_driver_pick_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -196,8 +198,13 @@ class _OrderDetailBody extends StatelessWidget {
               providerId: providerId,
               orderId: row.id,
             ),
-            onConfirmHandoff: () =>
-                context.read<ProviderOrdersCubit>().confirmHandoff(row.id),
+            onShowPickupQr: () => showPickupQrSheet(
+              context,
+              masterOrderId: row.id,
+              providerId: providerId,
+              driverId:
+                  slice.driverId ?? row.master.driverAssignment?.driverId,
+            ),
             onFinish: () => _finishWithCode(context, row.id),
           ),
           const SizedBox(height: AppSizes.spaceLg),
@@ -212,9 +219,7 @@ class _OrderDetailBody extends StatelessWidget {
             const SizedBox(height: AppSizes.spaceMd),
             OrderDetailNotesCard(note: slice.note!.trim()),
           ],
-          if (!row.slice.isStoreDelivery &&
-              row.hasAssignedDriverEffective &&
-              slice.statusWire == 'ready_for_pickup') ...[
+          if (row.canShowPickupQr) ...[
             const SizedBox(height: AppSizes.spaceMd),
             PickupQrTile(
               masterOrderId: row.id,
@@ -253,11 +258,22 @@ class _OrderDetailBody extends StatelessWidget {
     ProviderMasterOrderRow row,
   ) async {
     final cubit = context.read<ProviderOrdersCubit>();
-    final center = await showRequestDeliverySheet(
-      context,
-      initialLocation: row.slice.storeLocation,
+    final auth = context.read<AuthCubit>().state;
+    final profile = auth is Authenticated ? auth.profile : null;
+    final center = resolveDriverRequestPickup(
+      profile: profile,
+      sliceStoreLocation: row.slice.storeLocation,
     );
-    if (center == null || !context.mounted) return;
+    if (center == null) {
+      if (!context.mounted) return;
+      AppSnack.show(
+        context,
+        message: AppStrings.Orders.requestDeliveryMissingLocation.tr,
+        state: AppSnackState.warning,
+        icon: ToukhIcons.location,
+      );
+      return;
+    }
     await cubit.requestDelivery(orderId: row.id, searchCenter: center);
     if (!context.mounted) return;
     final updated = cubit.orderById(row.id);

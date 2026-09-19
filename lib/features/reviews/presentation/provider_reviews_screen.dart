@@ -10,6 +10,11 @@ import 'package:toukh_ui/toukh_ui.dart';
 class ProviderReviewsScreen extends StatelessWidget {
   const ProviderReviewsScreen({super.key});
 
+  Future<void> _refresh(BuildContext context) async {
+    context.read<ProviderReviewsCubit>().retry();
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -26,51 +31,68 @@ class ProviderReviewsScreen extends StatelessWidget {
             return const Center(child: AppLoadingMark());
           }
           if (state.error != null && state.reviews.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: AppSizes.screenPadding,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    CustomText(state.error!),
-                    const SizedBox(height: AppSizes.spaceMd),
-                    AppFilledButton(
-                      text: AppStrings.Common.retry.tr,
-                      onTap: () =>
-                          context.read<ProviderReviewsCubit>().retry(),
+            return ToukhRefresh(
+              onRefresh: () => _refresh(context),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: AppSizes.screenPadding,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CustomText(state.error!),
+                          const SizedBox(height: AppSizes.spaceMd),
+                          AppFilledButton(
+                            text: AppStrings.Common.retry.tr,
+                            onTap: () =>
+                                context.read<ProviderReviewsCubit>().retry(),
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             );
           }
           if (state.reviews.isEmpty) {
-            return ListView(
-              padding: AppSizes.screenPadding,
-              children: [
-                HomeDashboardEmptyPlaceholder(
-                  message: AppStrings.Home.dashboardReviewsEmpty,
-                ),
-              ],
+            return ToukhRefresh(
+              onRefresh: () => _refresh(context),
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: AppSizes.screenPadding,
+                children: [
+                  HomeDashboardEmptyPlaceholder(
+                    message: AppStrings.Home.dashboardReviewsEmpty,
+                  ),
+                ],
+              ),
             );
           }
 
-          return ListView.separated(
-            padding: AppSizes.screenPadding,
-            itemCount: state.reviews.length + 1,
-            separatorBuilder: (_, i) => SizedBox(
-              height: i == 0 ? AppSizes.spaceMd : 10,
+          return ToukhRefresh(
+            onRefresh: () => _refresh(context),
+            child: ListView.separated(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSizes.screenPadding,
+              itemCount: state.reviews.length + 1,
+              separatorBuilder: (_, i) => SizedBox(
+                height: i == 0 ? AppSizes.spaceMd : 10,
+              ),
+              itemBuilder: (context, i) {
+                if (i == 0) {
+                  return _ReviewsSummaryHeader(
+                    averageRating: state.averageRating,
+                    reviewCount: state.reviewCount,
+                  );
+                }
+                final review = state.reviews[i - 1];
+                return ProviderReviewTile(review: review);
+              },
             ),
-            itemBuilder: (context, i) {
-              if (i == 0) {
-                return _ReviewsSummaryHeader(
-                  averageRating: state.averageRating,
-                  reviewCount: state.reviewCount,
-                );
-              }
-              final review = state.reviews[i - 1];
-              return ProviderReviewTile(review: review);
-            },
           );
         },
       ),

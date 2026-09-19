@@ -297,30 +297,51 @@ class _HomeServiceRequestsTabView extends StatelessWidget {
 
         final list = state.forTab(tab);
         if (list.isEmpty) {
-          return Center(
-            child: HomeDashboardEmptyPlaceholder(
-              message: _emptyMessage(state),
-              compact: true,
+          return ToukhRefresh(
+            onRefresh: () => _refresh(context),
+            child: CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: HomeDashboardEmptyPlaceholder(
+                      message: _emptyMessage(state),
+                      compact: true,
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         }
 
-        return ListView.separated(
-          padding: AppSizes.screenPadding.copyWith(
-            top: AppSizes.spaceSm,
-            bottom: AppSizes.space2xl,
+        return ToukhRefresh(
+          onRefresh: () => _refresh(context),
+          child: ListView.separated(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: AppSizes.screenPadding.copyWith(
+              top: AppSizes.spaceSm,
+              bottom: AppSizes.space2xl,
+            ),
+            itemCount: list.length,
+            separatorBuilder: (_, _) =>
+                const SizedBox(height: AppSizes.spaceMd),
+            itemBuilder: (context, i) {
+              return ProviderHomeServiceRequestCard(
+                request: list[i],
+                tab: tab,
+              );
+            },
           ),
-          itemCount: list.length,
-          separatorBuilder: (_, _) => const SizedBox(height: AppSizes.spaceMd),
-          itemBuilder: (context, i) {
-            return ProviderHomeServiceRequestCard(
-              request: list[i],
-              tab: tab,
-            );
-          },
         );
       },
     );
+  }
+
+  Future<void> _refresh(BuildContext context) async {
+    context.read<ProviderHomeServiceRequestsCubit>().refresh();
+    await Future<void>.delayed(const Duration(milliseconds: 450));
   }
 
   String _emptyMessage(ProviderHomeServiceRequestsState state) {

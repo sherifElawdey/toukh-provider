@@ -71,6 +71,15 @@ class WalletCubit extends Cubit<WalletState> {
   double? _latestPending;
   List<ProviderWalletTransaction> _latestRecent = const [];
 
+  /// Re-subscribe to the wallet streams so fresh values are pulled in.
+  Future<void> refresh() async {
+    await _summarySub?.cancel();
+    await _recentSub?.cancel();
+    _summarySub = _repo.watchWalletSummary(_providerId).listen(_onSummary);
+    _recentSub =
+        _repo.watchRecentTransactions(_providerId, limit: 10).listen(_onRecent);
+  }
+
   void _onSummary(ProviderWalletSummary summary) {
     _latestBalance = summary.balanceEgp;
     _latestPending = summary.pendingEgp;

@@ -96,7 +96,8 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
   Future<void> _onAppResumed() async {
     final auth = getIt<AuthCubit>().state;
     if (auth is! Authenticated) return;
-    await ToukhPushMessaging.instance.requestPermission();
+    final status = await getIt<OnboardingCubit>().readPermissionStatus();
+    if (!status.notification) return;
     await _syncFcmForProvider(auth.user.uid);
   }
 

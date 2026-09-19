@@ -56,44 +56,76 @@ class _WalletTransactionsScreenState extends State<WalletTransactionsScreen> {
           if (state.loading && state.items.isEmpty) {
             return const Center(child: AppLoadingMark());
           }
+
+          final onRefresh = context.read<WalletHistoryCubit>().loadInitial;
+
           if (state.error != null && state.items.isEmpty) {
-            return Center(
-              child: Padding(
-                padding: AppSizes.screenPadding,
-                child: CustomText(state.error!),
-              ),
+            return ToukhRefresh(
+              onRefresh: onRefresh,
+              child: _CenteredScrollable(child: CustomText(state.error!)),
             );
           }
           if (state.items.isEmpty) {
-            return Center(
-              child: CustomText(
-                AppStrings.Wallet.noTransactionsYet.tr,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: AppColors.onSurface.withValues(alpha: 0.55),
-                    ),
+            return ToukhRefresh(
+              onRefresh: onRefresh,
+              child: _CenteredScrollable(
+                child: CustomText(
+                  AppStrings.Wallet.noTransactionsYet.tr,
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: AppColors.onSurface.withValues(alpha: 0.55),
+                      ),
+                ),
               ),
             );
           }
-          return ListView.builder(
-            controller: _scroll,
-            padding: AppSizes.screenPadding,
-            itemCount: state.items.length + (state.loadingMore ? 1 : 0),
-            itemBuilder: (context, i) {
-              if (i >= state.items.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(AppSizes.spaceLg),
-                  child: Center(child: AppLoadingMark()),
+          return ToukhRefresh(
+            onRefresh: onRefresh,
+            child: ListView.builder(
+              controller: _scroll,
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSizes.screenPadding,
+              itemCount: state.items.length + (state.loadingMore ? 1 : 0),
+              itemBuilder: (context, i) {
+                if (i >= state.items.length) {
+                  return const Padding(
+                    padding: EdgeInsets.all(AppSizes.spaceLg),
+                    child: Center(child: AppLoadingMark()),
+                  );
+                }
+                final tx = state.items[i];
+                return _TxListRow(
+                  transaction: tx,
+                  onTap: () => showWalletEarningSheet(context, tx),
                 );
-              }
-              final tx = state.items[i];
-              return _TxListRow(
-                transaction: tx,
-                onTap: () => showWalletEarningSheet(context, tx),
-              );
-            },
+              },
+            ),
           );
         },
       ),
+    );
+  }
+}
+
+/// Scrollable, vertically centered box so pull-to-refresh works when the
+/// list has no rows to show.
+class _CenteredScrollable extends StatelessWidget {
+  const _CenteredScrollable({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Padding(
+            padding: AppSizes.screenPadding,
+            child: Center(child: child),
+          ),
+        ),
+      ],
     );
   }
 }

@@ -8,7 +8,6 @@ import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_sta
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_category_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_or_edit_item_sheet.dart';
-import 'package:toukh_provider/features/menu/presentation/widgets/menu_builder_header_card.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_category_filter_chips.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_category_section_card.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_empty_categories_placeholder.dart';
@@ -260,72 +259,76 @@ class MenuBuilderView extends StatelessWidget {
           body: Column(
             children: [
               Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: AppSizes.screenPadding,
-                        child: const MenuBuilderHeaderCard(),
-                      ),
-                    ),
-                    if (state.categories.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: MenuEmptyCategoriesPlaceholder(
-                          onAddCategory: () => _showAddCategorySheet(context),
-                        ),
-                      )
-                    else ...[
-                      SliverToBoxAdapter(
-                        child: MenuCategoryFilterChips(
-                          categories: state.categories,
-                          selectedCategory: state.selectedCategory,
-                          countForCategory: state.countForCategory,
-                          onAllSelected: () =>
-                              context.read<MenuBuilderCubit>().toggleFilterAll(),
-                          onCategoryToggle: (cat) => context
-                              .read<MenuBuilderCubit>()
-                              .toggleFilterCategory(cat),
-                          onAddCategory: () => _showAddCategorySheet(context),
-                        ),
-                      ),
-                      SliverPadding(
-                        padding: AppSizes.screenHorizontal,
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final cat = state.visibleCategories[index];
-                              return Padding(
-                                padding:
-                                    EdgeInsets.only(bottom: AppSizes.spaceMd),
-                                child: MenuCategorySectionCard(
-                                  category: cat,
-                                  itemCount: state.countForCategory(cat),
-                                  items: state.itemsInCategory(cat),
-                                  onAddItem: () => _showItemSheet(
-                                    context,
-                                    initialCategory: cat,
-                                  ),
-                                  onEditItem: (e) => _showItemSheet(
-                                    context,
-                                    initialCategory: cat,
-                                    existing: e,
-                                  ),
-                                  onDeleteItem: (e) =>
-                                      _confirmDeleteItem(context, e),
-                                  onRenameCategory: () =>
-                                      _renameCategory(context, cat),
-                                  onDeleteCategory: () =>
-                                      _deleteCategory(context, cat),
-                                ),
-                              );
-                            },
-                            childCount: state.visibleCategories.length,
+                child: ToukhRefresh(
+                  onRefresh: () => _refresh(context),
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      if (state.categories.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: MenuEmptyCategoriesPlaceholder(
+                            onAddCategory: () => _showAddCategorySheet(context),
+                          ),
+                        )
+                      else ...[
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding:
+                                const EdgeInsets.only(top: AppSizes.spaceSm),
+                            child: MenuCategoryFilterChips(
+                              categories: state.categories,
+                              selectedCategory: state.selectedCategory,
+                              countForCategory: state.countForCategory,
+                              onAllSelected: () => context
+                                  .read<MenuBuilderCubit>()
+                                  .toggleFilterAll(),
+                              onCategoryToggle: (cat) => context
+                                  .read<MenuBuilderCubit>()
+                                  .toggleFilterCategory(cat),
+                              onAddCategory: () =>
+                                  _showAddCategorySheet(context),
+                            ),
                           ),
                         ),
-                      ),
+                        SliverPadding(
+                          padding: AppSizes.screenHorizontal,
+                          sliver: SliverList(
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final cat = state.visibleCategories[index];
+                                return Padding(
+                                  padding:
+                                      EdgeInsets.only(bottom: AppSizes.spaceMd),
+                                  child: MenuCategorySectionCard(
+                                    category: cat,
+                                    itemCount: state.countForCategory(cat),
+                                    items: state.itemsInCategory(cat),
+                                    onAddItem: () => _showItemSheet(
+                                      context,
+                                      initialCategory: cat,
+                                    ),
+                                    onEditItem: (e) => _showItemSheet(
+                                      context,
+                                      initialCategory: cat,
+                                      existing: e,
+                                    ),
+                                    onDeleteItem: (e) =>
+                                        _confirmDeleteItem(context, e),
+                                    onRenameCategory: () =>
+                                        _renameCategory(context, cat),
+                                    onDeleteCategory: () =>
+                                        _deleteCategory(context, cat),
+                                  ),
+                                );
+                              },
+                              childCount: state.visibleCategories.length,
+                            ),
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
               ),
             ],
@@ -333,5 +336,10 @@ class MenuBuilderView extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _refresh(BuildContext context) async {
+    await context.read<MenuBuilderCubit>().refresh();
+    await Future<void>.delayed(const Duration(milliseconds: 450));
   }
 }

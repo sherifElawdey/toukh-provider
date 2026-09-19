@@ -160,6 +160,17 @@ class _Permissions {
   String get allowed => 'permissions.allowed';
   String get openSystemSettings => 'permissions.open_system_settings';
   String get continueLabel => 'permissions.continue';
+  String get notNow => 'permissions.not_now';
+  String get locationNeededTitle => 'permissions.location_needed_title';
+  String get locationNeededBody => 'permissions.location_needed_body';
+  String get notificationsNeededTitle =>
+      'permissions.notifications_needed_title';
+  String get notificationsNeededBody =>
+      'permissions.notifications_needed_body';
+  String get bannerTitle => 'permissions.banner_title';
+  String get bannerSubtitle => 'permissions.banner_subtitle';
+  String get allowLocation => 'permissions.allow_location';
+  String get openSettings => 'permissions.open_settings';
 }
 
 class _AccountStatus {
@@ -411,7 +422,10 @@ class _Orders {
   String get detailDriverSearchStarted => 'orders.detail_driver_search_started';
   String get detailDriverAssigned => 'orders.detail_driver_assigned';
   String get actionDeliver => 'orders.action_deliver';
+  String get actionChangeDriver => 'orders.action_change_driver';
+  String get awaitingDriverApproval => 'orders.awaiting_driver_approval';
   String get actionConfirmHandoff => 'orders.action_confirm_handoff';
+  String get actionShowPickupQr => 'orders.action_show_pickup_qr';
   String get actionFinishOrder => 'orders.action_finish_order';
   String get completionCodeSheetTitle => 'orders.completion_code_sheet_title';
   String get completionCodeWrong => 'orders.completion_code_wrong';
@@ -437,6 +451,9 @@ class _Orders {
   String get requestDeliveryTitle => 'orders.request_delivery_title';
   String get requestDeliveryHint => 'orders.request_delivery_hint';
   String get requestDeliveryConfirm => 'orders.request_delivery_confirm';
+  String get requestDeliveryEmpty => 'orders.request_delivery_empty';
+  String get requestDeliveryMissingLocation =>
+      'orders.request_delivery_missing_location';
   String get driverAssignedTitle => 'orders.driver_assigned_title';
   String get driverAssignedBody => 'orders.driver_assigned_body';
   String get driverAssignedDone => 'orders.driver_assigned_done';
@@ -486,6 +503,10 @@ class _Orders {
   String get detailOrderTotal => 'orders.detail_order_total';
   String get detailPickupQrTitle => 'orders.detail_pickup_qr_title';
   String get detailPickupQrHint => 'orders.detail_pickup_qr_hint';
+  String get detailPickupQrDriverScanHint =>
+      'orders.detail_pickup_qr_driver_scan_hint';
+  String get handoffSuccessTitle => 'orders.handoff_success_title';
+  String get handoffSuccessBody => 'orders.handoff_success_body';
   String get detailCancelledByProvider => 'orders.detail_cancelled_by_provider';
   String get detailCancelledByCustomer => 'orders.detail_cancelled_by_customer';
   String get detailCancelledAt => 'orders.detail_cancelled_at';
@@ -548,6 +569,10 @@ class _Settings {
   String get selectLanguage => 'settings.select_language';
   String get termsAndConditions => 'settings.terms_and_conditions';
   String get privacyPolicy => 'settings.privacy_policy';
+  String get deleteAccount => 'settings.delete_account';
+  String get deleteAccountTitle => 'settings.delete_account_title';
+  String get deleteAccountBody => 'settings.delete_account_body';
+  String get deleteAccountContinue => 'settings.delete_account_continue';
   String get declaration => 'settings.declaration';
   String get legalOpenInBrowser => 'settings.legal_open_in_browser';
   String get legalOpenInBrowserHint => 'settings.legal_open_in_browser_hint';

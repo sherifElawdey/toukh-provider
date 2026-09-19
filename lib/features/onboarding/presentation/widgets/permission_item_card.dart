@@ -11,6 +11,7 @@ class PermissionItemCard extends StatelessWidget {
     required this.icon,
     required this.busy,
     required this.onEnable,
+    this.enableLabel,
   });
 
   final bool granted;
@@ -19,6 +20,7 @@ class PermissionItemCard extends StatelessWidget {
   final IconData icon;
   final bool busy;
   final VoidCallback onEnable;
+  final String? enableLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +74,7 @@ class PermissionItemCard extends StatelessWidget {
             SizedBox(width: AppSizes.spaceSm),
             if (!granted)
               AppOutlinedButton(
-                text: AppStrings.Permissions.enable,
+                text: enableLabel ?? AppStrings.Permissions.enable,
                 status: busy
                     ? AppButtonStatus.disabled
                     : AppButtonStatus.enabled,

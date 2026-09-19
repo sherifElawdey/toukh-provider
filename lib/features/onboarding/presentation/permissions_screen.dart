@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:get/get.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
-import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_item_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -16,11 +19,13 @@ class PermissionsScreen extends StatefulWidget {
 
 class _PermissionsScreenState extends State<PermissionsScreen>
     with WidgetsBindingObserver {
-  PermissionsStatus _status = const PermissionsStatus(
-    notification: false,
-    foregroundLocation: false,
-  );
+  bool _notificationGranted = false;
+  bool _locationGranted = false;
+  bool _notificationPermanentlyDenied = false;
   bool _loading = true;
+  bool _busy = false;
+
+  bool get _allGranted => _notificationGranted && _locationGranted;
 
   @override
   void initState() {
@@ -42,42 +47,86 @@ class _PermissionsScreenState extends State<PermissionsScreen>
     }
   }
 
+  Future<bool> _isNotificationPermanentlyDenied() async {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final settings =
+          await FirebaseMessaging.instance.getNotificationSettings();
+      return settings.authorizationStatus == AuthorizationStatus.denied;
+    }
+    final status = await Permission.notification.status;
+    return status.isPermanentlyDenied || status.isRestricted;
+  }
+
   Future<void> _syncStatus() async {
     final cubit = context.read<OnboardingCubit>();
     final s = await cubit.readPermissionStatus();
+    final notifPermanent = await _isNotificationPermanentlyDenied();
     if (!mounted) return;
     setState(() {
-      _status = s;
+      _notificationGranted = s.notification;
+      _locationGranted = s.foregroundLocation;
+      _notificationPermanentlyDenied =
+          !s.notification && notifPermanent;
       _loading = false;
     });
+    if (_allGranted) {
+      await cubit.continueAfterPermissionsGranted();
+    }
   }
 
-  Future<void> _wrap(Future<void> Function() action) async {
-    setState(() => _loading = true);
+  Future<void> _enableNotification() async {
+    setState(() => _busy = true);
     try {
-      await action();
+      final cubit = context.read<OnboardingCubit>();
+      await cubit.requestNotificationPermission();
+      // Deny or grant both continue — never trap the user on this screen.
+      await cubit.continueAfterNotificationRequest();
     } catch (e, st) {
-      debugPrint('PermissionsScreen action error: $e\n$st');
+      debugPrint('PermissionsScreen._enableNotification error: $e\n$st');
       if (mounted) {
         AppSnack.show(
           context,
           message: appFirebaseError(e),
           state: AppSnackState.error,
-          icon: ToukhIcons.error,
+          icon: PhosphorIconsRegular.bellSlash,
         );
       }
     } finally {
-      if (mounted) await _syncStatus();
+      if (mounted) {
+        await _syncStatus();
+        setState(() => _busy = false);
+      }
     }
   }
 
-  Future<void> _onContinue() async {
-    if (!_status.allGranted) return;
-    setState(() => _loading = true);
+  Future<void> _enableLocation() async {
+    setState(() => _busy = true);
     try {
-      final err = await context
-          .read<OnboardingCubit>()
-          .continueAfterPermissionsGranted();
+      final cubit = context.read<OnboardingCubit>();
+      await cubit.requestForegroundLocationPermission();
+      await cubit.continueAfterLocationRequest();
+    } catch (e, st) {
+      debugPrint('PermissionsScreen._enableLocation error: $e\n$st');
+      if (mounted) {
+        AppSnack.show(
+          context,
+          message: appFirebaseError(e),
+          state: AppSnackState.error,
+          icon: PhosphorIconsRegular.gpsSlash,
+        );
+      }
+    } finally {
+      if (mounted) {
+        await _syncStatus();
+        setState(() => _busy = false);
+      }
+    }
+  }
+
+  Future<void> _onNotNow() async {
+    setState(() => _busy = true);
+    try {
+      final err = await context.read<OnboardingCubit>().skipPermissionsPrompt();
       if (!mounted) return;
       if (err != null) {
         AppSnack.show(
@@ -87,48 +136,32 @@ class _PermissionsScreenState extends State<PermissionsScreen>
           icon: ToukhIcons.settings,
         );
       }
-    } catch (e, st) {
-      debugPrint('PermissionsScreen._onContinue error: $e\n$st');
-      if (mounted) {
-        AppSnack.show(
-          context,
-          message: appFirebaseError(e),
-          state: AppSnackState.error,
-          icon: ToukhIcons.error,
-        );
-      }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) setState(() => _busy = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final disabled = _loading || _busy;
+    final notifActionLabel = _notificationPermanentlyDenied
+        ? AppStrings.Permissions.openSettings.tr
+        : AppStrings.Permissions.enable.tr;
 
     return Scaffold(
       appBar: AppBar(
-        title: CustomText(AppStrings.Permissions.title),
         automaticallyImplyLeading: false,
+        title: CustomText(AppStrings.Permissions.title),
       ),
       body: SafeArea(
         child: Padding(
-          padding: AppSizes.screenPadding.copyWith(
-            bottom: AppSizes.spaceBase,
-            top: AppSizes.spaceMd,
-          ),
+          padding: AppSizes.screenPadding.copyWith(bottom: AppSizes.spaceBase),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: ToukhServiceLogo(
-                  size: 80,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-              ),
-              SizedBox(height: AppSizes.spaceXl),
               CustomText(
-                AppStrings.Permissions.intro,
+                AppStrings.Permissions.intro.tr,
                 style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       height: 1.4,
                       color: scheme.onSurface.withValues(alpha: 0.85),
@@ -136,40 +169,63 @@ class _PermissionsScreenState extends State<PermissionsScreen>
               ),
               SizedBox(height: AppSizes.spaceXl),
               PermissionItemCard(
-                granted: _status.notification,
-                title: AppStrings.Permissions.notifications,
-                subtitle: AppStrings.Permissions.notificationsSubtitle,
+                granted: _notificationGranted,
+                title: AppStrings.Permissions.notifications.tr,
+                subtitle: AppStrings.Permissions.notificationsSubtitle.tr,
                 icon: ToukhIcons.notificationPermission,
-                busy: _loading,
-                onEnable: () => _wrap(
-                  context.read<OnboardingCubit>().requestNotificationPermission,
-                ),
+                busy: disabled,
+                enableLabel: notifActionLabel,
+                onEnable: _enableNotification,
               ),
               SizedBox(height: AppSizes.spaceMd),
               PermissionItemCard(
-                granted: _status.foregroundLocation,
-                title: AppStrings.Permissions.location,
-                subtitle: AppStrings.Permissions.locationSubtitle,
+                granted: _locationGranted,
+                title: AppStrings.Permissions.location.tr,
+                subtitle: AppStrings.Permissions.locationSubtitle.tr,
                 icon: ToukhIcons.location,
-                busy: _loading,
-                onEnable: () => _wrap(
-                  context
-                      .read<OnboardingCubit>()
-                      .requestForegroundLocationPermission,
-                ),
+                busy: disabled,
+                onEnable: _enableLocation,
               ),
               const Spacer(),
-              AppFilledButton(
-                text: AppStrings.Permissions.continueLabel,
-                status: (!_status.allGranted || _loading)
-                    ? AppButtonStatus.disabled
-                    : AppButtonStatus.enabled,
-                onTap: _onContinue,
-              ),
-              SizedBox(height: AppSizes.spaceMd),
+              if (!_allGranted) ...[
+                if (!_notificationGranted)
+                  AppFilledButton(
+                    text: notifActionLabel,
+                    status: disabled
+                        ? AppButtonStatus.disabled
+                        : AppButtonStatus.enabled,
+                    onTap: _enableNotification,
+                  )
+                else if (!_locationGranted)
+                  AppFilledButton(
+                    text: AppStrings.Permissions.allowLocation,
+                    status: disabled
+                        ? AppButtonStatus.disabled
+                        : AppButtonStatus.enabled,
+                    onTap: _enableLocation,
+                  ),
+                SizedBox(height: AppSizes.spaceMd),
+                AppTextButton(
+                  text: AppStrings.Permissions.notNow,
+                  status: disabled
+                      ? AppButtonStatus.disabled
+                      : AppButtonStatus.enabled,
+                  onTap: _onNotNow,
+                ),
+              ] else
+                AppFilledButton(
+                  text: AppStrings.Permissions.continueLabel,
+                  status: disabled
+                      ? AppButtonStatus.disabled
+                      : AppButtonStatus.enabled,
+                  onTap: () => context
+                      .read<OnboardingCubit>()
+                      .continueAfterPermissionsGranted(),
+                ),
+              SizedBox(height: AppSizes.spaceSm),
               AppTextButton(
                 text: AppStrings.Permissions.openSystemSettings,
-                status: _loading
+                status: disabled
                     ? AppButtonStatus.disabled
                     : AppButtonStatus.enabled,
                 onTap: () =>

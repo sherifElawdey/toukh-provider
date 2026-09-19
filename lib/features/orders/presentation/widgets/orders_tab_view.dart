@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/orders_list_shimmer.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/pickup_qr_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_card.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_location.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/store_driver_pick_sheet.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class OrdersTabView extends StatelessWidget {
@@ -41,13 +45,16 @@ class OrdersTabView extends StatelessWidget {
         }
 
         if (rows.isEmpty) {
-          return ListView(
-            physics: const AlwaysScrollableScrollPhysics(),
-            children: [
-              HomeDashboardEmptyPlaceholder(
-                message: emptyMessageKey,
-              ),
-            ],
+          return ToukhRefresh(
+            onRefresh: () => _refresh(context),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              children: [
+                HomeDashboardEmptyPlaceholder(
+                  message: emptyMessageKey,
+                ),
+              ],
+            ),
           );
         }
 
@@ -57,40 +64,49 @@ class OrdersTabView extends StatelessWidget {
 
         return Stack(
           children: [
-            ListView.builder(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: AppSizes.screenPadding,
-              itemCount: rows.length,
-              itemBuilder: (context, index) {
-                final row = rows[index];
-                final busy = state.actionInFlightId == row.id;
-                final isPharmacyRequest = row.master.isPharmacyRequest;
-                final pendingPharmacy = isPharmacyRequest &&
-                    row.slice.providerState ==
-                        ProviderSubState.pending.wireValue;
-                return ProviderOrderCard(
-                  key: ValueKey(row.id),
-                  row: row,
-                  tab: tab,
-                  busy: busy,
-                  onApprove: pendingPharmacy
-                      ? null
-                      : () => _approveAndMaybeRequestDriver(context, row),
-                  onReview: pendingPharmacy
-                      ? () => showPharmacyApproveOrderSheet(context, row: row)
-                      : null,
-                  onCancel: () => cubit.cancel(row.id),
-                  onRequestDelivery: () => _openRequestDelivery(context, row),
-                  onReadyForPickup: () => cubit.markReadyForPickup(row.id),
-                  onDeliver: () => _openStoreDriverPick(
-                    context,
-                    providerId: providerId,
-                    orderId: row.id,
-                  ),
-                  onConfirmHandoff: () => cubit.confirmHandoff(row.id),
-                  onFinish: () => _finishWithCode(context, row.id),
-                );
-              },
+            ToukhRefresh(
+              onRefresh: () => _refresh(context),
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: AppSizes.screenPadding,
+                itemCount: rows.length,
+                itemBuilder: (context, index) {
+                  final row = rows[index];
+                  final busy = state.actionInFlightId == row.id;
+                  final isPharmacyRequest = row.master.isPharmacyRequest;
+                  final pendingPharmacy = isPharmacyRequest &&
+                      row.slice.providerState ==
+                          ProviderSubState.pending.wireValue;
+                  return ProviderOrderCard(
+                    key: ValueKey(row.id),
+                    row: row,
+                    tab: tab,
+                    busy: busy,
+                    onApprove: pendingPharmacy
+                        ? null
+                        : () => _approveAndMaybeRequestDriver(context, row),
+                    onReview: pendingPharmacy
+                        ? () => showPharmacyApproveOrderSheet(context, row: row)
+                        : null,
+                    onCancel: () => cubit.cancel(row.id),
+                    onRequestDelivery: () => _openRequestDelivery(context, row),
+                    onReadyForPickup: () => cubit.markReadyForPickup(row.id),
+                    onDeliver: () => _openStoreDriverPick(
+                      context,
+                      providerId: providerId,
+                      orderId: row.id,
+                    ),
+                    onShowPickupQr: () => showPickupQrSheet(
+                      context,
+                      masterOrderId: row.id,
+                      providerId: providerId,
+                      driverId: row.slice.driverId ??
+                          row.master.driverAssignment?.driverId,
+                    ),
+                    onFinish: () => _finishWithCode(context, row.id),
+                  );
+                },
+              ),
             ),
             if (actionBusy)
               Positioned.fill(
@@ -105,6 +121,11 @@ class OrdersTabView extends StatelessWidget {
         );
       },
     );
+  }
+
+  Future<void> _refresh(BuildContext context) async {
+    context.read<ProviderOrdersCubit>().refresh();
+    await Future<void>.delayed(const Duration(milliseconds: 450));
   }
 
   Future<void> _approveAndMaybeRequestDriver(
@@ -151,11 +172,22 @@ class OrdersTabView extends StatelessWidget {
     ProviderMasterOrderRow row,
   ) async {
     final cubit = context.read<ProviderOrdersCubit>();
-    final center = await showRequestDeliverySheet(
-      context,
-      initialLocation: row.slice.storeLocation,
+    final auth = context.read<AuthCubit>().state;
+    final profile = auth is Authenticated ? auth.profile : null;
+    final center = resolveDriverRequestPickup(
+      profile: profile,
+      sliceStoreLocation: row.slice.storeLocation,
     );
-    if (center == null || !context.mounted) return;
+    if (center == null) {
+      if (!context.mounted) return;
+      AppSnack.show(
+        context,
+        message: AppStrings.Orders.requestDeliveryMissingLocation.tr,
+        state: AppSnackState.warning,
+        icon: ToukhIcons.location,
+      );
+      return;
+    }
     await cubit.requestDelivery(orderId: row.id, searchCenter: center);
     if (!context.mounted) return;
     final updated = cubit.orderById(row.id);

@@ -89,139 +89,149 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               ),
               title: CustomText(AppStrings.Settings.accountDetails),
             ),
-            body: ListView(
-              padding: AppSizes.screenPadding.copyWith(
-                top: AppSizes.spaceMd,
-                bottom: AppSizes.space2xl,
-              ),
-              children: [
-                _AccountDetailsHero(profile: profile),
-                SizedBox(height: AppSizes.spaceXl),
-                SettingsSectionTitle(
-                  labelKey: AppStrings.Settings.businessInfo,
+            body: ToukhRefresh(
+              onRefresh: context.read<AuthCubit>().refreshProfile,
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: AppSizes.screenPadding.copyWith(
+                  top: AppSizes.spaceMd,
+                  bottom: AppSizes.space2xl,
                 ),
-                SizedBox(height: AppSizes.spaceSm),
-                RegisterReviewTile(
-                  icon: ToukhIcons.store,
-                  titleKey: AppStrings.Registration.reviewBusinessType,
-                  value: draft.kind == null
-                      ? '—'
-                      : providerKindLabelKey(draft.kind!).tr,
-                  scheme: scheme,
-                  onTap: () => _showLockedSnack(context),
-                ),
-                if (categoryEntryFromDraft(draft) case final cat?) ...[
+                children: [
+                  _AccountDetailsHero(profile: profile),
+                  SizedBox(height: AppSizes.spaceXl),
+                  SettingsSectionTitle(
+                    labelKey: AppStrings.Settings.businessInfo,
+                  ),
+                  SizedBox(height: AppSizes.spaceSm),
                   RegisterReviewTile(
-                    icon: PhosphorIconsRegular.tag,
-                    titleKey: cat.$1,
-                    value: cat.$2,
+                    icon: ToukhIcons.store,
+                    titleKey: AppStrings.Registration.reviewBusinessType,
+                    value: draft.kind == null
+                        ? '—'
+                        : providerKindLabelKey(draft.kind!).tr,
                     scheme: scheme,
                     onTap: () => _showLockedSnack(context),
                   ),
-                ],
-                RegisterReviewTile(
-                  icon: PhosphorIconsRegular.identificationBadge,
-                  titleKey: AppStrings.Registration.brandName,
-                  value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
-                  scheme: scheme,
-                  onTap: () => _openEdit(context, ReviewField.profile),
-                ),
-                if (draft.description.trim().isNotEmpty)
+                  if (categoryEntryFromDraft(draft) case final cat?) ...[
+                    RegisterReviewTile(
+                      icon: PhosphorIconsRegular.tag,
+                      titleKey: cat.$1,
+                      value: cat.$2,
+                      scheme: scheme,
+                      onTap: () => _showLockedSnack(context),
+                    ),
+                  ],
                   RegisterReviewTile(
-                    icon: PhosphorIconsRegular.notepad,
-                    titleKey: AppStrings.Registration.description,
-                    value: draft.description.trim(),
+                    icon: PhosphorIconsRegular.identificationBadge,
+                    titleKey: AppStrings.Registration.brandName,
+                    value:
+                        draft.name.trim().isEmpty ? '—' : draft.name.trim(),
                     scheme: scheme,
                     onTap: () => _openEdit(context, ReviewField.profile),
                   ),
-                if (draft.kind == ServiceType.homeService)
-                  RegisterReviewTile(
-                    icon: PhosphorIconsRegular.chatCircleDots,
-                    titleKey: AppStrings.Registration.preServiceQuestionsTitle,
-                    value: draft.preServiceQuestions.isEmpty
-                        ? AppStrings.Registration.preServiceQuestionsNone.tr
-                        : AppStrings.Registration.preServiceQuestionsCount.trParams({
-                            'count': '${draft.preServiceQuestions.length}',
-                          }),
-                    scheme: scheme,
-                    onTap: () =>
-                        _openEdit(context, ReviewField.preServiceQuestions),
+                  if (draft.description.trim().isNotEmpty)
+                    RegisterReviewTile(
+                      icon: PhosphorIconsRegular.notepad,
+                      titleKey: AppStrings.Registration.description,
+                      value: draft.description.trim(),
+                      scheme: scheme,
+                      onTap: () => _openEdit(context, ReviewField.profile),
+                    ),
+                  if (draft.kind == ServiceType.homeService)
+                    RegisterReviewTile(
+                      icon: PhosphorIconsRegular.chatCircleDots,
+                      titleKey:
+                          AppStrings.Registration.preServiceQuestionsTitle,
+                      value: draft.preServiceQuestions.isEmpty
+                          ? AppStrings.Registration.preServiceQuestionsNone.tr
+                          : AppStrings.Registration.preServiceQuestionsCount
+                              .trParams({
+                              'count': '${draft.preServiceQuestions.length}',
+                            }),
+                      scheme: scheme,
+                      onTap: () =>
+                          _openEdit(context, ReviewField.preServiceQuestions),
+                    ),
+                  SizedBox(height: AppSizes.spaceLg),
+                  SettingsSectionTitle(
+                    labelKey: AppStrings.Settings.contactInfo,
                   ),
-                SizedBox(height: AppSizes.spaceLg),
-                SettingsSectionTitle(
-                  labelKey: AppStrings.Settings.contactInfo,
-                ),
-                SizedBox(height: AppSizes.spaceSm),
-                RegisterReviewTile(
-                  icon: ToukhIcons.phone,
-                  titleKey: AppStrings.Auth.phoneNumber,
-                  value: formatProviderPhone(profile.phone),
-                  scheme: scheme,
-                  onTap: () => _showLockedSnack(context),
-                ),
-                SizedBox(height: AppSizes.spaceLg),
-                SettingsSectionTitle(labelKey: AppStrings.Settings.location),
-                SizedBox(height: AppSizes.spaceSm),
-                RegisterReviewTile(
-                  icon: ToukhIcons.location,
-                  titleKey: AppStrings.Registration.mapTitle,
-                  value: draft.formattedAddress.trim().isEmpty
-                      ? '—'
-                      : draft.formattedAddress.trim(),
-                  scheme: scheme,
-                  onTap: () => _openEdit(context, ReviewField.location),
-                ),
-                SizedBox(height: AppSizes.spaceLg),
-                SettingsSectionTitle(
-                  labelKey: AppStrings.Settings.operations,
-                ),
-                SizedBox(height: AppSizes.spaceSm),
-                RegisterReviewTile(
-                  icon: ToukhIcons.clock,
-                  titleKey: AppStrings.Registration.hoursTitle,
-                  value: hoursSummaryFromDraft(draft),
-                  scheme: scheme,
-                  onTap: () => _openEdit(context, ReviewField.hours),
-                ),
-                if (deliverySummaryFromDraft(draft) case final delivery?) ...[
+                  SizedBox(height: AppSizes.spaceSm),
                   RegisterReviewTile(
-                    icon: ToukhIcons.delivery,
-                    titleKey: AppStrings.Registration.deliveryTitle,
-                    value: delivery,
+                    icon: ToukhIcons.phone,
+                    titleKey: AppStrings.Auth.phoneNumber,
+                    value: formatProviderPhone(profile.phone),
                     scheme: scheme,
-                    onTap: () => _openEdit(context, ReviewField.delivery),
+                    onTap: () => _showLockedSnack(context),
                   ),
-                ],
-                if (draft.avgPrepMinutes != null && draft.avgPrepMinutes! > 0)
+                  SizedBox(height: AppSizes.spaceLg),
+                  SettingsSectionTitle(labelKey: AppStrings.Settings.location),
+                  SizedBox(height: AppSizes.spaceSm),
+                  RegisterReviewTile(
+                    icon: ToukhIcons.location,
+                    titleKey: AppStrings.Registration.mapTitle,
+                    value: () {
+                      final fromProfile = profile.address?.trim() ?? '';
+                      if (fromProfile.isNotEmpty) return fromProfile;
+                      final fromDraft = draft.formattedAddress.trim();
+                      return fromDraft.isEmpty ? '—' : fromDraft;
+                    }(),
+                    scheme: scheme,
+                    onTap: () => _openEdit(context, ReviewField.location),
+                  ),
+                  SizedBox(height: AppSizes.spaceLg),
+                  SettingsSectionTitle(
+                    labelKey: AppStrings.Settings.operations,
+                  ),
+                  SizedBox(height: AppSizes.spaceSm),
                   RegisterReviewTile(
                     icon: ToukhIcons.clock,
-                    titleKey: AppStrings.Registration.reviewPrepTime,
-                    value: '${draft.avgPrepMinutes}',
+                    titleKey: AppStrings.Registration.hoursTitle,
+                    value: hoursSummaryFromDraft(draft),
                     scheme: scheme,
-                    onTap: () => _openEdit(context, ReviewField.delivery),
+                    onTap: () => _openEdit(context, ReviewField.hours),
                   ),
-                SizedBox(height: AppSizes.spaceLg),
-                SettingsSectionTitle(
-                  labelKey: AppStrings.Settings.accountInfo,
-                ),
-                SizedBox(height: AppSizes.spaceSm),
-                RegisterReviewTile(
-                  icon: ToukhIcons.calendar,
-                  titleKey: AppStrings.Settings.memberSince,
-                  value: formatMemberSince(profile.createdAt, locale),
-                  scheme: scheme,
-                ),
-                RegisterReviewTile(
-                  icon: profile.phoneVerified
-                      ? ToukhIcons.success
-                      : ToukhIcons.warning,
-                  titleKey: AppStrings.Settings.phoneVerified,
-                  value: profile.phoneVerified
-                      ? AppStrings.Common.success.tr
-                      : AppStrings.Settings.statusUnverified.tr,
-                  scheme: scheme,
-                ),
-              ],
+                  if (deliverySummaryFromDraft(draft) case final delivery?) ...[
+                    RegisterReviewTile(
+                      icon: ToukhIcons.delivery,
+                      titleKey: AppStrings.Registration.deliveryTitle,
+                      value: delivery,
+                      scheme: scheme,
+                      onTap: () => _openEdit(context, ReviewField.delivery),
+                    ),
+                  ],
+                  if (draft.avgPrepMinutes != null && draft.avgPrepMinutes! > 0)
+                    RegisterReviewTile(
+                      icon: ToukhIcons.clock,
+                      titleKey: AppStrings.Registration.reviewPrepTime,
+                      value: '${draft.avgPrepMinutes}',
+                      scheme: scheme,
+                      onTap: () => _openEdit(context, ReviewField.delivery),
+                    ),
+                  SizedBox(height: AppSizes.spaceLg),
+                  SettingsSectionTitle(
+                    labelKey: AppStrings.Settings.accountInfo,
+                  ),
+                  SizedBox(height: AppSizes.spaceSm),
+                  RegisterReviewTile(
+                    icon: ToukhIcons.calendar,
+                    titleKey: AppStrings.Settings.memberSince,
+                    value: formatMemberSince(profile.createdAt, locale),
+                    scheme: scheme,
+                  ),
+                  RegisterReviewTile(
+                    icon: profile.phoneVerified
+                        ? ToukhIcons.success
+                        : ToukhIcons.warning,
+                    titleKey: AppStrings.Settings.phoneVerified,
+                    value: profile.phoneVerified
+                        ? AppStrings.Common.success.tr
+                        : AppStrings.Settings.statusUnverified.tr,
+                    scheme: scheme,
+                  ),
+                ],
+              ),
             ),
           );
         },

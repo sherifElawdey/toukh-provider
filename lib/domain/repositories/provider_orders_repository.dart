@@ -21,11 +21,13 @@ abstract class ProviderOrdersRepository {
   });
 
   /// Creates a delivery request and sets slice status to [courier_requested].
+  ///
+  /// Matching radius comes from admin `dispatchSettings.driverSearchRadiusKm`
+  /// on the server. [serviceAreaId] is taken from the restaurant profile.
   Future<String> requestDelivery({
     required String providerId,
     required String orderId,
     required Location searchCenter,
-    int radiusMeters = 1000,
   });
 
   Future<void> markReadyForPickup({

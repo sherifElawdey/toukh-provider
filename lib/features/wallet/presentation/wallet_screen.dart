@@ -14,6 +14,11 @@ import 'package:toukh_ui/toukh_ui.dart';
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
 
+  Future<void> _refresh(BuildContext context) async {
+    await context.read<WalletCubit>().refresh();
+    await Future<void>.delayed(const Duration(milliseconds: 450));
+  }
+
   void _showPayoutComingSoon(BuildContext context) {
     AppSnack.show(
       context,
@@ -35,7 +40,8 @@ class WalletScreen extends StatelessWidget {
       ),
       body: BlocBuilder<WalletCubit, WalletState>(
         builder: (context, state) {
-          return ListView(
+          final content = ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
             padding: AppSizes.screenPadding,
             children: [
               _BalanceCard(
@@ -78,6 +84,10 @@ class WalletScreen extends StatelessWidget {
                 ),
               const SizedBox(height: AppSizes.space4xl),
             ],
+          );
+          return ToukhRefresh(
+            onRefresh: () => _refresh(context),
+            child: content,
           );
         },
       ),

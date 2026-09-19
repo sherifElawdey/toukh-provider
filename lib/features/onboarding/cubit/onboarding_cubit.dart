@@ -6,6 +6,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
@@ -32,9 +33,20 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     _onAuthState(_authCubit.state);
   }
 
+  /// Legacy permanent skip key — cleared on each [refresh] so we re-prompt
+  /// once per cold start while permission remains denied.
+  static const notificationsPromptSkippedKey = 'notifications_prompt_skipped';
+
   final AuthCubit _authCubit;
   StreamSubscription<AuthState>? _authSub;
   AuthState? _priorAuthForGate;
+
+  /// Session-only skips: cleared when the cubit is created (cold start).
+  bool _sessionNotificationsSkipped = false;
+  bool _sessionLocationSkipped = false;
+
+  bool get sessionNotificationsSkipped => _sessionNotificationsSkipped;
+  bool get sessionLocationSkipped => _sessionLocationSkipped;
 
   void _onAuthState(AuthState state) {
     final prev = _priorAuthForGate;
@@ -67,6 +79,9 @@ class OnboardingCubit extends Cubit<OnboardingState> {
 
     emit(const OnboardingState(gate: OnboardingGate.checking));
 
+    // Drop any permanent skip from older builds so deny never hard-blocks.
+    await _clearLegacyPermanentSkip();
+
     try {
       final status = await readPermissionStatus().timeout(
         const Duration(seconds: 12),
@@ -78,20 +93,40 @@ class OnboardingCubit extends Cubit<OnboardingState> {
           );
         },
       );
-      if (!status.notification || !status.foregroundLocation) {
+
+      final needsNotif =
+          !status.notification && !_sessionNotificationsSkipped;
+      final needsLocation =
+          !status.foregroundLocation && !_sessionLocationSkipped;
+
+      if (needsNotif || needsLocation) {
         emit(const OnboardingState(gate: OnboardingGate.needsPermissions));
         return null;
       }
+
       emit(const OnboardingState(gate: OnboardingGate.ready));
-      await ToukhPushMessaging.instance.syncToken(
-        auth.user.uid,
-        existingFcmTokens: auth.profile.fcmTokens,
-      );
+      if (status.notification) {
+        await ToukhPushMessaging.instance.syncToken(
+          auth.user.uid,
+          existingFcmTokens: auth.profile.fcmTokens,
+        );
+      }
       return null;
     } catch (e, st) {
       debugPrint('OnboardingCubit.refresh error: $e\n$st');
       emit(const OnboardingState(gate: OnboardingGate.needsPermissions));
       return appFirebaseError(e);
+    }
+  }
+
+  Future<void> _clearLegacyPermanentSkip() async {
+    try {
+      final p = await SharedPreferences.getInstance();
+      if (p.containsKey(notificationsPromptSkippedKey)) {
+        await p.remove(notificationsPromptSkippedKey);
+      }
+    } catch (e, st) {
+      debugPrint('OnboardingCubit._clearLegacyPermanentSkip: $e\n$st');
     }
   }
 
@@ -104,8 +139,21 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     );
   }
 
+  /// Whether notifications are currently granted (for feature gates).
+  Future<bool> isNotificationGranted() => _isNotificationGranted();
+
+  /// Whether foreground location is currently granted (for feature gates).
+  Future<bool> isForegroundLocationGranted() =>
+      _isForegroundLocationGranted();
+
   Future<void> requestNotificationPermission() async {
     if (defaultTargetPlatform == TargetPlatform.iOS) {
+      final settings =
+          await FirebaseMessaging.instance.getNotificationSettings();
+      if (settings.authorizationStatus == AuthorizationStatus.denied) {
+        await openAppSettings();
+        return;
+      }
       await FirebaseMessaging.instance.requestPermission(
         alert: true,
         badge: true,
@@ -113,9 +161,16 @@ class OnboardingCubit extends Cubit<OnboardingState> {
       );
       return;
     }
-    final s = await Permission.notification.status;
-    if (!s.isGranted) {
-      await Permission.notification.request();
+    final status = await Permission.notification.status;
+    if (status.isGranted) return;
+    if (status.isPermanentlyDenied || status.isRestricted) {
+      await openAppSettings();
+      return;
+    }
+    final result = await Permission.notification.request();
+    if (!result.isGranted &&
+        (result.isPermanentlyDenied || result.isRestricted)) {
+      await openAppSettings();
     }
   }
 
@@ -138,6 +193,36 @@ class OnboardingCubit extends Cubit<OnboardingState> {
     if (permission == LocationPermission.deniedForever) {
       await openAppSettings();
     }
+  }
+
+  /// Session skip for the soft permissions prompt (Not now / system deny).
+  Future<String?> skipPermissionsPrompt({
+    bool notifications = true,
+    bool location = true,
+  }) async {
+    if (notifications) _sessionNotificationsSkipped = true;
+    if (location) _sessionLocationSkipped = true;
+    return refresh();
+  }
+
+  /// @deprecated Prefer [skipPermissionsPrompt]. Kept for call-site clarity.
+  Future<String?> skipNotificationsPrompt() => skipPermissionsPrompt();
+
+  /// After Enable: if still denied, treat like skip so the user is not stuck.
+  Future<String?> continueAfterNotificationRequest() async {
+    final granted = await _isNotificationGranted();
+    if (!granted) {
+      _sessionNotificationsSkipped = true;
+    }
+    return refresh();
+  }
+
+  Future<String?> continueAfterLocationRequest() async {
+    final granted = await _isForegroundLocationGranted();
+    if (!granted) {
+      _sessionLocationSkipped = true;
+    }
+    return refresh();
   }
 
   Future<String?> continueAfterPermissionsGranted() => refresh();
@@ -179,7 +264,7 @@ class PermissionsStatus extends Equatable {
   final bool notification;
   final bool foregroundLocation;
 
-  bool get allGranted => notification && foregroundLocation;
+  bool get notificationsReady => notification;
 
   @override
   List<Object?> get props => [notification, foregroundLocation];

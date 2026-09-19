@@ -9,6 +9,7 @@ import 'package:toukh_provider/features/home_service_requests/cubit/provider_hom
 import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_sections.dart';
+import 'package:toukh_provider/features/home/presentation/widgets/home_permissions_banner.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -27,8 +28,7 @@ class HomeDashboardOverviewTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return RefreshIndicator(
-      color: AppColors.appColor,
+    return ToukhRefresh(
       onRefresh: () async {
         context.read<HomeDashboardCubit>().retry();
         await Future<void>.delayed(const Duration(milliseconds: 450));
@@ -62,7 +62,9 @@ class HomeDashboardOverviewTab extends StatelessWidget {
                       height: 1.35,
                     ),
                   ),
-                  const SizedBox(height: AppSizes.spaceXl),
+                  const SizedBox(height: AppSizes.spaceLg),
+                  const HomePermissionsBanner(),
+                  const SizedBox(height: AppSizes.spaceMd),
                   BlocBuilder<AuthCubit, AuthState>(
                     builder: (context, auth) {
                       if (auth is Authenticated &&

@@ -252,14 +252,14 @@ class AppTranslations extends Translations {
     'pending.subtitle':
         'We\'re reviewing your application. You\'ll be notified when approved.',
 
-    'permissions.title': 'Enable access',
+    'permissions.title': 'App permissions',
     'permissions.intro':
-        'Havit Partner needs notifications and your location while using the app so customers can find your business and you receive order updates.',
+        'Notifications keep you updated on orders. Location helps with store pickup and delivery. You can enable now or continue and turn them on later.',
     'permissions.notifications': 'Notifications',
     'permissions.notifications_subtitle':
-        'New trip alerts and order updates',
+        'New order alerts and status updates',
     'permissions.location': 'Location',
-    'permissions.location_subtitle': 'Accurate pickup and drop-off',
+    'permissions.location_subtitle': 'Accurate store pickup and delivery',
     'permissions.background_location': 'Background tracking',
     'permissions.background_location_subtitle':
         'Stay visible to dispatch while the app is in the background',
@@ -267,6 +267,18 @@ class AppTranslations extends Translations {
     'permissions.allowed': 'Allowed',
     'permissions.open_system_settings': 'Open system settings',
     'permissions.continue': 'Continue',
+    'permissions.not_now': 'Not now',
+    'permissions.location_needed_title': 'Location needed',
+    'permissions.location_needed_body':
+        'Allow location access to use this feature, or open Settings if access was previously denied.',
+    'permissions.notifications_needed_title': 'Notifications needed',
+    'permissions.notifications_needed_body':
+        'Allow notifications to see order alerts and updates in your inbox. You can enable them in Settings if access was previously denied.',
+    'permissions.banner_title': 'Enable app permissions',
+    'permissions.banner_subtitle':
+        'Notifications and location help you manage orders reliably. You can enable them anytime.',
+    'permissions.allow_location': 'Allow location',
+    'permissions.open_settings': 'Open settings',
 
     'status.blocked_title': 'Your account is blocked',
     'status.blocked_reason': 'Reason',
@@ -565,7 +577,10 @@ class AppTranslations extends Translations {
     'orders.detail_driver_search_started': 'Driver search started',
     'orders.detail_driver_assigned': 'Driver assigned',
     'orders.action_deliver': 'Deliver',
+    'orders.action_change_driver': 'Change driver',
+    'orders.awaiting_driver_approval': 'Waiting for driver approval',
     'orders.action_confirm_handoff': 'Hand to courier',
+    'orders.action_show_pickup_qr': 'Show pickup QR',
     'orders.action_finish_order': 'Finish order',
     'orders.completion_code_sheet_title': 'Enter customer code',
     'orders.completion_code_wrong': 'Incorrect code, please try again',
@@ -592,8 +607,12 @@ class AppTranslations extends Translations {
     'orders.status_cancelled': 'Cancelled',
     'orders.request_delivery_title': 'Request a courier',
     'orders.request_delivery_hint':
-        'Move the map to set the pickup search area. We notify online couriers within 1 km.',
+        'Move the map to set the pickup search area. We notify online couriers in your service area within the configured search radius.',
     'orders.request_delivery_confirm': 'Send request',
+    'orders.request_delivery_empty':
+        'No couriers in range — move the map or try again.',
+    'orders.request_delivery_missing_location':
+        'Set your business location in account details before requesting a driver.',
     'orders.driver_assigned_title': 'Courier assigned',
     'orders.driver_assigned_body':
         'A courier accepted this order. You can mark it ready for pickup when prepared.',
@@ -634,6 +653,11 @@ class AppTranslations extends Translations {
     'orders.detail_order_total': 'Order total',
     'orders.detail_pickup_qr_title': 'Pickup QR',
     'orders.detail_pickup_qr_hint': 'Show this code to the courier',
+    'orders.detail_pickup_qr_driver_scan_hint':
+        'The driver must scan this code to receive the order. Status updates after a successful scan.',
+    'orders.handoff_success_title': 'Handed to courier',
+    'orders.handoff_success_body':
+        'The courier scanned the QR and received the order. It is now out for delivery.',
     'orders.detail_cancelled_by_provider': 'Canceled by provider',
     'orders.detail_cancelled_by_customer': 'Canceled by customer',
     'orders.detail_cancelled_at': 'Canceled at @date',
@@ -694,6 +718,12 @@ class AppTranslations extends Translations {
     'settings.select_language': 'Select language',
     'settings.terms_and_conditions': 'Terms & conditions',
     'settings.privacy_policy': 'Privacy policy',
+    'settings.support': 'Support',
+    'settings.delete_account': 'Delete account',
+    'settings.delete_account_title': 'Delete account?',
+    'settings.delete_account_body':
+        'You will continue on our website to delete your account. This cannot be undone from the app.',
+    'settings.delete_account_continue': 'Continue',
     'settings.declaration': 'Declaration',
     'settings.legal_open_in_browser': 'Open in browser',
     'settings.legal_open_in_browser_hint':
@@ -724,7 +754,6 @@ class AppTranslations extends Translations {
     'settings.status_deleted': 'Deleted',
     'settings.about_tagline':
         'Manage your business, orders, and deliveries with Havit Partner.',
-    'settings.support': 'Support',
     'settings.copyright': '© Havit. All rights reserved.',
     'settings.copied': 'Copied to clipboard',
     'settings.field_locked':
@@ -1049,13 +1078,13 @@ class AppTranslations extends Translations {
     'pending.title': 'طلبك قيد المراجعة',
     'pending.subtitle': 'نراجع طلبك وسنُبلغك عند الموافقة.',
 
-    'permissions.title': 'تفعيل الأذونات',
+    'permissions.title': 'أذونات التطبيق',
     'permissions.intro':
-        'يحتاج تطبيق حافيت بارتنر إلى الإشعارات وموقعك أثناء استخدام التطبيق حتى يتمكّن العملاء من العثور على نشاطك وتصلك تحديثات الطلبات.',
+        'الإشعارات تُبقيك على اطلاع بالطلبات. الموقع يساعد في الاستلام والتوصيل. يمكنك التفعيل الآن أو المتابعة وتفعيلها لاحقًا.',
     'permissions.notifications': 'الإشعارات',
-    'permissions.notifications_subtitle': 'تنبيهات الرحلات وتحديثات الطلب',
+    'permissions.notifications_subtitle': 'تنبيهات الطلبات وتحديثات الحالة',
     'permissions.location': 'الموقع',
-    'permissions.location_subtitle': 'استلام وتسليم دقيقَين',
+    'permissions.location_subtitle': 'استلام المتجر والتوصيل بدقة',
     'permissions.background_location': 'تتبّع في الخلفية',
     'permissions.background_location_subtitle':
         'استمر في الظهور للمنصة عندما يكون التطبيق في الخلفية',
@@ -1063,6 +1092,18 @@ class AppTranslations extends Translations {
     'permissions.allowed': 'مفعّل',
     'permissions.open_system_settings': 'فتح إعدادات النظام',
     'permissions.continue': 'متابعة',
+    'permissions.not_now': 'ليس الآن',
+    'permissions.location_needed_title': 'الموقع مطلوب',
+    'permissions.location_needed_body':
+        'اسمح بالوصول إلى الموقع لاستخدام هذه الميزة، أو افتح الإعدادات إذا تم الرفض سابقًا.',
+    'permissions.notifications_needed_title': 'الإشعارات مطلوبة',
+    'permissions.notifications_needed_body':
+        'اسمح بالإشعارات لعرض تنبيهات الطلبات في صندوق الوارد. يمكنك تفعيلها من الإعدادات إذا رُفض الوصول سابقًا.',
+    'permissions.banner_title': 'تفعيل أذونات التطبيق',
+    'permissions.banner_subtitle':
+        'الإشعارات والموقع يساعدانك على إدارة الطلبات بموثوقية. يمكنك تفعيلهما في أي وقت.',
+    'permissions.allow_location': 'السماح بالموقع',
+    'permissions.open_settings': 'فتح الإعدادات',
 
     'status.blocked_title': 'تم حظر حسابك',
     'status.blocked_reason': 'السبب',
@@ -1360,7 +1401,10 @@ class AppTranslations extends Translations {
     'orders.detail_driver_search_started': 'بدء البحث عن سائق',
     'orders.detail_driver_assigned': 'تم تعيين السائق',
     'orders.action_deliver': 'تسليم',
+    'orders.action_change_driver': 'تغيير السائق',
+    'orders.awaiting_driver_approval': 'في انتظار موافقة السائق',
     'orders.action_confirm_handoff': 'تسليم للمندوب',
+    'orders.action_show_pickup_qr': 'عرض رمز الاستلام',
     'orders.action_finish_order': 'إنهاء الطلب',
     'orders.completion_code_sheet_title': 'أدخل كود العميل',
     'orders.completion_code_wrong': 'الكود غير صحيح، يرجى المحاولة مجددًا',
@@ -1387,8 +1431,12 @@ class AppTranslations extends Translations {
     'orders.status_cancelled': 'ملغي',
     'orders.request_delivery_title': 'طلب مندوب توصيل',
     'orders.request_delivery_hint':
-        'حرّك الخريطة لتحديد منطقة البحث. نُبلّغ المناديب المتصلين ضمن 1 كم.',
+        'حرّك الخريطة لتحديد منطقة البحث. نُبلّغ المناديب المتصلين في منطقة خدمتك ضمن نطاق البحث المحدد.',
     'orders.request_delivery_confirm': 'إرسال الطلب',
+    'orders.request_delivery_empty':
+        'لا يوجد مناديب في النطاق — حرّك الخريطة أو أعد المحاولة.',
+    'orders.request_delivery_missing_location':
+        'حدّد موقع عملك من تفاصيل الحساب قبل طلب مندوب.',
     'orders.driver_assigned_title': 'تم تعيين مندوب',
     'orders.driver_assigned_body':
         'قبل مندوب هذا الطلب. يمكنك تحديده جاهزًا للاستلام عند الانتهاء.',
@@ -1429,6 +1477,11 @@ class AppTranslations extends Translations {
     'orders.detail_order_total': 'إجمالي الطلب',
     'orders.detail_pickup_qr_title': 'رمز الاستلام',
     'orders.detail_pickup_qr_hint': 'اعرض هذا الرمز للسائق',
+    'orders.detail_pickup_qr_driver_scan_hint':
+        'يجب على السائق مسح هذا الرمز لاستلام الطلب. يتم تحديث الحالة بعد المسح الناجح.',
+    'orders.handoff_success_title': 'تم التسليم للمندوب',
+    'orders.handoff_success_body':
+        'مسح المندوب رمز الاستلام واستلم الطلب. الطلب الآن في الطريق للعميل.',
     'orders.detail_cancelled_by_provider': 'ألغى مقدم الخدمة الطلب',
     'orders.detail_cancelled_by_customer': 'ألغى العميل الطلب',
     'orders.detail_cancelled_at': 'تم الإلغاء @date',
@@ -1489,6 +1542,11 @@ class AppTranslations extends Translations {
     'settings.select_language': 'اختر اللغة',
     'settings.terms_and_conditions': 'الشروط والأحكام',
     'settings.privacy_policy': 'سياسة الخصوصية',
+    'settings.delete_account': 'حذف الحساب',
+    'settings.delete_account_title': 'حذف الحساب؟',
+    'settings.delete_account_body':
+        'ستتابع على موقعنا لحذف حسابك. لا يمكن التراجع عن ذلك من داخل التطبيق.',
+    'settings.delete_account_continue': 'متابعة',
     'settings.declaration': 'إقرار',
     'settings.legal_open_in_browser': 'فتح في المتصفح',
     'settings.legal_open_in_browser_hint':

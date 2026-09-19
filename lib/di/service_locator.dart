@@ -41,6 +41,7 @@ import 'package:toukh_provider/domain/repositories/provider_home_service_request
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/domain/services/order_qr_service.dart';
+import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_drivers_repository.dart';
@@ -140,6 +141,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<OrderQrService>(
     () => OrderQrService(functions: getIt<FirebaseFunctions>()),
+  );
+  getIt.registerLazySingleton<DriverMatchingService>(
+    () => DriverMatchingService(functions: getIt<FirebaseFunctions>()),
   );
   getIt.registerLazySingleton<ProviderDriversRepository>(
     () => FirestoreProviderDriversRepository(

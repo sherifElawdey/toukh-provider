@@ -63,6 +63,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
       GlobalKey<ReviewEditPreServiceQuestionsBodyState>();
 
   late String _locationAddress;
+  bool _locationInServiceArea = true;
 
   @override
   void initState() {
@@ -171,6 +172,10 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
             if (!mounted || _locationAddress == address) return;
             setState(() => _locationAddress = address);
           },
+          onInServiceAreaChanged: (inArea) {
+            if (!mounted || _locationInServiceArea == inArea) return;
+            setState(() => _locationInServiceArea = inArea);
+          },
         );
       case ReviewField.hours:
         return ReviewEditHoursBody(key: _hoursKey);
@@ -239,10 +244,24 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
                         color: scheme.onSurface,
                       ),
                     ),
+                    if (!_locationInServiceArea) ...[
+                      SizedBox(height: AppSizes.spaceSm),
+                      CustomText(
+                        AppStrings.Registration.locationOutsideServiceArea.tr,
+                        style: TextStyle(
+                          fontSize: AppSizes.fontCaption,
+                          color: scheme.error,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
                     SizedBox(height: AppSizes.spaceMd),
                     AppFilledButton(
                       text: AppStrings.Registration.reviewEditSave,
-                      onTap: _persistAndClose,
+                      status: _locationInServiceArea
+                          ? AppButtonStatus.enabled
+                          : AppButtonStatus.disabled,
+                      onTap: _locationInServiceArea ? _persistAndClose : null,
                     ),
                   ],
                 ),

@@ -44,6 +44,13 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     unawaited(_startMenuStream(uid, auth.profile.menuItems));
   }
 
+  /// Re-bind the menu stream so the latest snapshot is fetched again.
+  Future<void> refresh() async {
+    final uid = _uid;
+    if (uid == null) return;
+    await _startMenuStream(uid, null);
+  }
+
   Future<void> _startMenuStream(
     String uid,
     List<MenuItemEntity>? legacyItems,

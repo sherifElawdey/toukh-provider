@@ -150,17 +150,10 @@ class _ClientDetailsBody extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            CircleAvatar(
-              radius: 28,
+            ToukhProfileAvatar(
+              imageUrl: hasPhoto ? photoUrl : null,
+              size: 56,
               backgroundColor: AppColors.appColor.withValues(alpha: 0.14),
-              backgroundImage: hasPhoto ? NetworkImage(photoUrl) : null,
-              child: hasPhoto
-                  ? null
-                  : Icon(
-                      ToukhIcons.profile,
-                      size: 28,
-                      color: AppColors.secondColor,
-                    ),
             ),
             const SizedBox(width: AppSizes.spaceMd),
             Expanded(

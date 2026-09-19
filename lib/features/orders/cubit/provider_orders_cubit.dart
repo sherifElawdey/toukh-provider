@@ -144,7 +144,7 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
       return requestId;
     } catch (e) {
       emit(state.copyWith(
-        actionInFlightId: null,
+        clearActionInFlight: true,
         errorMessage: appFirebaseError(e),
       ));
       return null;

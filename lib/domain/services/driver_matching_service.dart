@@ -20,17 +20,21 @@ class DriverMatchingService {
 
   final FirebaseFunctions _functions;
 
+  /// Lists online drivers near [lat]/[lng] using the admin search radius.
+  /// When [serviceAreaId] is set, results are limited to that restaurant area.
   Future<List<NearbyDriver>> listNearby({
     required double lat,
     required double lng,
-    int radiusMeters = 1000,
+    String? serviceAreaId,
   }) async {
     final callable = _functions.httpsCallable('listNearbyDrivers');
-    final result = await callable.call<Map<String, dynamic>>({
+    final payload = <String, dynamic>{
       'lat': lat,
       'lng': lng,
-      'radiusMeters': radiusMeters,
-    });
+      if (serviceAreaId != null && serviceAreaId.trim().isNotEmpty)
+        'serviceAreaId': serviceAreaId.trim(),
+    };
+    final result = await callable.call<Map<String, dynamic>>(payload);
     final data = Map<String, dynamic>.from(result.data as Map);
     final raw = data['drivers'] as List<dynamic>? ?? [];
     return raw.map((e) {

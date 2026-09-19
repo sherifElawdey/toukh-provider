@@ -72,6 +72,18 @@ class NotificationsCubit extends Cubit<NotificationsState> {
       emit(const NotificationsState(loading: false, items: []));
       return;
     }
+    _subscribe(uid);
+  }
+
+  /// Re-subscribe to the inbox stream and clear any error.
+  void refresh() {
+    final uid = _uid;
+    if (uid == null) return;
+    _sub?.cancel();
+    _subscribe(uid);
+  }
+
+  void _subscribe(String uid) {
     emit(state.copyWith(loading: true, clearError: true));
     _sub = _repository.watchInbox(uid).listen(
       (items) => emit(

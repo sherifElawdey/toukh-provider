@@ -26,72 +26,76 @@ class RevenuesScreen extends StatelessWidget {
           if (state.loading) {
             return const Center(child: CircularProgressIndicator());
           }
-          return ListView(
-            padding: AppSizes.screenPadding,
-            children: [
-              CustomText(
-                AppStrings.Revenues.monthFilter.tr,
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
-              ),
-              const SizedBox(height: AppSizes.spaceSm),
-              SizedBox(
-                height: 40,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: state.availableMonths.length,
-                  separatorBuilder: (_, _) =>
-                      const SizedBox(width: AppSizes.spaceSm),
-                  itemBuilder: (context, i) {
-                    final m = state.availableMonths[i];
-                    final selected = m == state.selectedMonth;
-                    return ChoiceChip(
-                      label: Text(m.label),
-                      selected: selected,
-                      onSelected: (_) =>
-                          context.read<RevenuesCubit>().selectMonth(m),
-                    );
-                  },
+          return ToukhRefresh(
+            onRefresh: context.read<RevenuesCubit>().reload,
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: AppSizes.screenPadding,
+              children: [
+                CustomText(
+                  AppStrings.Revenues.monthFilter.tr,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
-              ),
-              const SizedBox(height: AppSizes.spaceXl),
-              _SummaryGrid(state: state),
-              const SizedBox(height: AppSizes.spaceXl),
-              CustomText(
-                AppStrings.Revenues.revenueTrend.tr,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-              const SizedBox(height: AppSizes.spaceMd),
-              _RevenueTrendChart(state: state),
-              const SizedBox(height: AppSizes.spaceXl),
-              CustomText(
-                AppStrings.Revenues.statusBreakdown.tr,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-              const SizedBox(height: AppSizes.spaceMd),
-              _StatusPie(
-                accepted: state.acceptedCount,
-                rejected: state.rejectedCount,
-              ),
-              const SizedBox(height: AppSizes.spaceXl),
-              CustomText(
-                AppStrings.Revenues.feesBreakdown.tr,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-              ),
-              const SizedBox(height: AppSizes.spaceMd),
-              _MoneyPie(
-                revenue: state.revenueEgp,
-                fees: state.appFeesEgp,
-              ),
-              const SizedBox(height: AppSizes.space4xl),
-            ],
+                const SizedBox(height: AppSizes.spaceSm),
+                SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: state.availableMonths.length,
+                    separatorBuilder: (_, _) =>
+                        const SizedBox(width: AppSizes.spaceSm),
+                    itemBuilder: (context, i) {
+                      final m = state.availableMonths[i];
+                      final selected = m == state.selectedMonth;
+                      return ChoiceChip(
+                        label: Text(m.label),
+                        selected: selected,
+                        onSelected: (_) =>
+                            context.read<RevenuesCubit>().selectMonth(m),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: AppSizes.spaceXl),
+                _SummaryGrid(state: state),
+                const SizedBox(height: AppSizes.spaceXl),
+                CustomText(
+                  AppStrings.Revenues.revenueTrend.tr,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: AppSizes.spaceMd),
+                _RevenueTrendChart(state: state),
+                const SizedBox(height: AppSizes.spaceXl),
+                CustomText(
+                  AppStrings.Revenues.statusBreakdown.tr,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: AppSizes.spaceMd),
+                _StatusPie(
+                  accepted: state.acceptedCount,
+                  rejected: state.rejectedCount,
+                ),
+                const SizedBox(height: AppSizes.spaceXl),
+                CustomText(
+                  AppStrings.Revenues.feesBreakdown.tr,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                ),
+                const SizedBox(height: AppSizes.spaceMd),
+                _MoneyPie(
+                  revenue: state.revenueEgp,
+                  fees: state.appFeesEgp,
+                ),
+                const SizedBox(height: AppSizes.space4xl),
+              ],
+            ),
           );
         },
       ),

@@ -364,7 +364,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String providerId,
     required String orderId,
     required Location searchCenter,
-    int radiusMeters = 1000,
   }) async {
     final requestRef = _firestore.collection(deliveryRequestsCollection).doc();
     final now = DateTime.now();
@@ -389,6 +388,8 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
 
       final existingSearchId =
           (master['driverSearchRequestId'] as String?)?.trim();
+      final priorSliceRequestId =
+          (slice['deliveryRequestId'] as String?)?.trim();
       final requestedAt = ToukhFirestoreTimestamps.toDateTime(
             master['deliveryRequestedAt'],
           ) ??
@@ -408,66 +409,78 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         throw StateError('A driver is already assigned.');
       }
 
-      // Join an active shared search instead of creating a parallel request.
-      if (existingSearchId != null &&
-          existingSearchId.isNotEmpty &&
-          !searchExpired) {
-        final existingRef =
-            _firestore.collection(deliveryRequestsCollection).doc(existingSearchId);
-        final existingSnap = await tx.get(existingRef);
-        final existingStatus = existingSnap.data()?['status'] as String?;
-        if (existingSnap.exists && existingStatus == 'open') {
-          slice['status'] = ProviderOrderStatusWire.courierRequested;
-          slice['deliveryRequestId'] = existingSearchId;
-          slice['storeLocation'] = _locationToMap(searchCenter);
-          slice['deliveryRequestedAt'] = master['deliveryRequestedAt'] ??
-              Timestamp.fromDate(requestedAt);
-          slice['updatedAt'] = FieldValue.serverTimestamp();
-          slices[providerId] = slice;
-          tx.update(masterRef, {
-            'providerSlices': slices,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-          resultRequestId = existingSearchId;
-          return;
-        }
+      // Firestore requires every read to finish before any write.
+      final providerSnap = await tx.get(
+        _firestore
+            .collection(ToukhFirestoreCollections.providers)
+            .doc(providerId),
+      );
+      final providerServiceAreaId =
+          (providerSnap.data()?['serviceAreaId'] as String?)?.trim();
+
+      DocumentSnapshot<Map<String, dynamic>>? existingSearchSnap;
+      if (existingSearchId != null && existingSearchId.isNotEmpty) {
+        existingSearchSnap = await tx.get(
+          _firestore
+              .collection(deliveryRequestsCollection)
+              .doc(existingSearchId),
+        );
       }
 
-      // Expire previous open request on re-request.
-      if (existingSearchId != null && existingSearchId.isNotEmpty) {
-        final oldRef =
-            _firestore.collection(deliveryRequestsCollection).doc(existingSearchId);
-        final oldSnap = await tx.get(oldRef);
-        if (oldSnap.exists && oldSnap.data()?['status'] == 'open') {
-          tx.update(oldRef, {
-            'status': 'expired',
-            'candidateDriverIds': <String>[],
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-        }
-      }
-      final priorSliceRequestId =
-          (slice['deliveryRequestId'] as String?)?.trim();
+      DocumentSnapshot<Map<String, dynamic>>? priorSliceRequestSnap;
       if (priorSliceRequestId != null &&
           priorSliceRequestId.isNotEmpty &&
           priorSliceRequestId != existingSearchId) {
-        final oldSliceRef = _firestore
-            .collection(deliveryRequestsCollection)
-            .doc(priorSliceRequestId);
-        final oldSliceSnap = await tx.get(oldSliceRef);
-        if (oldSliceSnap.exists && oldSliceSnap.data()?['status'] == 'open') {
-          tx.update(oldSliceRef, {
-            'status': 'expired',
-            'candidateDriverIds': <String>[],
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-        }
+        priorSliceRequestSnap = await tx.get(
+          _firestore
+              .collection(deliveryRequestsCollection)
+              .doc(priorSliceRequestId),
+        );
+      }
+
+      // Join an active shared search instead of creating a parallel request.
+      if (existingSearchId != null &&
+          existingSearchId.isNotEmpty &&
+          !searchExpired &&
+          existingSearchSnap != null &&
+          existingSearchSnap.exists &&
+          existingSearchSnap.data()?['status'] == 'open') {
+        slice['status'] = ProviderOrderStatusWire.courierRequested;
+        slice['deliveryRequestId'] = existingSearchId;
+        slice['storeLocation'] = _locationToMap(searchCenter);
+        slice['deliveryRequestedAt'] = master['deliveryRequestedAt'] ??
+            Timestamp.fromDate(requestedAt);
+        slice['updatedAt'] = FieldValue.serverTimestamp();
+        slices[providerId] = slice;
+        tx.update(masterRef, {
+          'providerSlices': slices,
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+        resultRequestId = existingSearchId;
+        return;
+      }
+
+      // Expire previous open request on re-request.
+      if (existingSearchSnap != null &&
+          existingSearchSnap.exists &&
+          existingSearchSnap.data()?['status'] == 'open') {
+        tx.update(existingSearchSnap.reference, {
+          'status': 'expired',
+          'candidateDriverIds': <String>[],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
+      }
+      if (priorSliceRequestSnap != null &&
+          priorSliceRequestSnap.exists &&
+          priorSliceRequestSnap.data()?['status'] == 'open') {
+        tx.update(priorSliceRequestSnap.reference, {
+          'status': 'expired',
+          'candidateDriverIds': <String>[],
+          'updatedAt': FieldValue.serverTimestamp(),
+        });
       }
 
       final deliveryAddress = master['deliveryAddress'];
-      final serviceAreaId = deliveryAddress is Map
-          ? (deliveryAddress['serviceAreaId'] as String?)?.trim()
-          : null;
 
       tx.set(requestRef, {
         'providerId': providerId,
@@ -477,9 +490,8 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         'storeLocation': GeoPoint(searchCenter.lat, searchCenter.lng),
         'searchCenter': _locationToMap(searchCenter),
         if (deliveryAddress is Map) 'deliveryLocation': deliveryAddress,
-        if (serviceAreaId != null && serviceAreaId.isNotEmpty)
-          'serviceAreaId': serviceAreaId,
-        'radiusMeters': radiusMeters,
+        if (providerServiceAreaId != null && providerServiceAreaId.isNotEmpty)
+          'serviceAreaId': providerServiceAreaId,
         'status': 'open',
         'candidateDriverIds': <String>[],
         'createdAt': FieldValue.serverTimestamp(),
@@ -547,19 +559,18 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String driverName,
     String? driverPhotoUrl,
   }) async {
+    // Soft assign only — slice stays preparing/accepted (inProgress) until the
+    // linked driver accepts via acknowledgeStoreAssignment.
     await _patchSlice(
       providerId: providerId,
       masterOrderId: orderId,
       patch: {
-        'status': ProviderOrderStatusWire.outForDelivery,
-        'providerState': 'picked_up',
         'driverId': driverId,
         'driverName': driverName,
         if (driverPhotoUrl != null && driverPhotoUrl.trim().isNotEmpty)
           'driverPhotoUrl': driverPhotoUrl.trim(),
       },
     );
-    await _notifyCustomer(providerId, orderId);
   }
 
   @override

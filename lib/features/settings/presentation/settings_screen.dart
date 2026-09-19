@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/constants/legal_urls.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
@@ -13,9 +14,45 @@ import 'package:toukh_provider/features/settings/presentation/widgets/reputation
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
+
+  Future<void> _openExternalUrl(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    final ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!ok && context.mounted) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Settings.legalLaunchFailed,
+        state: AppSnackState.error,
+      );
+    }
+  }
+
+  Future<void> _confirmDeleteAccount(BuildContext context) async {
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: CustomText(AppStrings.Settings.deleteAccountTitle),
+        content: CustomText(AppStrings.Settings.deleteAccountBody),
+        actions: [
+          AppTextButton(
+            text: AppStrings.Common.cancel,
+            onTap: () => Navigator.of(ctx).pop(false),
+          ),
+          AppTextButton(
+            text: AppStrings.Settings.deleteAccountContinue,
+            color: AppColors.error,
+            onTap: () => Navigator.of(ctx).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (go != true || !context.mounted) return;
+    await _openExternalUrl(context, LegalUrls.deleteAccount);
+  }
 
   Future<void> _confirmSignOut(BuildContext context) async {
     final ok = await showDialog<bool>(
@@ -46,7 +83,8 @@ class SettingsScreen extends StatelessWidget {
       builder: (context, settings) {
         return BlocBuilder<AuthCubit, AuthState>(
           builder: (context, auth) {
-            return ListView(
+            final content = ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               padding: AppSizes.screenPadding.copyWith(
                 top: AppSizes.spaceLg,
                 bottom: AppSizes.space2xl,
@@ -241,6 +279,18 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => context.push(AppRoutes.legalPrivacy),
                 ),
                 SettingsTile(
+                  icon: ToukhIcons.info,
+                  titleKey: AppStrings.Settings.support,
+                  trailing: Icon(
+                    ToukhIcons.chevronRight,
+                    color: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withValues(alpha: 0.45),
+                  ),
+                  onTap: () => _openExternalUrl(context, LegalUrls.support),
+                ),
+                SettingsTile(
                   icon: ToukhIcons.article,
                   titleKey: AppStrings.Settings.declaration,
                   trailing: Icon(
@@ -251,6 +301,13 @@ class SettingsScreen extends StatelessWidget {
                         .withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.legalDeclaration),
+                ),
+                SizedBox(height: AppSizes.spaceLg),
+                SettingsTile(
+                  icon: ToukhIcons.delete,
+                  iconColor: AppColors.error,
+                  titleKey: AppStrings.Settings.deleteAccount,
+                  onTap: () => _confirmDeleteAccount(context),
                 ),
                 SizedBox(height: AppSizes.spaceXl),
                 Center(
@@ -286,6 +343,10 @@ class SettingsScreen extends StatelessWidget {
                 ),
                 const Center(child: SettingsAppVersionFooter()),
               ],
+            );
+            return ToukhRefresh(
+              onRefresh: context.read<AuthCubit>().refreshProfile,
+              child: content,
             );
           },
         );

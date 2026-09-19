@@ -130,6 +130,14 @@ String? resolveProviderRedirect({
           case OnboardingGate.checking:
             return AppRoutes.splash;
           case OnboardingGate.needsPermissions:
+            // Welcome always wins until first-launch onboarding is finished.
+            if (!settings.firstLaunchCompleted) {
+              logRedirect(
+                AppRoutes.welcome,
+                'postLogin needs permissions but first launch incomplete',
+              );
+              return AppRoutes.welcome;
+            }
             return AppRoutes.permissions;
           case OnboardingGate.ready:
             return AppRoutes.home;
@@ -203,7 +211,18 @@ String? resolveProviderRedirect({
             logRedirect(AppRoutes.splash, 'active + onboarding checking');
             return AppRoutes.splash;
           case OnboardingGate.needsPermissions:
-            final next = loc == AppRoutes.permissions ? null : AppRoutes.permissions;
+            // Never bounce /welcome ↔ /permissions while first launch is open.
+            if (!settings.firstLaunchCompleted) {
+              final next =
+                  loc == AppRoutes.welcome ? null : AppRoutes.welcome;
+              logRedirect(
+                next,
+                'active needs permissions but first launch incomplete',
+              );
+              return next;
+            }
+            final next =
+                loc == AppRoutes.permissions ? null : AppRoutes.permissions;
             logRedirect(next, 'active needs permissions');
             return next;
           case OnboardingGate.ready:

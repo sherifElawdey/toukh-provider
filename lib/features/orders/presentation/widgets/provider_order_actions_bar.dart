@@ -19,7 +19,7 @@ class ProviderOrderActionsBar extends StatelessWidget {
     this.onRequestDelivery,
     this.onReadyForPickup,
     this.onDeliver,
-    this.onConfirmHandoff,
+    this.onShowPickupQr,
     this.onFinish,
     this.onSeeDetails,
   });
@@ -34,7 +34,7 @@ class ProviderOrderActionsBar extends StatelessWidget {
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onReadyForPickup;
   final VoidCallback? onDeliver;
-  final VoidCallback? onConfirmHandoff;
+  final VoidCallback? onShowPickupQr;
   final VoidCallback? onFinish;
   final VoidCallback? onSeeDetails;
 
@@ -80,7 +80,7 @@ class ProviderOrderActionsBar extends StatelessWidget {
         onRequestDelivery: onRequestDelivery,
         onReadyForPickup: onReadyForPickup,
         onDeliver: onDeliver,
-        onConfirmHandoff: onConfirmHandoff,
+        onShowPickupQr: onShowPickupQr,
       );
     }
 
@@ -130,7 +130,7 @@ class _InProgressActions extends StatefulWidget {
     this.onRequestDelivery,
     this.onReadyForPickup,
     this.onDeliver,
-    this.onConfirmHandoff,
+    this.onShowPickupQr,
   });
 
   final ProviderMasterOrderRow row;
@@ -139,7 +139,7 @@ class _InProgressActions extends StatefulWidget {
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onReadyForPickup;
   final VoidCallback? onDeliver;
-  final VoidCallback? onConfirmHandoff;
+  final VoidCallback? onShowPickupQr;
 
   @override
   State<_InProgressActions> createState() => _InProgressActionsState();
@@ -277,7 +277,41 @@ class _InProgressActionsState extends State<_InProgressActions> {
         ),
       );
     }
-    if (widget.row.canStoreDeliver) {
+    if (widget.row.isAwaitingStoreDriverAccept) {
+      buttons.add(
+        Material(
+          color: AppColors.warning.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSizes.spaceMd,
+              vertical: AppSizes.spaceSm,
+            ),
+            child: CustomText(
+              AppStrings.Orders.awaitingDriverApproval.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: AppSizes.fontCaption,
+                color: AppColors.warning,
+              ),
+            ),
+          ),
+        ),
+      );
+      if (widget.onDeliver != null) {
+        buttons.add(
+          AppOutlinedButton(
+            text: AppStrings.Orders.actionChangeDriver.tr,
+            height: widget.buttonHeight,
+            size: AppButtonSize.small,
+            status: widget.busy
+                ? AppButtonStatus.loading
+                : AppButtonStatus.enabled,
+            onTap: widget.busy ? null : widget.onDeliver,
+          ),
+        );
+      }
+    } else if (widget.row.canStoreDeliver) {
       buttons.add(
         AppFilledButton(
           text: AppStrings.Orders.actionDeliver.tr,
@@ -289,15 +323,15 @@ class _InProgressActionsState extends State<_InProgressActions> {
         ),
       );
     }
-    if (widget.row.canConfirmHandoff) {
+    if (widget.row.canShowPickupQr) {
       buttons.add(
         AppFilledButton(
-          text: AppStrings.Orders.actionConfirmHandoff.tr,
+          text: AppStrings.Orders.actionShowPickupQr.tr,
           height: widget.buttonHeight,
           size: AppButtonSize.small,
           status:
               widget.busy ? AppButtonStatus.loading : AppButtonStatus.enabled,
-          onTap: widget.busy ? null : widget.onConfirmHandoff,
+          onTap: widget.busy ? null : widget.onShowPickupQr,
         ),
       );
     }
