@@ -2,12 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
-import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
-import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_required_sheet.dart';
 import 'package:toukh_provider/features/shell/provider_shell_nav.dart';
 import 'package:toukh_provider/features/shell/widgets/shell_nav_destination.dart';
 import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
@@ -18,37 +15,6 @@ class MainShellScaffold extends StatelessWidget {
   const MainShellScaffold({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
-
-  Future<void> _openNotifications(BuildContext context) async {
-    final cubit = context.read<OnboardingCubit>();
-    final granted = await cubit.isNotificationGranted();
-    if (!context.mounted) return;
-    if (granted) {
-      context.push(AppRoutes.notifications);
-      return;
-    }
-
-    final permanentlyDenied = await Permission.notification.isPermanentlyDenied;
-    if (!context.mounted) return;
-    final enable = await PermissionRequiredSheet.showForNotifications(
-      context,
-      permanentlyDenied: permanentlyDenied,
-    );
-    if (!enable || !context.mounted) return;
-
-    if (permanentlyDenied) {
-      await cubit.openSystemSettings();
-      return;
-    }
-
-    await cubit.requestNotificationPermission();
-    if (!context.mounted) return;
-    final nowGranted = await cubit.isNotificationGranted();
-    if (!context.mounted) return;
-    if (nowGranted) {
-      context.push(AppRoutes.notifications);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +55,10 @@ class MainShellScaffold extends StatelessWidget {
               builder: (context, badge) {
                 return IconButton(
                   tooltip: AppStrings.Notifications.title.tr,
-                  onPressed: () => _openNotifications(context),
+                  onPressed: () => context.push(
+                    AppRoutes.comingSoon,
+                    extra: AppStrings.Notifications.title.tr,
+                  ),
                   icon: Badge(
                     isLabelVisible: badge.notificationCount > 0,
                     label: CustomText('${badge.notificationCount}'),

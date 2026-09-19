@@ -1,141 +1,165 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:toukh_provider/di/service_locator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
-import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
-import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
-import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_overview_tab.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
-class HomeScreen extends StatefulWidget {
+/// Showcase home: greeting + mock stats; feature taps → Coming soon.
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  late final AppVersionGateService _versionGate;
-  bool _updateDialogVisible = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _versionGate = getIt<AppVersionGateService>();
-    _versionGate.addListener(_onVersionGateChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      unawaited(_syncFcmToken());
-      unawaited(_presentMandatoryUpdateIfNeeded());
-    });
-  }
-
-  @override
-  void dispose() {
-    _versionGate.removeListener(_onVersionGateChanged);
-    super.dispose();
-  }
-
-  void _onVersionGateChanged() {
-    unawaited(_presentMandatoryUpdateIfNeeded());
-  }
-
-  Future<void> _presentMandatoryUpdateIfNeeded() async {
-    if (!mounted || _updateDialogVisible) return;
-    final result = await _versionGate.ensureChecked();
-    if (!mounted || !result.needsUpdate || _updateDialogVisible) return;
-    final storeUri = _versionGate.storeUri;
-    if (storeUri == null) return;
-
-    _updateDialogVisible = true;
-    await showAppMandatoryUpdateDialog(
-      context,
-      title: AppStrings.AppUpdate.title.tr,
-      description: AppStrings.AppUpdate.description.tr,
-      storeUri: storeUri,
-      updateButtonLabel: AppStrings.AppUpdate.openStore.tr,
-    );
-    if (mounted) {
-      _updateDialogVisible = false;
-      unawaited(_presentMandatoryUpdateIfNeeded());
-    }
-  }
-
-  Future<void> _syncFcmToken() async {
-    final auth = getIt<AuthCubit>().state;
-    if (auth is! Authenticated) return;
-    await ToukhFcmTokenSync.syncOnAppOpen(
-      uid: auth.user.uid,
-      firestore: FirebaseFirestore.instance,
-      recipient: ToukhNotificationRecipient.provider,
-    );
-  }
-
-  String _greetingTr() {
+  String _greetingLabel() {
     final h = DateTime.now().hour;
     if (h < 12) return AppStrings.Home.greetingMorning.tr;
     if (h < 17) return AppStrings.Home.greetingAfternoon.tr;
     return AppStrings.Home.greetingEvening.tr;
   }
 
+  void _soon(BuildContext context, [String? title]) {
+    context.push(AppRoutes.comingSoon, extra: title);
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final auth = context.watch<AuthCubit>().state;
+    final rawName =
+        auth is Authenticated ? auth.profile.displayName.trim() : '';
+    final name = rawName.isEmpty ? '' : rawName.split(RegExp(r'\s+')).first;
+    final greeting = name.isEmpty ? _greetingLabel() : '${_greetingLabel()}, $name';
 
-    return BlocBuilder<HomeDashboardCubit, HomeDashboardState>(
-      builder: (context, state) {
-        if (!state.authenticated) {
-          return const SizedBox.shrink();
-        }
-
-        if (state.errorMessage != null &&
-            !state.loading &&
-            state.orders.isEmpty &&
-            state.reviews.isEmpty) {
-          return Padding(
-            padding: AppSizes.screenPadding.copyWith(top: AppSizes.spaceXl),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CustomText(
-                  AppStrings.Common.error.tr,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: AppSizes.fontHeadline,
-                    color: scheme.onSurface,
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      slivers: [
+        SliverPadding(
+          padding: AppSizes.screenPadding.copyWith(
+            top: AppSizes.spaceLg,
+            bottom: AppSizes.space2xl,
+          ),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              // Use Text (not CustomText) so composed greeting is not re-.tr'd.
+              Text(
+                greeting,
+                style: TextStyle(
+                  fontFamily: AppFonts.family,
+                  fontSize: AppSizes.fontHeadline,
+                  fontWeight: FontWeight.w900,
+                  color: scheme.onSurface,
+                  letterSpacing: -0.3,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Demo dashboard — full tools coming soon'.tr,
+                style: TextStyle(
+                  fontFamily: AppFonts.family,
+                  fontSize: AppSizes.fontBody,
+                  color: scheme.onSurface.withValues(alpha: 0.72),
+                  height: 1.35,
+                ),
+              ),
+              SizedBox(height: AppSizes.spaceXl),
+              Row(
+                children: [
+                  Expanded(
+                    child: _MockStatCard(
+                      label: 'Orders today'.tr,
+                      value: '8',
+                    ),
                   ),
-                ),
-                const SizedBox(height: AppSizes.spaceSm),
-                CustomText(
-                  state.errorMessage!,
-                  style: TextStyle(color: scheme.onSurface.withValues(alpha: 0.72)),
-                ),
-                const SizedBox(height: AppSizes.spaceLg),
-                AppFilledButton(
-                  text: AppStrings.Common.retry.tr,
-                  onTap: () => context.read<HomeDashboardCubit>().retry(),
-                ),
-              ],
+                  SizedBox(width: AppSizes.spaceSm),
+                  Expanded(
+                    child: _MockStatCard(
+                      label: 'Revenue'.tr,
+                      value: '1,240',
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: AppSizes.spaceSm),
+              Row(
+                children: [
+                  Expanded(
+                    child: _MockStatCard(
+                      label: 'Pending'.tr,
+                      value: '3',
+                    ),
+                  ),
+                  SizedBox(width: AppSizes.spaceSm),
+                  Expanded(
+                    child: _MockStatCard(
+                      label: 'Reviews'.tr,
+                      value: '4.8',
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: AppSizes.spaceXl),
+              AppFilledButton(
+                text: AppStrings.Orders.title.tr,
+                onTap: () => _soon(context, AppStrings.Orders.title.tr),
+              ),
+              SizedBox(height: AppSizes.spaceMd),
+              AppOutlinedButton(
+                text: 'Wallet'.tr,
+                onTap: () => _soon(context, 'Wallet'),
+              ),
+              SizedBox(height: AppSizes.spaceMd),
+              AppOutlinedButton(
+                text: AppStrings.Notifications.title.tr,
+                onTap: () =>
+                    _soon(context, AppStrings.Notifications.title.tr),
+              ),
+            ]),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _MockStatCard extends StatelessWidget {
+  const _MockStatCard({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.6),
+      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+      child: Padding(
+        padding: const EdgeInsets.all(AppSizes.spaceBase),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: AppFonts.family,
+                fontSize: AppSizes.fontCaption,
+                color: scheme.onSurface.withValues(alpha: 0.6),
+              ),
             ),
-          );
-        }
-
-        if (state.loading &&
-            state.orders.isEmpty &&
-            state.reviews.isEmpty &&
-            state.errorMessage == null) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        return HomeDashboardOverviewTab(
-          state: state,
-          greeting: _greetingTr(),
-        );
-      },
+            SizedBox(height: AppSizes.spaceXs),
+            Text(
+              value,
+              style: TextStyle(
+                fontFamily: AppFonts.family,
+                fontSize: AppSizes.fontHeadline,
+                fontWeight: FontWeight.w900,
+                color: scheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

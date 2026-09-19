@@ -29,6 +29,7 @@ abstract final class AppRoutes {
   static const postLoginStatus = '/post-login-status';
 
   static const permissions = '/permissions';
+  static const comingSoon = '/coming-soon';
 
   static const registrationMenu = '/registration/menu';
   static const registrationPortfolio = '/registration/portfolio';
@@ -74,6 +75,7 @@ abstract final class AppRoutes {
   };
 
   static bool isShellPathOrSubroute(String matchedLocation) {
+    if (matchedLocation == comingSoon) return true;
     if (matchedLocation.startsWith('/legal/')) return true;
     if (matchedLocation == notifications ||
         matchedLocation.startsWith('$notifications/')) {

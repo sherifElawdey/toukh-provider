@@ -24,19 +24,10 @@ import 'package:toukh_provider/features/auth/presentation/splash_screen.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_screen.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
-import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
-import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
-import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
-import 'package:toukh_provider/features/home_service_requests/presentation/home_service_request_detail_screen.dart';
-import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/home_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/menu_builder_screen.dart';
-import 'package:toukh_provider/features/notifications/presentation/notifications_screen.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/onboarding/presentation/permissions_screen.dart';
-import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
-import 'package:toukh_provider/features/orders/presentation/order_detail_screen.dart';
-import 'package:toukh_provider/features/orders/presentation/orders_screen.dart';
 import 'package:toukh_provider/features/pending/presentation/pending_approval_screen.dart';
 import 'package:toukh_provider/features/portfolio/presentation/portfolio_screen.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -53,28 +44,12 @@ import 'package:toukh_provider/features/settings/presentation/about_app_screen.d
 import 'package:toukh_provider/features/settings/presentation/account_details_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/legal_document_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/settings_screen.dart';
-import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
-import 'package:toukh_provider/features/wallet/cubit/wallet_cubit.dart';
-import 'package:toukh_provider/features/wallet/presentation/wallet_screen.dart';
-import 'package:toukh_provider/features/revenues/cubit/revenues_cubit.dart';
-import 'package:toukh_provider/features/revenues/presentation/revenues_screen.dart';
-import 'package:toukh_provider/domain/repositories/provider_drivers_repository.dart';
-import 'package:toukh_provider/features/drivers/cubit/manage_drivers_cubit.dart';
-import 'package:toukh_provider/features/drivers/presentation/manage_drivers_screen.dart';
-import 'package:toukh_provider/domain/repositories/provider_order_history_repository.dart';
-import 'package:toukh_provider/features/order_history/cubit/order_history_cubit.dart';
-import 'package:toukh_provider/features/order_history/presentation/order_history_screen.dart';
-import 'package:toukh_provider/features/reviews/cubit/provider_reviews_cubit.dart';
-import 'package:toukh_provider/features/reviews/presentation/provider_reviews_screen.dart';
-import 'package:toukh_provider/domain/repositories/provider_reviews_repository.dart';
-import 'package:toukh_provider/features/wallet/presentation/wallet_transactions_screen.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_overlay.dart';
 import 'package:toukh_provider/features/shell/main_shell_scaffold.dart';
 import 'package:toukh_provider/features/welcome/welcome_screen.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_provider/router/widgets/login_with_deleted_sheet.dart';
 import 'package:toukh_ui/toukh_ui.dart';
-import 'package:toukh_provider/router/widgets/menu_or_gallery_tab_screen.dart';
 import 'package:toukh_provider/router/widgets/verify_otp_missing_args_placeholder.dart';
 
 final GlobalKey<NavigatorState> providerRootNavigatorKey =
@@ -282,141 +257,60 @@ GoRouter createAppRouter({
       GoRoute(
         path: AppRoutes.notifications,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) => const NotificationsScreen(),
+        builder: (context, state) =>
+            const ComingSoonScreen(appBarTitle: 'Notifications'),
+      ),
+      GoRoute(
+        path: AppRoutes.comingSoon,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final title = state.extra is String ? state.extra as String : null;
+          return ComingSoonScreen(
+            appBarTitle: title,
+            title: title == null ? 'Coming soon' : '$title — coming soon',
+          );
+        },
       ),
       GoRoute(
         path: '/home-service-request/:requestId',
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) {
-          final requestId = state.pathParameters['requestId']!;
-          return BlocProvider.value(
-            value: getIt<ProviderHomeServiceRequestsCubit>(),
-            child: HomeServiceRequestDetailScreen(requestId: requestId),
-          );
-        },
+        builder: (context, state) => const ComingSoonScreen(),
       ),
       GoRoute(
         path: AppRoutes.wallet,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) {
-          final auth = authCubit.state;
-          if (auth is! Authenticated) {
-            return Scaffold(
-              body: Center(child: CustomText(AppStrings.Common.error.tr)),
-            );
-          }
-          return BlocProvider(
-            create: (_) => WalletCubit(
-              getIt<ProviderWalletRepository>(),
-              auth.user.uid,
-            ),
-            child: const WalletScreen(),
-          );
-        },
+        builder: (context, state) =>
+            const ComingSoonScreen(appBarTitle: 'Wallet'),
       ),
       GoRoute(
         path: AppRoutes.revenues,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) {
-          final auth = authCubit.state;
-          if (auth is! Authenticated) {
-            return Scaffold(
-              body: Center(child: CustomText(AppStrings.Common.error.tr)),
-            );
-          }
-          return BlocProvider(
-            create: (_) => RevenuesCubit(
-              dashboardRepository: getIt<ProviderDashboardRepository>(),
-              walletRepository: getIt<ProviderWalletRepository>(),
-              providerId: auth.user.uid,
-            ),
-            child: const RevenuesScreen(),
-          );
-        },
+        builder: (context, state) =>
+            const ComingSoonScreen(appBarTitle: 'Revenues'),
       ),
       GoRoute(
         path: AppRoutes.walletTransactions,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) {
-          final auth = authCubit.state;
-          if (auth is! Authenticated) {
-            return Scaffold(
-              body: Center(child: CustomText(AppStrings.Common.error.tr)),
-            );
-          }
-          return BlocProvider(
-            create: (_) {
-              final c = WalletHistoryCubit(
-                getIt<ProviderWalletRepository>(),
-                auth.user.uid,
-              );
-              c.loadInitial();
-              return c;
-            },
-            child: const WalletTransactionsScreen(),
-          );
-        },
+        builder: (context, state) =>
+            const ComingSoonScreen(appBarTitle: 'Transactions'),
       ),
       GoRoute(
         path: AppRoutes.reviews,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) {
-          final auth = authCubit.state;
-          if (auth is! Authenticated) {
-            return Scaffold(
-              body: Center(child: CustomText(AppStrings.Common.error.tr)),
-            );
-          }
-          return BlocProvider(
-            create: (_) => ProviderReviewsCubit(
-              getIt<ProviderReviewsRepository>(),
-              auth.user.uid,
-            ),
-            child: const ProviderReviewsScreen(),
-          );
-        },
+        builder: (context, state) =>
+            const ComingSoonScreen(appBarTitle: 'Reviews'),
       ),
       GoRoute(
         path: AppRoutes.ordersHistory,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) {
-          final auth = authCubit.state;
-          if (auth is! Authenticated) {
-            return Scaffold(
-              body: Center(child: CustomText(AppStrings.Common.error.tr)),
-            );
-          }
-          return BlocProvider(
-            create: (_) {
-              final c = OrderHistoryCubit(
-                getIt<ProviderOrderHistoryRepository>(),
-                auth.user.uid,
-              );
-              c.loadInitial();
-              return c;
-            },
-            child: const OrderHistoryScreen(),
-          );
-        },
+        builder: (context, state) =>
+            const ComingSoonScreen(appBarTitle: 'Order history'),
       ),
       GoRoute(
         path: AppRoutes.manageDrivers,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) {
-          final auth = authCubit.state;
-          if (auth is! Authenticated) {
-            return Scaffold(
-              body: Center(child: CustomText(AppStrings.Common.error.tr)),
-            );
-          }
-          return BlocProvider(
-            create: (_) => ManageDriversCubit(
-              getIt<ProviderDriversRepository>(),
-              auth.user.uid,
-            ),
-            child: const ManageDriversScreen(),
-          );
-        },
+        builder: (context, state) =>
+            const ComingSoonScreen(appBarTitle: 'Drivers'),
       ),
       ShellRoute(
         builder: (context, state, child) => BlocProvider(
@@ -476,22 +370,7 @@ GoRouter createAppRouter({
                 path: AppRoutes.home,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: MultiBlocProvider(
-                    providers: [
-                      BlocProvider(
-                        create: (_) => HomeDashboardCubit(
-                          authCubit: getIt<AuthCubit>(),
-                          dashboardRepository: getIt<ProviderDashboardRepository>(),
-                          menuRepository: getIt<ProviderMenuRepository>(),
-                        )..start(),
-                      ),
-                      BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
-                      BlocProvider.value(
-                        value: getIt<ProviderHomeServiceRequestsCubit>(),
-                      ),
-                    ],
-                    child: const HomeScreen(),
-                  ),
+                  child: const HomeScreen(),
                 ),
               ),
             ],
@@ -502,29 +381,16 @@ GoRouter createAppRouter({
                 path: AppRoutes.orders,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: MultiBlocProvider(
-                    providers: [
-                      BlocProvider.value(
-                        value: getIt<ProviderOrdersCubit>(),
-                      ),
-                      BlocProvider.value(
-                        value: getIt<ProviderHomeServiceRequestsCubit>(),
-                      ),
-                    ],
-                    child: const OrdersScreen(),
+                  child: const ComingSoonScreen(
+                    showBack: false,
+                    appBarTitle: 'Orders',
                   ),
                 ),
                 routes: [
                   GoRoute(
                     path: ':orderId',
                     parentNavigatorKey: providerRootNavigatorKey,
-                    builder: (context, state) {
-                      final orderId = state.pathParameters['orderId']!;
-                      return BlocProvider.value(
-                        value: getIt<ProviderOrdersCubit>(),
-                        child: OrderDetailScreen(orderId: orderId),
-                      );
-                    },
+                    builder: (context, state) => const ComingSoonScreen(),
                   ),
                 ],
               ),
@@ -536,9 +402,9 @@ GoRouter createAppRouter({
                 path: AppRoutes.menu,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: BlocProvider.value(
-                    value: getIt<ProviderHomeServiceRequestsCubit>(),
-                    child: const MenuOrGalleryTabScreen(),
+                  child: const ComingSoonScreen(
+                    showBack: false,
+                    appBarTitle: 'Menu',
                   ),
                 ),
               ),
