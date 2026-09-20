@@ -671,6 +671,8 @@ class AppTranslations extends Translations {
         'Explain available and unavailable items…',
     'orders.pharmacy_quote_subtotal': 'Medicine subtotal (EGP)',
     'orders.pharmacy_quote_delivery_fee': 'Delivery fee: @fee EGP',
+    'orders.pharmacy_quote_courier_fee_hint':
+        'Toukh courier delivery and service fees are calculated when the customer accepts (same as food orders).',
     'orders.pharmacy_accept_order': 'Accept order',
     'orders.pharmacy_quote_subtotal_required': 'Enter a valid subtotal',
     'orders.pharmacy_quote_select_items': 'Select at least one available item',
@@ -782,6 +784,7 @@ class AppTranslations extends Translations {
     'revenues.month_filter': 'Month',
     'revenues.revenue': 'Revenue',
     'revenues.app_fees': 'App fees',
+    'revenues.customer_service_fees': 'Customer service fees',
     'revenues.accepted': 'Accepted',
     'revenues.rejected': 'Rejected',
     'revenues.revenue_trend': 'Revenue trend',
@@ -1495,6 +1498,8 @@ class AppTranslations extends Translations {
         'اشرح الأصناف المتوفرة وغير المتوفرة…',
     'orders.pharmacy_quote_subtotal': 'مجموع الأدوية (جنيه)',
     'orders.pharmacy_quote_delivery_fee': 'رسوم التوصيل: @fee جنيه',
+    'orders.pharmacy_quote_courier_fee_hint':
+        'رسوم توصيل مندوب طوخ ورسوم الخدمة تُحسب عند قبول العميل (مثل طلبات الطعام).',
     'orders.pharmacy_accept_order': 'قبول الطلب',
     'orders.pharmacy_quote_subtotal_required': 'أدخل مجموعاً صالحاً',
     'orders.pharmacy_quote_select_items': 'اختر صنفاً واحداً على الأقل',
@@ -1606,6 +1611,7 @@ class AppTranslations extends Translations {
     'revenues.month_filter': 'الشهر',
     'revenues.revenue': 'الإيرادات',
     'revenues.app_fees': 'رسوم التطبيق',
+    'revenues.customer_service_fees': 'رسوم خدمة العملاء',
     'revenues.accepted': 'مقبولة',
     'revenues.rejected': 'مرفوضة',
     'revenues.revenue_trend': 'اتجاه الإيرادات',

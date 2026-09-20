@@ -23,7 +23,6 @@ import 'package:toukh_provider/features/orders/presentation/widgets/request_deli
 import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/store_driver_pick_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 void _leaveOrderDetail(BuildContext context) {
@@ -316,80 +315,20 @@ class _DetailDriverCard extends StatelessWidget {
 
   final ProviderMasterOrderRow row;
 
-  Future<void> _call(String raw) async {
-    final cleaned = raw.replaceAll(RegExp(r'[^\d+]'), '');
-    if (cleaned.isEmpty) return;
-    final uri = Uri(scheme: 'tel', path: cleaned);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final slice = row.slice;
-    final assignment = row.master.driverAssignment;
-    final name = slice.driverName?.trim().isNotEmpty == true
-        ? slice.driverName!
-        : (assignment?.driverName?.trim().isNotEmpty == true
-            ? assignment!.driverName!
-            : AppStrings.Orders.courierAssignedLabel.tr);
-    final photo = slice.driverPhotoUrl ?? assignment?.driverPhotoUrl;
-    final phone =
-        slice.driverPhone?.trim() ?? assignment?.driverPhone?.trim();
-    final t = Theme.of(context).textTheme;
-    final scheme = Theme.of(context).colorScheme;
-
-    return Container(
+    final fields = AssignedDriverFields.resolve(
+      slice: row.slice,
+      assignment: row.master.driverAssignment,
+      fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+    );
+    return AssignedDriverIdentityWithFallback(
+      fields: fields,
+      variant: AssignedDriverIdentityVariant.expanded,
+      eyebrow: AppStrings.Orders.detailDriverAssigned.tr,
+      fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+      filled: true,
       padding: const EdgeInsets.all(AppSizes.spaceMd),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            radius: 22,
-            backgroundColor: scheme.primaryContainer,
-            backgroundImage: photo != null ? NetworkImage(photo) : null,
-            child: photo == null
-                ? Icon(ToukhIcons.profile, color: scheme.primary)
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-                  AppStrings.Orders.detailDriverAssigned.tr,
-                  style: t.labelMedium?.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.65),
-                  ),
-                ),
-                CustomText(
-                  name,
-                  style: t.titleSmall?.copyWith(fontWeight: FontWeight.w700),
-                ),
-                if (phone != null && phone.isNotEmpty) ...[
-                  const SizedBox(height: 2),
-                  CustomText(
-                    phone,
-                    style: t.bodySmall?.copyWith(
-                      color: AppColors.onSurface.withValues(alpha: 0.75),
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          if (phone != null && phone.isNotEmpty)
-            IconButton(
-              onPressed: () => _call(phone),
-              icon: Icon(ToukhIcons.phone, color: scheme.primary),
-            ),
-        ],
-      ),
     );
   }
 }

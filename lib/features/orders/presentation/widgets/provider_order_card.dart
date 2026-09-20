@@ -140,7 +140,7 @@ class ProviderOrderCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (_slice.courierLateWarningAt != null) ...[
+              if (_slice.showCourierLateWarning) ...[
                 const SizedBox(height: 8),
                 CustomText(
                   AppStrings.Orders.courierLateWarning.tr,
@@ -353,36 +353,65 @@ class _OutgoingMeta extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final slice = row.slice;
-    final label = slice.isStoreDelivery
-        ? AppStrings.Orders.storeDeliveryLabel.tr
-        : (slice.driverName ?? AppStrings.Orders.courierAssignedLabel.tr);
     final elapsed = _formatElapsed(slice.dispatchedAt);
 
-    return Row(
+    if (slice.isStoreDelivery) {
+      return Row(
+        children: [
+          Icon(
+            ToukhIcons.store,
+            size: 18,
+            color: scheme.onSurface.withValues(alpha: 0.55),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: CustomText(
+              AppStrings.Orders.storeDeliveryLabel.tr,
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: scheme.onSurface.withValues(alpha: 0.78),
+              ),
+            ),
+          ),
+          if (elapsed != null)
+            CustomText(
+              '${AppStrings.Orders.elapsedSinceDispatch.tr} $elapsed',
+              style: TextStyle(
+                fontSize: 12,
+                color: scheme.onSurface.withValues(alpha: 0.55),
+              ),
+            ),
+        ],
+      );
+    }
+
+    final fields = AssignedDriverFields.resolve(
+      slice: slice,
+      assignment: row.master.driverAssignment,
+      fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Icon(
-          slice.isStoreDelivery ? ToukhIcons.store : ToukhIcons.delivery,
-          size: 18,
-          color: scheme.onSurface.withValues(alpha: 0.55),
+        AssignedDriverIdentity(
+          fields: fields,
+          fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+          showCallButton: true,
         ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: CustomText(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurface.withValues(alpha: 0.78),
+        if (elapsed != null) ...[
+          const SizedBox(height: 4),
+          Align(
+            alignment: AlignmentDirectional.centerEnd,
+            child: CustomText(
+              '${AppStrings.Orders.elapsedSinceDispatch.tr} $elapsed',
+              style: TextStyle(
+                fontSize: 12,
+                color: scheme.onSurface.withValues(alpha: 0.55),
+              ),
             ),
           ),
-        ),
-        if (elapsed != null)
-          CustomText(
-            '${AppStrings.Orders.elapsedSinceDispatch.tr} $elapsed',
-            style: TextStyle(
-              fontSize: 12,
-              color: scheme.onSurface.withValues(alpha: 0.55),
-            ),
-          ),
+        ],
       ],
     );
   }
@@ -403,33 +432,15 @@ class _DriverChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final slice = row.slice;
-    final assignment = row.master.driverAssignment;
-    final name = slice.driverName?.trim().isNotEmpty == true
-        ? slice.driverName!
-        : (assignment?.driverName?.trim().isNotEmpty == true
-            ? assignment!.driverName!
-            : AppStrings.Orders.courierAssignedLabel.tr);
-    final photo = slice.driverPhotoUrl ?? assignment?.driverPhotoUrl;
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 16,
-          backgroundColor: scheme.primaryContainer,
-          backgroundImage: photo != null ? NetworkImage(photo) : null,
-          child: photo == null
-              ? Icon(ToukhIcons.profile, size: 18, color: scheme.primary)
-              : null,
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: CustomText(
-            name,
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-        ),
-      ],
+    final fields = AssignedDriverFields.resolve(
+      slice: row.slice,
+      assignment: row.master.driverAssignment,
+      fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+    );
+    return AssignedDriverIdentity(
+      fields: fields,
+      fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+      showCallButton: true,
     );
   }
 }

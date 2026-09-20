@@ -75,6 +75,22 @@ class FirestoreProviderWalletRepository implements ProviderWalletRepository {
   }
 
   @override
+  Future<List<ProviderWalletTransaction>> fetchPlatformFeeTransactions(
+    String providerId, {
+    int docLimit = 400,
+  }) async {
+    final snap = await _txCol(providerId)
+        .orderBy('createdAt', descending: true)
+        .limit(docLimit)
+        .get();
+
+    return snap.docs
+        .map((d) => ProviderWalletTransaction.fromFirestore(d.id, d.data()))
+        .where((t) => t.isPlatformFee)
+        .toList();
+  }
+
+  @override
   Future<List<ProviderWalletTransaction>> fetchTransactionsForChart(
     String providerId,
     DateTime periodStart,

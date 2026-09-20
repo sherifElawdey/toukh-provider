@@ -20,5 +20,7 @@ String walletEarningLabel(ProviderWalletTransaction transaction) {
       return 'Adjustment';
     case ProviderWalletTxKind.appFee:
       return 'App fee';
+    case ProviderWalletTxKind.customerServiceFee:
+      return 'Customer service fee';
   }
 }

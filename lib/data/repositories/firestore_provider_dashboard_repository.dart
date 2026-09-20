@@ -166,6 +166,10 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
     final orderPrice = slice.orderPriceEgp > 0
         ? slice.orderPriceEgp
         : slice.totalEgp;
+    final fields = AssignedDriverFields.resolve(
+      slice: slice,
+      assignment: order.driverAssignment,
+    );
 
     return ProviderOrderDashboard(
       id: masterOrderId,
@@ -190,6 +194,10 @@ class FirestoreProviderDashboardRepository implements ProviderDashboardRepositor
             lineTotalEgp: item.lineTotalEgp,
           ),
       ],
+      driverId: fields.driverId,
+      driverName: fields.name,
+      driverPhotoUrl: fields.photoUrl,
+      driverPhone: fields.phone,
     );
   }
 

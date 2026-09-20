@@ -4,6 +4,10 @@ import 'package:toukh_ui/toukh_ui.dart';
 extension ProviderMasterOrderRowDashboardX on ProviderMasterOrderRow {
   ProviderOrderDashboard toDashboard() {
     final s = slice;
+    final fields = AssignedDriverFields.resolve(
+      slice: s,
+      assignment: master.driverAssignment,
+    );
     return ProviderOrderDashboard(
       id: id,
       status: _mapOrderStatus(s.statusWire),
@@ -26,6 +30,10 @@ extension ProviderMasterOrderRowDashboardX on ProviderMasterOrderRow {
             lineTotalEgp: item.lineTotalEgp,
           ),
       ],
+      driverId: fields.driverId,
+      driverName: fields.name,
+      driverPhotoUrl: fields.photoUrl,
+      driverPhone: fields.phone,
     );
   }
 }

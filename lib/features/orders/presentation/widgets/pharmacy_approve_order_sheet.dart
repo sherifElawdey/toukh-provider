@@ -41,6 +41,7 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
   final _subtotal = TextEditingController();
   late final Set<String> _approvedIds;
   late final double _deliveryFee;
+  late final bool _offersDelivery;
   bool _submitting = false;
 
   @override
@@ -54,7 +55,12 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
     };
     final auth = context.read<AuthCubit>().state;
     final dc = auth is Authenticated ? auth.profile.deliveryConfig : null;
-    _deliveryFee = dc?.isFree == true ? 0 : (dc?.priceEgp ?? 0);
+    _offersDelivery = dc?.offersDelivery ?? false;
+    // Pharmacy own delivery fee only when the pharmacy offers delivery.
+    // Toukh courier fee is calculated when the customer accepts the quote.
+    _deliveryFee = _offersDelivery
+        ? (dc?.isFree == true ? 0 : (dc?.priceEgp ?? 0))
+        : 0;
     _subtotal.text = '0';
   }
 
@@ -200,12 +206,20 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
               ),
             ),
             const SizedBox(height: AppSizes.spaceSm),
-            CustomText(
-              AppStrings.Orders.pharmacyQuoteDeliveryFee.trParams({
-                'fee': _deliveryFee.toStringAsFixed(0),
-              }),
-              style: t.bodySmall,
-            ),
+            if (_offersDelivery)
+              CustomText(
+                AppStrings.Orders.pharmacyQuoteDeliveryFee.trParams({
+                  'fee': _deliveryFee.toStringAsFixed(0),
+                }),
+                style: t.bodySmall,
+              )
+            else
+              CustomText(
+                AppStrings.Orders.pharmacyQuoteCourierFeeHint.tr,
+                style: t.bodySmall?.copyWith(
+                  color: AppColors.onSurface.withValues(alpha: 0.65),
+                ),
+              ),
             const SizedBox(height: AppSizes.spaceLg),
             AppFilledButton(
               text: AppStrings.Orders.pharmacyAcceptOrder.tr,

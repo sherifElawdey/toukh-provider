@@ -91,7 +91,8 @@ class RevenuesScreen extends StatelessWidget {
                 const SizedBox(height: AppSizes.spaceMd),
                 _MoneyPie(
                   revenue: state.revenueEgp,
-                  fees: state.appFeesEgp,
+                  appFees: state.appFeesEgp,
+                  customerServiceFees: state.customerServiceFeesEgp,
                 ),
                 const SizedBox(height: AppSizes.space4xl),
               ],
@@ -129,6 +130,36 @@ class _SummaryGrid extends StatelessWidget {
                 value: formatDashboardEgp(context, state.appFeesEgp),
                 color: AppColors.error,
                 icon: PhosphorIconsRegular.receipt,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSizes.spaceMd),
+        Row(
+          children: [
+            Expanded(
+              child: _MetricCard(
+                label: AppStrings.Revenues.customerServiceFees.tr,
+                value: formatDashboardEgp(
+                  context,
+                  state.customerServiceFeesEgp,
+                ),
+                color: AppColors.error,
+                icon: PhosphorIconsRegular.handshake,
+              ),
+            ),
+            const SizedBox(width: AppSizes.spaceMd),
+            Expanded(
+              child: _MetricCard(
+                label: AppStrings.Revenues.netAfterFees.tr,
+                value: formatDashboardEgp(
+                  context,
+                  (state.revenueEgp - state.totalFeesEgp)
+                      .clamp(0, double.infinity)
+                      .toDouble(),
+                ),
+                color: AppColors.secondColor,
+                icon: PhosphorIconsRegular.chartLineUp,
               ),
             ),
           ],
@@ -328,35 +359,52 @@ class _StatusPie extends StatelessWidget {
 }
 
 class _MoneyPie extends StatelessWidget {
-  const _MoneyPie({required this.revenue, required this.fees});
+  const _MoneyPie({
+    required this.revenue,
+    required this.appFees,
+    required this.customerServiceFees,
+  });
 
   final double revenue;
-  final double fees;
+  final double appFees;
+  final double customerServiceFees;
 
   @override
   Widget build(BuildContext context) {
-    final net = (revenue - fees).clamp(0, double.infinity).toDouble();
-    final total = net + fees;
+    final totalFees = appFees + customerServiceFees;
+    final net = (revenue - totalFees).clamp(0, double.infinity).toDouble();
+    final total = net + totalFees;
     if (total <= 0) {
       return _EmptyChart(message: AppStrings.Revenues.noData.tr);
     }
-    return _PieWithLegend(
-      sections: [
-        PieChartSectionData(
-          value: net,
-          color: AppColors.secondColor,
-          title: '${((net / total) * 100).round()}%',
-          radius: 54,
-          titleStyle: const TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 12,
-          ),
+
+    final sections = <PieChartSectionData>[
+      PieChartSectionData(
+        value: net,
+        color: AppColors.secondColor,
+        title: '${((net / total) * 100).round()}%',
+        radius: 54,
+        titleStyle: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w700,
+          fontSize: 12,
         ),
+      ),
+    ];
+    final legends = <(String, Color, String)>[
+      (
+        AppStrings.Revenues.netAfterFees.tr,
+        AppColors.secondColor,
+        formatDashboardEgp(context, net),
+      ),
+    ];
+
+    if (appFees > 0) {
+      sections.add(
         PieChartSectionData(
-          value: fees,
+          value: appFees,
           color: AppColors.error,
-          title: '${((fees / total) * 100).round()}%',
+          title: '${((appFees / total) * 100).round()}%',
           radius: 54,
           titleStyle: const TextStyle(
             color: Colors.white,
@@ -364,20 +412,60 @@ class _MoneyPie extends StatelessWidget {
             fontSize: 12,
           ),
         ),
-      ],
-      legends: [
-        (
-          AppStrings.Revenues.netAfterFees.tr,
-          AppColors.secondColor,
-          formatDashboardEgp(context, net),
+      );
+      legends.add((
+        AppStrings.Revenues.appFees.tr,
+        AppColors.error,
+        formatDashboardEgp(context, appFees),
+      ));
+    }
+
+    if (customerServiceFees > 0) {
+      const csfColor = Color(0xFFC45C26);
+      sections.add(
+        PieChartSectionData(
+          value: customerServiceFees,
+          color: csfColor,
+          title: '${((customerServiceFees / total) * 100).round()}%',
+          radius: 54,
+          titleStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+          ),
         ),
-        (
-          AppStrings.Revenues.appFees.tr,
-          AppColors.error,
-          formatDashboardEgp(context, fees),
+      );
+      legends.add((
+        AppStrings.Revenues.customerServiceFees.tr,
+        csfColor,
+        formatDashboardEgp(context, customerServiceFees),
+      ));
+    }
+
+    // Fallback: show combined fees if both were zero but totalFees somehow > 0
+    // (should not happen) — keep pie readable with at least net.
+    if (sections.length == 1 && totalFees > 0) {
+      sections.add(
+        PieChartSectionData(
+          value: totalFees,
+          color: AppColors.error,
+          title: '${((totalFees / total) * 100).round()}%',
+          radius: 54,
+          titleStyle: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+            fontSize: 12,
+          ),
         ),
-      ],
-    );
+      );
+      legends.add((
+        AppStrings.Revenues.appFees.tr,
+        AppColors.error,
+        formatDashboardEgp(context, totalFees),
+      ));
+    }
+
+    return _PieWithLegend(sections: sections, legends: legends);
   }
 }
 

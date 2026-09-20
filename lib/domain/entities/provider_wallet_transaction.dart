@@ -3,7 +3,13 @@ import 'package:toukh_ui/toukh_ui.dart';
 
 enum ProviderWalletTxDirection { debit, credit }
 
-enum ProviderWalletTxKind { orderEarning, payout, adjustment, appFee }
+enum ProviderWalletTxKind {
+  orderEarning,
+  payout,
+  adjustment,
+  appFee,
+  customerServiceFee,
+}
 
 enum ProviderWalletTxSource { order, manual, homeService }
 
@@ -44,6 +50,11 @@ class ProviderWalletTransaction extends Equatable {
 
   bool get isAppFee => kind == ProviderWalletTxKind.appFee;
 
+  bool get isCustomerServiceFee =>
+      kind == ProviderWalletTxKind.customerServiceFee;
+
+  bool get isPlatformFee => isAppFee || isCustomerServiceFee;
+
   static Map<String, dynamic>? _nestedMap(dynamic v) {
     if (v == null) return null;
     if (v is Map<String, dynamic>) return Map<String, dynamic>.from(v);
@@ -68,6 +79,8 @@ class ProviderWalletTransaction extends Equatable {
         return ProviderWalletTxKind.adjustment;
       case 'app_fee':
         return ProviderWalletTxKind.appFee;
+      case 'customer_service_fee':
+        return ProviderWalletTxKind.customerServiceFee;
       case 'order_earning':
       default:
         return ProviderWalletTxKind.orderEarning;

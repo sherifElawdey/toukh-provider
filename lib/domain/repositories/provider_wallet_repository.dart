@@ -14,6 +14,12 @@ abstract class ProviderWalletRepository {
     int docLimit = 400,
   });
 
+  /// App fee + customer service fee debits for revenues.
+  Future<List<ProviderWalletTransaction>> fetchPlatformFeeTransactions(
+    String providerId, {
+    int docLimit = 400,
+  });
+
   Future<List<ProviderWalletTransaction>> fetchTransactionsForChart(
     String providerId,
     DateTime periodStart,

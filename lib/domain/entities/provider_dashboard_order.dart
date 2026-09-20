@@ -33,6 +33,10 @@ class ProviderOrderDashboard extends Equatable {
     this.hideCustomerContact = false,
     this.items = const [],
     this.isHomeService = false,
+    this.driverId,
+    this.driverName,
+    this.driverPhotoUrl,
+    this.driverPhone,
   });
 
   final String id;
@@ -49,6 +53,21 @@ class ProviderOrderDashboard extends Equatable {
   final bool hideCustomerContact;
   final List<ProviderOrderLineItem> items;
   final bool isHomeService;
+  final String? driverId;
+  final String? driverName;
+  final String? driverPhotoUrl;
+  final String? driverPhone;
+
+  bool get hasAssignedDriver =>
+      (driverId != null && driverId!.trim().isNotEmpty) ||
+      (driverName != null && driverName!.trim().isNotEmpty);
+
+  AssignedDriverFields get assignedDriverFields => AssignedDriverFields(
+        driverId: driverId,
+        name: driverName,
+        photoUrl: driverPhotoUrl,
+        phone: driverPhone,
+      );
 
   /// Revenue amount for analytics (order/request price).
   double get revenueEgp {
@@ -75,6 +94,8 @@ class ProviderOrderDashboard extends Equatable {
           statusWire != 'awaiting_customer' &&
           statusWire != 'awaiting_provider';
     }
+    // Pharmacy quote is the pharmacy's accept.
+    if (statusWire == 'quoted') return !isCancelled;
     return acceptedAt != null ||
         status == OrderStatus.accepted ||
         status == OrderStatus.pickedUp ||
@@ -93,6 +114,7 @@ class ProviderOrderDashboard extends Equatable {
   static bool _merchantInProgressWire(String wire) {
     final v = wire.toLowerCase().replaceAll('-', '_');
     return v == 'preparing' ||
+        v == 'quoted' ||
         v == 'ready' ||
         v == 'ready_for_pickup' ||
         v == 'pending' ||
@@ -114,5 +136,9 @@ class ProviderOrderDashboard extends Equatable {
         hideCustomerContact,
         items,
         isHomeService,
+        driverId,
+        driverName,
+        driverPhotoUrl,
+        driverPhone,
       ];
 }

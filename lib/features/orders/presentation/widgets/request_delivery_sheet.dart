@@ -7,6 +7,12 @@ Future<void> showDriverAssignedSheet(
   BuildContext context, {
   required ProviderMasterOrderRow row,
 }) {
+  final fields = AssignedDriverFields.resolve(
+    slice: row.slice,
+    assignment: row.master.driverAssignment,
+    fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+  );
+
   return showModalBottomSheet<void>(
     context: context,
     useSafeArea: true,
@@ -37,6 +43,16 @@ Future<void> showDriverAssignedSheet(
                 height: 1.35,
               ),
             ),
+            if (fields.hasAnyIdentity) ...[
+              const SizedBox(height: AppSizes.spaceMd),
+              AssignedDriverIdentityWithFallback(
+                fields: fields,
+                variant: AssignedDriverIdentityVariant.expanded,
+                fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+                filled: true,
+                padding: const EdgeInsets.all(AppSizes.spaceMd),
+              ),
+            ],
             const SizedBox(height: AppSizes.spaceLg),
             AppFilledButton(
               text: AppStrings.Orders.driverAssignedDone.tr,

@@ -22,10 +22,10 @@ class WalletState extends Equatable {
   final double? pendingEgp;
   final List<ProviderWalletTransaction> recent;
 
-  /// Prefer last app fee; fall back to legacy earning credits.
+  /// Prefer last platform fee (app / customer service); fall back to earnings.
   ProviderWalletTransaction? get lastFeeOrEarning {
     for (final t in recent) {
-      if (t.isAppFee) return t;
+      if (t.isPlatformFee) return t;
     }
     for (final t in recent) {
       if (t.isEarning) return t;

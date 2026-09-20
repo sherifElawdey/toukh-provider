@@ -268,12 +268,12 @@ class _LastEarningSection extends StatelessWidget {
                   ),
                 ),
                 CustomText(
-                  transaction!.isAppFee
+                  transaction!.isPlatformFee
                       ? '-EGP ${formatWalletMoney(transaction!.amountEgp)}'
                       : '+EGP ${formatWalletMoney(transaction!.amountEgp)}',
                   style: t.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
-                    color: transaction!.isAppFee
+                    color: transaction!.isPlatformFee
                         ? AppColors.error
                         : AppColors.success,
                   ),

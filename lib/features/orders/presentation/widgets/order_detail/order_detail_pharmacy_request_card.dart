@@ -86,6 +86,31 @@ class OrderDetailPharmacyRequestCard extends StatelessWidget {
               ),
             ),
           ],
+          if (master.selectedProviderId != null &&
+              (master.subtotalEgp > 0 ||
+                  master.deliveryFeeEgp > 0 ||
+                  master.serviceFeeEgp > 0)) ...[
+            const SizedBox(height: AppSizes.spaceSm),
+            Divider(color: AppColors.borderSubtle.withValues(alpha: 0.8)),
+            const SizedBox(height: AppSizes.spaceSm),
+            CustomText(
+              'Subtotal EGP ${master.subtotalEgp.toStringAsFixed(0)}',
+              style: t.bodySmall,
+            ),
+            CustomText(
+              'Delivery EGP ${master.deliveryFeeEgp.toStringAsFixed(0)}',
+              style: t.bodySmall,
+            ),
+            if (master.serviceFeeEgp > 0)
+              CustomText(
+                'Service fee EGP ${master.serviceFeeEgp.toStringAsFixed(0)}',
+                style: t.bodySmall,
+              ),
+            CustomText(
+              'Total EGP ${master.totalEgp.toStringAsFixed(0)}',
+              style: t.titleSmall?.copyWith(fontWeight: FontWeight.w800),
+            ),
+          ],
         ],
       ),
     );

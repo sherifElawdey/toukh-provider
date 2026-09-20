@@ -481,6 +481,11 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       }
 
       final deliveryAddress = master['deliveryAddress'];
+      final deliveryFeeEgp = (master['deliveryFeeEgp'] as num?)?.toDouble() ??
+          (master['route'] is Map
+              ? ((master['route'] as Map)['deliveryFee'] as num?)?.toDouble()
+              : null) ??
+          0.0;
 
       tx.set(requestRef, {
         'providerId': providerId,
@@ -494,6 +499,10 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
           'serviceAreaId': providerServiceAreaId,
         'status': 'open',
         'candidateDriverIds': <String>[],
+        'estimatedEarnings': deliveryFeeEgp,
+        'deliveryFeeEgp': deliveryFeeEgp,
+        'customerName': master['customerName'],
+        'customerPhone': master['customerPhone'],
         'createdAt': FieldValue.serverTimestamp(),
         'expiresAt': Timestamp.fromDate(expiresAt),
       });

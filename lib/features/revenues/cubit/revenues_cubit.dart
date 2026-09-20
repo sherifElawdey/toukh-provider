@@ -61,6 +61,7 @@ class RevenuesState extends Equatable {
     required this.rejectedCount,
     required this.revenueEgp,
     required this.appFeesEgp,
+    required this.customerServiceFeesEgp,
     required this.dailyRevenue,
     required this.dailyMaxY,
   });
@@ -75,6 +76,7 @@ class RevenuesState extends Equatable {
       rejectedCount: 0,
       revenueEgp: 0,
       appFeesEgp: 0,
+      customerServiceFeesEgp: 0,
       dailyRevenue: const [],
       dailyMaxY: 1,
     );
@@ -87,8 +89,11 @@ class RevenuesState extends Equatable {
   final int rejectedCount;
   final double revenueEgp;
   final double appFeesEgp;
+  final double customerServiceFeesEgp;
   final List<RevenueChartPoint> dailyRevenue;
   final double dailyMaxY;
+
+  double get totalFeesEgp => appFeesEgp + customerServiceFeesEgp;
 
   RevenuesState copyWith({
     bool? loading,
@@ -98,6 +103,7 @@ class RevenuesState extends Equatable {
     int? rejectedCount,
     double? revenueEgp,
     double? appFeesEgp,
+    double? customerServiceFeesEgp,
     List<RevenueChartPoint>? dailyRevenue,
     double? dailyMaxY,
   }) {
@@ -109,6 +115,8 @@ class RevenuesState extends Equatable {
       rejectedCount: rejectedCount ?? this.rejectedCount,
       revenueEgp: revenueEgp ?? this.revenueEgp,
       appFeesEgp: appFeesEgp ?? this.appFeesEgp,
+      customerServiceFeesEgp:
+          customerServiceFeesEgp ?? this.customerServiceFeesEgp,
       dailyRevenue: dailyRevenue ?? this.dailyRevenue,
       dailyMaxY: dailyMaxY ?? this.dailyMaxY,
     );
@@ -123,6 +131,7 @@ class RevenuesState extends Equatable {
         rejectedCount,
         revenueEgp,
         appFeesEgp,
+        customerServiceFeesEgp,
         dailyRevenue,
         dailyMaxY,
       ];
@@ -151,7 +160,7 @@ class RevenuesCubit extends Cubit<RevenuesState> {
   List<ProviderOrderDashboard> _jobs = const [];
   List<ProviderWalletTransaction> _fees = const [];
 
-  /// Re-subscribe to dashboard orders and re-fetch app fees.
+  /// Re-subscribe to dashboard orders and re-fetch platform fees.
   Future<void> reload() async {
     await _dashSub?.cancel();
     _dashSub = _dashboardRepository
@@ -162,7 +171,8 @@ class RevenuesCubit extends Cubit<RevenuesState> {
 
   Future<void> _loadFees() async {
     try {
-      _fees = await _walletRepository.fetchAppFeeTransactions(_providerId);
+      _fees =
+          await _walletRepository.fetchPlatformFeeTransactions(_providerId);
     } catch (_) {
       _fees = const [];
     }
@@ -208,8 +218,12 @@ class RevenuesCubit extends Cubit<RevenuesState> {
         delivered.fold<double>(0, (a, o) => a + o.revenueEgp);
 
     final feesInMonth = _fees.where((t) => selected.contains(t.createdAt));
-    final fees =
-        feesInMonth.fold<double>(0, (a, t) => a + t.amountEgp);
+    final appFees = feesInMonth
+        .where((t) => t.isAppFee)
+        .fold<double>(0, (a, t) => a + t.amountEgp);
+    final customerServiceFees = feesInMonth
+        .where((t) => t.isCustomerServiceFee)
+        .fold<double>(0, (a, t) => a + t.amountEgp);
 
     final daily = _dailyRevenue(selected, delivered);
 
@@ -221,7 +235,8 @@ class RevenuesCubit extends Cubit<RevenuesState> {
         acceptedCount: accepted,
         rejectedCount: rejected,
         revenueEgp: revenue,
-        appFeesEgp: fees,
+        appFeesEgp: appFees,
+        customerServiceFeesEgp: customerServiceFees,
         dailyRevenue: daily.points,
         dailyMaxY: daily.maxY,
       ),

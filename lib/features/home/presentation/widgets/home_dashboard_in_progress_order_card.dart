@@ -64,6 +64,14 @@ class HomeDashboardInProgressOrderCard extends StatelessWidget {
                   formatDashboardEgp(context, order.totalEgp),
                   style: TextStyle(fontSize: 13, color: subtle, fontWeight: FontWeight.w600),
                 ),
+                if (order.hasAssignedDriver) ...[
+                  const SizedBox(height: 8),
+                  AssignedDriverIdentity(
+                    fields: order.assignedDriverFields,
+                    fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+                    showCallButton: true,
+                  ),
+                ],
               ],
           ),
         ),

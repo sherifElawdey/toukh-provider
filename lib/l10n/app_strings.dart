@@ -519,6 +519,8 @@ class _Orders {
   String get pharmacyPharmacistNoteHint => 'orders.pharmacy_pharmacist_note_hint';
   String get pharmacyQuoteSubtotal => 'orders.pharmacy_quote_subtotal';
   String get pharmacyQuoteDeliveryFee => 'orders.pharmacy_quote_delivery_fee';
+  String get pharmacyQuoteCourierFeeHint =>
+      'orders.pharmacy_quote_courier_fee_hint';
   String get pharmacyAcceptOrder => 'orders.pharmacy_accept_order';
   String get pharmacyQuoteSubtotalRequired => 'orders.pharmacy_quote_subtotal_required';
   String get pharmacyQuoteSelectItems => 'orders.pharmacy_quote_select_items';
@@ -772,6 +774,7 @@ class _Revenues {
   String get monthFilter => 'revenues.month_filter';
   String get revenue => 'revenues.revenue';
   String get appFees => 'revenues.app_fees';
+  String get customerServiceFees => 'revenues.customer_service_fees';
   String get accepted => 'revenues.accepted';
   String get rejected => 'revenues.rejected';
   String get revenueTrend => 'revenues.revenue_trend';
