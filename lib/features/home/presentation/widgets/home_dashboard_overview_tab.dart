@@ -137,11 +137,13 @@ class HomeDashboardOverviewTab extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: AppSizes.spaceXl),
-                  HomeDashboardWalletCard(
-                    balanceEgp: state.walletBalanceEgp,
-                    pendingEgp: state.walletPendingEgp,
-                  ),
-                  const SizedBox(height: AppSizes.spaceXl),
+                  if (ToukhFeatureFlags.walletEnabled) ...[
+                    HomeDashboardWalletCard(
+                      balanceEgp: state.walletBalanceEgp,
+                      pendingEgp: state.walletPendingEgp,
+                    ),
+                    const SizedBox(height: AppSizes.spaceXl),
+                  ],
                   HomeDashboardStatsRow(metrics: state.todayMetrics),
                   const SizedBox(height: AppSizes.spaceXl),
                   HomeDashboardChartSection(

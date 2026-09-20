@@ -104,11 +104,13 @@ class HomeScreen extends StatelessWidget {
                 onTap: () => _soon(context, AppStrings.Orders.title.tr),
               ),
               SizedBox(height: AppSizes.spaceMd),
-              AppOutlinedButton(
-                text: 'Wallet'.tr,
-                onTap: () => _soon(context, 'Wallet'),
-              ),
-              SizedBox(height: AppSizes.spaceMd),
+              if (ToukhFeatureFlags.walletEnabled) ...[
+                AppOutlinedButton(
+                  text: 'Wallet'.tr,
+                  onTap: () => _soon(context, 'Wallet'),
+                ),
+                SizedBox(height: AppSizes.spaceMd),
+              ],
               AppOutlinedButton(
                 text: AppStrings.Notifications.title.tr,
                 onTap: () =>

@@ -41,6 +41,14 @@ String? resolveProviderRedirect({
 
   final loc = matchedLocation;
 
+  if (!ToukhFeatureFlags.walletEnabled &&
+      (loc == AppRoutes.wallet ||
+          loc == AppRoutes.walletTransactions ||
+          loc.startsWith('${AppRoutes.wallet}/'))) {
+    logRedirect(AppRoutes.home, 'wallet feature disabled');
+    return AppRoutes.home;
+  }
+
   final versionGate = getIt<AppVersionGateService>();
   if (versionGate.checked && versionGate.needsUpdate) {
     if (loc != AppRoutes.appUpdate) {

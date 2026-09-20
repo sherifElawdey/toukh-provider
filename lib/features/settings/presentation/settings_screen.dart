@@ -122,18 +122,19 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   onTap: () => context.push(AppRoutes.ordersHistory),
                 ),
-                SettingsTile(
-                  icon: ToukhIcons.wallet,
-                  titleKey: AppStrings.Settings.wallet,
-                  trailing: Icon(
-                    ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                if (ToukhFeatureFlags.walletEnabled)
+                  SettingsTile(
+                    icon: ToukhIcons.wallet,
+                    titleKey: AppStrings.Settings.wallet,
+                    trailing: Icon(
+                      ToukhIcons.chevronRight,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.45),
+                    ),
+                    onTap: () => context.push(AppRoutes.wallet),
                   ),
-                  onTap: () => context.push(AppRoutes.wallet),
-                ),
                 SettingsTile(
                   icon: PhosphorIconsRegular.chartLine,
                   titleKey: AppStrings.Settings.revenues,
