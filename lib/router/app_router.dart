@@ -25,9 +25,13 @@ import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.
 import 'package:toukh_provider/features/auth/presentation/verify_otp_screen.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
 import 'package:toukh_provider/features/home/presentation/home_screen.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/home_service_request_detail_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/menu_builder_screen.dart';
+import 'package:toukh_provider/features/notifications/presentation/notifications_screen.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/onboarding/presentation/permissions_screen.dart';
+import 'package:toukh_provider/features/orders/presentation/order_detail_screen.dart';
+import 'package:toukh_provider/features/orders/presentation/orders_screen.dart';
 import 'package:toukh_provider/features/pending/presentation/pending_approval_screen.dart';
 import 'package:toukh_provider/features/portfolio/presentation/portfolio_screen.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -49,6 +53,7 @@ import 'package:toukh_provider/features/shell/main_shell_scaffold.dart';
 import 'package:toukh_provider/features/welcome/welcome_screen.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_provider/router/widgets/login_with_deleted_sheet.dart';
+import 'package:toukh_provider/router/widgets/menu_or_gallery_tab_screen.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/router/widgets/verify_otp_missing_args_placeholder.dart';
 
@@ -257,8 +262,7 @@ GoRouter createAppRouter({
       GoRoute(
         path: AppRoutes.notifications,
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) =>
-            const ComingSoonScreen(appBarTitle: 'Notifications'),
+        builder: (context, state) => const NotificationsScreen(),
       ),
       GoRoute(
         path: AppRoutes.comingSoon,
@@ -274,7 +278,9 @@ GoRouter createAppRouter({
       GoRoute(
         path: '/home-service-request/:requestId',
         parentNavigatorKey: providerRootNavigatorKey,
-        builder: (context, state) => const ComingSoonScreen(),
+        builder: (context, state) => HomeServiceRequestDetailScreen(
+          requestId: state.pathParameters['requestId']!,
+        ),
       ),
       GoRoute(
         path: AppRoutes.wallet,
@@ -381,16 +387,15 @@ GoRouter createAppRouter({
                 path: AppRoutes.orders,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const ComingSoonScreen(
-                    showBack: false,
-                    appBarTitle: 'Orders',
-                  ),
+                  child: const OrdersScreen(),
                 ),
                 routes: [
                   GoRoute(
                     path: ':orderId',
                     parentNavigatorKey: providerRootNavigatorKey,
-                    builder: (context, state) => const ComingSoonScreen(),
+                    builder: (context, state) => OrderDetailScreen(
+                      orderId: state.pathParameters['orderId']!,
+                    ),
                   ),
                 ],
               ),
@@ -402,10 +407,7 @@ GoRouter createAppRouter({
                 path: AppRoutes.menu,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const ComingSoonScreen(
-                    showBack: false,
-                    appBarTitle: 'Menu',
-                  ),
+                  child: const MenuOrGalleryTabScreen(),
                 ),
               ),
             ],

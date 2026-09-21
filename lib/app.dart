@@ -12,7 +12,9 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/core/notifications/notification_router_holder.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/notifications/cubit/notifications_cubit.dart';
+import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
@@ -123,6 +125,12 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
         ),
         BlocProvider<NotificationsCubit>.value(
           value: getIt<NotificationsCubit>(),
+        ),
+        BlocProvider<ProviderOrdersCubit>.value(
+          value: getIt<ProviderOrdersCubit>(),
+        ),
+        BlocProvider<ProviderHomeServiceRequestsCubit>.value(
+          value: getIt<ProviderHomeServiceRequestsCubit>(),
         ),
         BlocProvider<ProviderNotificationBadgeCubit>.value(
           value: getIt<ProviderNotificationBadgeCubit>(),

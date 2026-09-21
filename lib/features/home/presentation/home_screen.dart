@@ -7,7 +7,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
-/// Showcase home: greeting + mock stats; feature taps → Coming soon.
+/// Showcase home: greeting + mock stats; Orders / Notifications → real screens.
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -101,7 +101,7 @@ class HomeScreen extends StatelessWidget {
               SizedBox(height: AppSizes.spaceXl),
               AppFilledButton(
                 text: AppStrings.Orders.title.tr,
-                onTap: () => _soon(context, AppStrings.Orders.title.tr),
+                onTap: () => context.go(AppRoutes.orders),
               ),
               SizedBox(height: AppSizes.spaceMd),
               if (ToukhFeatureFlags.walletEnabled) ...[
@@ -113,8 +113,7 @@ class HomeScreen extends StatelessWidget {
               ],
               AppOutlinedButton(
                 text: AppStrings.Notifications.title.tr,
-                onTap: () =>
-                    _soon(context, AppStrings.Notifications.title.tr),
+                onTap: () => context.push(AppRoutes.notifications),
               ),
             ]),
           ),

@@ -55,10 +55,8 @@ class MainShellScaffold extends StatelessWidget {
               builder: (context, badge) {
                 return IconButton(
                   tooltip: AppStrings.Notifications.title.tr,
-                  onPressed: () => context.push(
-                    AppRoutes.comingSoon,
-                    extra: AppStrings.Notifications.title.tr,
-                  ),
+                  onPressed: () =>
+                      context.push(AppRoutes.notifications),
                   icon: Badge(
                     isLabelVisible: badge.notificationCount > 0,
                     label: CustomText('${badge.notificationCount}'),

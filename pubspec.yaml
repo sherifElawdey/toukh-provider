@@ -4,7 +4,7 @@ name: toukh_provider
 
 publish_to: 'none'
 
-version: 1.0.13+13
+version: 1.0.15+15
 
 environment:
   sdk: ^3.11.4

@@ -17,7 +17,7 @@ import 'package:toukh_provider/data/repositories/firestore_provider_dashboard_re
 import 'package:toukh_provider/data/repositories/firestore_provider_order_history_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_orders_repository.dart';
 import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
-import 'package:toukh_provider/data/repositories/firestore_notification_inbox_repository.dart';
+import 'package:toukh_provider/core/dev/mock_showcase_repositories.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_profile_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_drivers_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_reviews_repository.dart';
@@ -25,8 +25,6 @@ import 'package:toukh_provider/data/repositories/firestore_provider_wallet_repos
 import 'package:toukh_provider/data/services/customer_home_service_on_my_way_notify_service.dart';
 import 'package:toukh_provider/data/services/customer_home_service_quote_notify_service.dart';
 import 'package:toukh_provider/data/services/home_service_visit_reminder_coordinator.dart';
-import 'package:toukh_provider/data/repositories/firestore_provider_home_service_requests_repository.dart';
-import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
 import 'package:toukh_provider/data/services/release_misconfigured_otp_repository.dart';
 import 'package:toukh_provider/data/services/twilio_verify_otp_repository.dart';
@@ -92,7 +90,7 @@ Future<void> configureDependencies() async {
     () => FirestoreProviderProfileRepository(getIt<FirebaseFirestore>()),
   );
   getIt.registerLazySingleton<NotificationInboxRepository>(
-    () => FirestoreNotificationInboxRepository(getIt<FirebaseFirestore>()),
+    MockNotificationInboxRepository.new,
   );
   getIt.registerLazySingleton<HomeServiceCategoriesRepository>(
     () => FirestoreHomeServiceCategoriesRepository(
@@ -100,10 +98,7 @@ Future<void> configureDependencies() async {
     ),
   );
   getIt.registerLazySingleton<ProviderGalleryRepository>(
-    () => FirestoreProviderGalleryRepository(
-      getIt<FirebaseFirestore>(),
-      getIt<MediaUploadService>(),
-    ),
+    MockProviderGalleryRepository.new,
   );
   getIt.registerLazySingleton<ProviderMenuRepository>(
     () => FirestoreProviderMenuRepository(getIt<FirebaseFirestore>()),
@@ -122,13 +117,10 @@ Future<void> configureDependencies() async {
     ),
   );
   getIt.registerLazySingleton<ProviderHomeServiceRequestsRepository>(
-    () => FirestoreProviderHomeServiceRequestsRepository(
-      getIt<FirebaseFirestore>(),
-      functions: getIt<FirebaseFunctions>(),
-    ),
+    MockProviderHomeServiceRequestsRepository.new,
   );
   getIt.registerLazySingleton<ProviderOrdersRepository>(
-    () => getIt<FirestoreProviderOrdersRepository>(),
+    MockProviderOrdersRepository.new,
   );
   getIt.registerLazySingleton<ProviderOrderHistoryRepository>(
     () => FirestoreProviderOrderHistoryRepository(getIt<FirebaseFirestore>()),
