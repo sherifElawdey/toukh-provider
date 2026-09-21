@@ -10,7 +10,7 @@ import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class RegisterHoursScreen extends StatefulWidget {
   const RegisterHoursScreen({super.key});

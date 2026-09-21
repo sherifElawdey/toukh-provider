@@ -13,7 +13,7 @@ import 'package:toukh_provider/features/orders/presentation/widgets/request_deli
 import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/store_driver_pick_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class OrdersTabView extends StatelessWidget {
   const OrdersTabView({

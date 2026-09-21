@@ -7,7 +7,7 @@ import 'package:toukh_provider/features/home_service_requests/cubit/provider_hom
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_schedule_day_tabs.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_schedule_job_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeServiceScheduleTab extends StatefulWidget {
   const HomeServiceScheduleTab({super.key});

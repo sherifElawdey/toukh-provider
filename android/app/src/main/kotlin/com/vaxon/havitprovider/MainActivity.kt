@@ -1,4 +1,4 @@
-package com.toukh.provider.toukh_provider
+package com.vaxon.havitprovider
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_section_title.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_surface_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// Shared client contact + address payload for order detail screens.

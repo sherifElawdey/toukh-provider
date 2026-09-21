@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardPendingOrdersBanner extends StatelessWidget {
   const HomeDashboardPendingOrdersBanner({

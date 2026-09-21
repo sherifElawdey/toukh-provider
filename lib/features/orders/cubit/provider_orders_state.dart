@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ProviderOrdersState extends Equatable {
   const ProviderOrdersState({

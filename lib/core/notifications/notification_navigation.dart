@@ -4,7 +4,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 Future<void> handleProviderNotificationTap(ToukhNotification notification) async {

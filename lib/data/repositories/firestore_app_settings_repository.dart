@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreAppSettingsRepository implements AppSettingsRepository {
   FirestoreAppSettingsRepository(this._fs);

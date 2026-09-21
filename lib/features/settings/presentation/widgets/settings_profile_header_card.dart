@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';

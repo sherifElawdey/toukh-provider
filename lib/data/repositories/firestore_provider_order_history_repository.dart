@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/domain/entities/order_history_stats.dart';
 import 'package:toukh_provider/domain/repositories/provider_order_history_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreProviderOrderHistoryRepository
     implements ProviderOrderHistoryRepository {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/dashboard_shell.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardStatCell extends StatelessWidget {
   const HomeDashboardStatCell({

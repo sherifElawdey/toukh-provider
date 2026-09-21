@@ -4,7 +4,7 @@ import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/dashboard_shell.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_chart.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardChartSection extends StatelessWidget {
   const HomeDashboardChartSection({

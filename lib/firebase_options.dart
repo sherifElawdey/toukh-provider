@@ -1,8 +1,10 @@
-// Firebase config for `toukh_provider`.
+// Firebase config for `toukh_provider` (`com.vaxon.havitprovider`).
 //
-// Shares the Toukh Firebase project; register Android/iOS apps and run:
+// After changing the bundle id, register new Android/iOS apps in Firebase Console
+// and replace google-services.json / GoogleService-Info.plist, then run:
 //   dart pub global activate flutterfire_cli
 //   flutterfire configure --project=toukh-b5708 --out=lib/firebase_options.dart
+// Until that is done, Auth/FCM may fail against stale app ids.
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
@@ -40,7 +42,7 @@ class DefaultFirebaseOptions {
     storageBucket: 'toukh-b5708.firebasestorage.app',
     androidClientId: '919479487381-m6hgjmcug2bakt374sr6utm503ep5vhn.apps.googleusercontent.com',
     iosClientId: '919479487381-qi0tql34m5a02ni95s2m5j88u2e9e8ce.apps.googleusercontent.com',
-    iosBundleId: 'com.toukh.provider.toukhProvider',
+    iosBundleId: 'com.vaxon.havitprovider',
   );
 
   static const FirebaseOptions web = FirebaseOptions(

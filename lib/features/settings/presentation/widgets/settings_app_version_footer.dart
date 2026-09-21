@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 
 /// Loads and displays `package_info_plus` version + build.

@@ -4,7 +4,7 @@ import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_section_title.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_surface_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class OrderDetailItemsCard extends StatelessWidget {
   const OrderDetailItemsCard({super.key, required this.row});

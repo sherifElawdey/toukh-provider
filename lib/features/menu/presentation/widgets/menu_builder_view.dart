@@ -12,7 +12,7 @@ import 'package:toukh_provider/features/menu/presentation/widgets/menu_category_
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_category_section_card.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_empty_categories_placeholder.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class MenuBuilderView extends StatelessWidget {
   const MenuBuilderView({super.key});

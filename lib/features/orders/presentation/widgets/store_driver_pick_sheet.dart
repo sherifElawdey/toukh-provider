@@ -4,7 +4,7 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_linked_driver.dart';
 import 'package:toukh_provider/domain/repositories/provider_drivers_repository.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Pick a restaurant-linked driver for store delivery.
 Future<ProviderLinkedDriver?> showStoreDriverPickSheet(

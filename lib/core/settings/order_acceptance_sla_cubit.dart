@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class OrderAcceptanceSlaCubit extends Cubit<OrderAcceptanceSla> {
   OrderAcceptanceSlaCubit(this._repository)

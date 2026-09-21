@@ -10,7 +10,7 @@ import 'package:toukh_provider/features/orders/presentation/widgets/incoming_ord
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_actions_bar.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_label.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ProviderOrderCard extends StatelessWidget {
   const ProviderOrderCard({

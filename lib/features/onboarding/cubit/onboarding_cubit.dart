@@ -19,7 +19,7 @@ class OnboardingState extends Equatable {
   List<Object?> get props => [gate];
 }
 
-/// Showcase mode: permissions skipped; active providers go [ready].
+/// Permissions skipped; active providers go [ready] immediately.
 class OnboardingCubit extends Cubit<OnboardingState> {
   OnboardingCubit(this._authCubit)
       : super(const OnboardingState(gate: OnboardingGate.checking)) {

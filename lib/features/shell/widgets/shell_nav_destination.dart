@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/features/shell/widgets/shell_nav_item.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ShellNavDestination extends StatelessWidget {
   const ShellNavDestination({

@@ -3,7 +3,7 @@ import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/data/mappers/provider_review_mapper.dart';
 import 'package:toukh_provider/domain/entities/provider_review_summary.dart';
 import 'package:toukh_provider/domain/repositories/provider_reviews_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreProviderReviewsRepository implements ProviderReviewsRepository {
   FirestoreProviderReviewsRepository(this._firestore);

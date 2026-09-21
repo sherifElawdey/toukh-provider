@@ -1,5 +1,5 @@
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Used in release builds when Twilio dart-defines are missing.
 class ReleaseMisconfiguredOtpRepository implements OtpRepository {

@@ -7,7 +7,7 @@ import 'package:toukh_provider/domain/entities/provider_driver_link_request.dart
 import 'package:toukh_provider/domain/entities/provider_linked_driver.dart';
 import 'package:toukh_provider/features/drivers/cubit/manage_drivers_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ManageDriversScreen extends StatelessWidget {
   const ManageDriversScreen({super.key});

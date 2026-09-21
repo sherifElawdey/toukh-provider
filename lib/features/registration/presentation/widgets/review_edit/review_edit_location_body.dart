@@ -6,13 +6,11 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:toukh_provider/core/util/city_key.dart';
 import 'package:toukh_provider/di/service_locator.dart';
-import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_required_sheet.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ReviewEditLocationBody extends StatefulWidget {
   const ReviewEditLocationBody({
@@ -37,8 +35,6 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   String _address = '';
   bool _locating = false;
   bool _hasLocationPermission = false;
-  bool _locationPermanentlyDenied = false;
-  bool _locationBusy = false;
   bool _inServiceArea = true;
   double _zoom = 14;
   bool _mapReady = false;
@@ -64,7 +60,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     } else {
       _target = const LatLng(30.0444, 31.2357);
       _locating = true;
-      _initLocation(request: false);
+      _initLocation();
     }
   }
 
@@ -77,8 +73,6 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
             perm == LocationPermission.whileInUse);
     setState(() {
       _hasLocationPermission = granted;
-      _locationPermanentlyDenied =
-          perm == LocationPermission.deniedForever || !serviceOn;
     });
   }
 
@@ -109,66 +103,26 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   }
 
   Future<void> _goToCurrentLocation() async {
-    if (_locating || _locationBusy) return;
-    if (!_hasLocationPermission) {
-      await _promptLocationPermission();
-      return;
-    }
+    if (_locating) return;
     setState(() => _locating = true);
-    await _initLocation(request: true);
+    // Never prompt — use GPS only if already granted; otherwise keep pin / default city.
+    await _initLocation();
   }
 
-  Future<void> _promptLocationPermission() async {
-    if (_locationBusy) return;
-    final enable = await PermissionRequiredSheet.showForLocation(
-      context,
-      permanentlyDenied: _locationPermanentlyDenied,
-    );
-    if (!enable || !mounted) return;
-    await _onLocationPermissionAction();
-  }
-
-  Future<void> _onLocationPermissionAction() async {
-    if (_locationBusy) return;
-    setState(() => _locationBusy = true);
-    try {
-      if (_locationPermanentlyDenied) {
-        await openAppSettings();
-        await _refreshPermissionState();
-        if (_hasLocationPermission) {
-          await _initLocation(request: false);
-        }
-      } else {
-        await _initLocation(request: true);
-      }
-    } finally {
-      if (mounted) setState(() => _locationBusy = false);
-    }
-  }
-
-  Future<void> _initLocation({bool request = false}) async {
+  Future<void> _initLocation() async {
     try {
       final serviceOn = await Geolocator.isLocationServiceEnabled();
       if (!serviceOn) {
-        if (request) {
-          await Geolocator.openLocationSettings();
-        }
         if (mounted) {
           setState(() {
             _locating = false;
             _hasLocationPermission = false;
-            _locationPermanentlyDenied = true;
           });
         }
         await _handleCenterChanged(_target, reverseGeocode: true);
         return;
       }
-      var perm = await Geolocator.checkPermission();
-      if (request &&
-          (perm == LocationPermission.denied ||
-              perm == LocationPermission.unableToDetermine)) {
-        perm = await Geolocator.requestPermission();
-      }
+      final perm = await Geolocator.checkPermission();
       if (perm == LocationPermission.denied ||
           perm == LocationPermission.deniedForever ||
           perm == LocationPermission.unableToDetermine) {
@@ -176,8 +130,6 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
           setState(() {
             _locating = false;
             _hasLocationPermission = false;
-            _locationPermanentlyDenied =
-                perm == LocationPermission.deniedForever;
           });
         }
         await _handleCenterChanged(_target, reverseGeocode: true);
@@ -194,7 +146,6 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
         _target = next;
         _locating = false;
         _hasLocationPermission = true;
-        _locationPermanentlyDenied = false;
       });
       await _map?.animateCamera(CameraUpdate.newLatLngZoom(next, 15));
       _zoom = 15;
@@ -389,29 +340,11 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
             ),
           ),
         ),
-        if (!_hasLocationPermission)
-          Positioned(
-            left: AppSizes.spaceMd,
-            right: AppSizes.spaceMd,
-            top: AppSizes.spaceMd,
-            child: LocationPermissionTile(
-              compact: true,
-              title: AppStrings.Permissions.locationNeededTitle.tr,
-              message: AppStrings.Permissions.locationNeededBody.tr,
-              actionLabel: _locationPermanentlyDenied
-                  ? AppStrings.Permissions.openSettings.tr
-                  : AppStrings.Permissions.allowLocation.tr,
-              busy: _locationBusy || _locating,
-              onAction: _promptLocationPermission,
-            ),
-          ),
         if (!_inServiceArea)
           Positioned(
             left: AppSizes.spaceMd,
             right: AppSizes.spaceMd,
-            top: _hasLocationPermission
-                ? AppSizes.spaceMd
-                : AppSizes.spaceMd + 88,
+            top: AppSizes.spaceMd,
             child: Material(
               color: scheme.errorContainer,
               borderRadius: BorderRadius.circular(AppSizes.radiusMd),

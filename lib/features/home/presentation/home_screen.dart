@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Showcase home: greeting + mock stats; feature taps → Coming soon.
 class HomeScreen extends StatelessWidget {

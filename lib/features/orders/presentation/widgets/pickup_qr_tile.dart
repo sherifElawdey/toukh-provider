@@ -8,7 +8,7 @@ import 'package:toukh_provider/domain/services/order_qr_service.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_section_title.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_surface_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Shows a pickup verification QR for the driver to scan.
 class PickupQrTile extends StatefulWidget {

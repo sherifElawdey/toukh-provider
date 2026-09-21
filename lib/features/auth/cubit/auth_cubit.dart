@@ -20,7 +20,7 @@ import 'package:toukh_provider/features/registration/cubit/registration_cubit.da
 import 'package:toukh_provider/features/registration/models/registration_submit_data.dart';
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/settings/domain/provider_profile_draft_mapper.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 export 'auth_state.dart';
 

@@ -1,5 +1,5 @@
 import 'package:equatable/equatable.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Provider-facing order row for dashboard / lists (no Firestore types).
 class ProviderOrderLineItem extends Equatable {

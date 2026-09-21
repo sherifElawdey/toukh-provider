@@ -4,7 +4,7 @@ import 'package:toukh_provider/domain/entities/provider_review_summary.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/reviews/presentation/widgets/provider_review_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardReviewsSection extends StatelessWidget {
   const HomeDashboardReviewsSection({super.key, required this.reviews});

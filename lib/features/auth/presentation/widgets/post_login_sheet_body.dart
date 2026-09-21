@@ -8,7 +8,7 @@ import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class PostLoginSheetBody extends StatefulWidget {
   const PostLoginSheetBody({

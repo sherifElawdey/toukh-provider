@@ -7,7 +7,7 @@ import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/register_kind_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Order tuned for registration UX (not enum declaration order).
 const List<ServiceType> _kRegistrationKindOrder = [

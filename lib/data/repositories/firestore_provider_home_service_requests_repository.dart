@@ -5,7 +5,7 @@ import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 const _kCollection = ToukhFirestoreCollections.homeServiceRequests;
 

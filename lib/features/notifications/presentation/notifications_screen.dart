@@ -4,14 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:toukh_provider/core/notifications/notification_labels.dart';
 import 'package:toukh_provider/core/notifications/notification_navigation.dart';
 import 'package:toukh_provider/features/notifications/cubit/notifications_cubit.dart';
-import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
-import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_required_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -33,44 +30,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Future<void> _ensureNotificationPermission() async {
-    final cubit = context.read<OnboardingCubit>();
-    final granted = await cubit.isNotificationGranted();
+    // Simple ecommerce: open inbox without prompting for notification permission.
     if (!mounted) return;
-    if (granted) {
-      setState(() {
-        _permissionChecked = true;
-        _allowed = true;
-      });
-      return;
-    }
-
-    final permanentlyDenied = await Permission.notification.isPermanentlyDenied;
-    if (!mounted) return;
-    final enable = await PermissionRequiredSheet.showForNotifications(
-      context,
-      permanentlyDenied: permanentlyDenied,
-    );
-    if (!mounted) return;
-
-    if (!enable) {
-      context.pop();
-      return;
-    }
-
-    if (permanentlyDenied) {
-      await cubit.openSystemSettings();
-      if (mounted) context.pop();
-      return;
-    }
-
-    await cubit.requestNotificationPermission();
-    if (!mounted) return;
-    final nowGranted = await cubit.isNotificationGranted();
-    if (!mounted) return;
-    if (!nowGranted) {
-      context.pop();
-      return;
-    }
     setState(() {
       _permissionChecked = true;
       _allowed = true;

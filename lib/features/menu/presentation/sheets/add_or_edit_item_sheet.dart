@@ -8,7 +8,7 @@ import 'package:toukh_provider/core/media/safe_image_pick.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:uuid/uuid.dart';
 
 class AddOrEditItemSheet extends StatefulWidget {

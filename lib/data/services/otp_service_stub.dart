@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// In-memory [OtpRepository] used while Twilio env vars are not set.
 ///

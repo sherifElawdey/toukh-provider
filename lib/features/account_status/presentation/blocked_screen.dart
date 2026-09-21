@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/domain/entities/block_info.dart';
 import 'package:toukh_provider/features/account_status/presentation/widgets/blocked_info_card.dart';

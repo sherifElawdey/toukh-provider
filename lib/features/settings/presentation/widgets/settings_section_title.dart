@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class SettingsSectionTitle extends StatelessWidget {
   const SettingsSectionTitle({super.key, required this.labelKey});

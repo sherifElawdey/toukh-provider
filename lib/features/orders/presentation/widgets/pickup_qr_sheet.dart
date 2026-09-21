@@ -5,7 +5,7 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pickup_qr_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Bottom sheet so the provider can show the pickup QR for the courier to scan.
 ///

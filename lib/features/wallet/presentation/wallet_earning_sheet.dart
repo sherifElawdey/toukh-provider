@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/utils/wallet_format.dart';
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 Future<void> showWalletEarningSheet(
   BuildContext context,

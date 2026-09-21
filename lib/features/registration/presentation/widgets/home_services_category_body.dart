@@ -8,7 +8,7 @@ import 'package:toukh_provider/domain/repositories/home_service_categories_repos
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/home_service_category_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeServicesCategoryBody extends StatelessWidget {
   const HomeServicesCategoryBody({

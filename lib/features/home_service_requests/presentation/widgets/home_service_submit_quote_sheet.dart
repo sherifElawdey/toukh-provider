@@ -8,7 +8,7 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 Future<bool?> showHomeServiceSubmitQuoteSheet(
   BuildContext context, {

@@ -9,7 +9,7 @@ import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/home_services_category_body.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class RegisterCategoryScreen extends StatelessWidget {
   const RegisterCategoryScreen({super.key});

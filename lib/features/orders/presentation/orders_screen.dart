@@ -5,7 +5,7 @@ import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/home_service_requests_screen.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/orders_tab_view.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 

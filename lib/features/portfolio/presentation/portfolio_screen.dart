@@ -11,7 +11,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/portfolio/presentation/widgets/portfolio_add_placeholder.dart';
 import 'package:toukh_provider/features/portfolio/presentation/widgets/portfolio_image_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});

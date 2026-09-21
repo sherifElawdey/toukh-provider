@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker_android/image_picker_android.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/app.dart';
 import 'package:toukh_provider/core/media/safe_image_pick.dart';
 import 'package:toukh_provider/core/notifications/background_message_handler.dart';

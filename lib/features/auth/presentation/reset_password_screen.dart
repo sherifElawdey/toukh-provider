@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/features/auth/presentation/widgets/auth_brand_header.dart';

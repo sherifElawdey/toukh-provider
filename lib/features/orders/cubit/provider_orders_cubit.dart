@@ -6,7 +6,7 @@ import 'package:toukh_provider/core/notifications/provider_order_alert_controlle
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_state.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 export 'provider_orders_state.dart' show ProviderOrdersState;
 

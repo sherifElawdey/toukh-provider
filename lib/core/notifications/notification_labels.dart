@@ -1,6 +1,6 @@
 import 'package:get/get.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Localized labels for notification list styling.
 abstract final class NotificationLabels {

@@ -7,7 +7,7 @@ import 'package:toukh_provider/domain/entities/provider_home_service_request.dar
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeServiceScheduleJobCard extends StatelessWidget {
   const HomeServiceScheduleJobCard({super.key, required this.request});

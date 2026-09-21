@@ -12,7 +12,7 @@ import 'package:toukh_provider/features/home_service_requests/presentation/widge
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/incoming_order_wait_counter.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ProviderHomeServiceRequestCard extends StatelessWidget {
   const ProviderHomeServiceRequestCard({

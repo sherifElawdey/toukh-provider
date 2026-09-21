@@ -8,7 +8,7 @@ import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ProviderProfile extends Equatable {
   const ProviderProfile({

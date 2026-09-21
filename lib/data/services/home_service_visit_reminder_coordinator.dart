@@ -5,7 +5,7 @@ import 'package:toukh_provider/domain/entities/provider_home_service_request.dar
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Keeps provider local visit reminders in sync for Home Service accounts only.
 ///

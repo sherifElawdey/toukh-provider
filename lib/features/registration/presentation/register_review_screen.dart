@@ -23,7 +23,7 @@ import 'package:toukh_provider/features/registration/presentation/review_field.d
 import 'package:toukh_provider/features/registration/presentation/widgets/register_review_tile.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 String _kindKey(ServiceType k) {
   switch (k) {

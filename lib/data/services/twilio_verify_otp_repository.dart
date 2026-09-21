@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// [OtpRepository] backed by Twilio Verify v2 (WhatsApp-first + SMS fallback).
 class TwilioVerifyOtpRepository implements OtpRepository {

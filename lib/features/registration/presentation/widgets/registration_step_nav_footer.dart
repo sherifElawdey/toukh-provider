@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Bottom navigation for registration steps: outlined Back + filled primary action with arrows.
 class RegistrationStepNavFooter extends StatelessWidget {

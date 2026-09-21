@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardOrderChart extends StatelessWidget {
   const HomeDashboardOrderChart({

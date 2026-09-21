@@ -3,8 +3,8 @@ abstract final class LegalUrls {
   LegalUrls._();
 
   static const terms = 'https://havit.toukh.com/en/terms/';
-  static const privacy = 'https://havit.toukh.com/en/privacy/';
-  static const support = 'https://havit.toukh.com/en/support/';
+  static const privacy = 'https://havit.toukh.com/en/privacy-partner/';
+  static const support = 'https://havit.toukh.com/en/support-partner/';
   static const deleteAccount =
       'https://havit.toukh.com/en/delete-account/provider/';
   static const declaration =

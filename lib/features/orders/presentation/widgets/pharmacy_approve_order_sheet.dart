@@ -6,7 +6,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/network_image_zoom_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Bottom inset for snacks shown from modal sheets over the provider shell nav.
 const _kShellSnackBottomInset = 100.0;

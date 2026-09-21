@@ -12,7 +12,7 @@ import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard
 import 'package:toukh_provider/features/home/presentation/widgets/home_permissions_banner.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardOverviewTab extends StatelessWidget {
   const HomeDashboardOverviewTab({

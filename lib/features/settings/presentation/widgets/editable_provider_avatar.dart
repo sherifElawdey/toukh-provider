@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/pick_profile_image_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Provider brand/profile avatar with camera edit affordance and upload flow.
 class EditableProviderAvatar extends StatefulWidget {

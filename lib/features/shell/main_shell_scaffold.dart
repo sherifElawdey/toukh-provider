@@ -9,7 +9,7 @@ import 'package:toukh_provider/features/shell/provider_shell_nav.dart';
 import 'package:toukh_provider/features/shell/widgets/shell_nav_destination.dart';
 import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class MainShellScaffold extends StatelessWidget {
   const MainShellScaffold({super.key, required this.navigationShell});

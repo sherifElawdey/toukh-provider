@@ -11,7 +11,7 @@ import 'package:toukh_provider/features/registration/presentation/widgets/id_pho
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/square_brand_image_block.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class RegisterCredentialsScreen extends StatefulWidget {
   const RegisterCredentialsScreen({super.key});

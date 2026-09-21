@@ -1,5 +1,5 @@
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 extension ProviderMasterOrderRowDashboardX on ProviderMasterOrderRow {
   ProviderOrderDashboard toDashboard() {

@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
 import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreProviderWalletRepository implements ProviderWalletRepository {
   FirestoreProviderWalletRepository(this._firestore);

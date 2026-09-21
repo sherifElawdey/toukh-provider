@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/domain/entities/home_service_category.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeServiceCategoryCard extends StatelessWidget {
   const HomeServiceCategoryCard({

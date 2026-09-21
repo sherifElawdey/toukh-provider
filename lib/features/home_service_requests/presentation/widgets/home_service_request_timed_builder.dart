@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Rebuilds [builder] every second from request [createdAt] while incoming.
 class HomeServiceRequestTimedBuilder extends StatefulWidget {

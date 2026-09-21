@@ -1,5 +1,5 @@
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Pickup center for driver search: business profile coords, else slice store.
 Location? resolveDriverRequestPickup({

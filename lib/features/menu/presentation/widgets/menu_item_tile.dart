@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Professional menu item row for the provider menu builder.
 class MenuItemTile extends StatelessWidget {

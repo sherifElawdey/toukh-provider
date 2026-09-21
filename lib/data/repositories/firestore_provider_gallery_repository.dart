@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreProviderGalleryRepository implements ProviderGalleryRepository {
   FirestoreProviderGalleryRepository(

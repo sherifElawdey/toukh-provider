@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Shown briefly when `/verify-otp` has no route args (cold start / deep link).
 /// Matches [PostLoginStatusScreen] rehydrate loader so users never see a white frame.

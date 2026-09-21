@@ -49,7 +49,7 @@ import 'package:toukh_provider/features/shell/main_shell_scaffold.dart';
 import 'package:toukh_provider/features/welcome/welcome_screen.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_provider/router/widgets/login_with_deleted_sheet.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/router/widgets/verify_otp_missing_args_placeholder.dart';
 
 final GlobalKey<NavigatorState> providerRootNavigatorKey =

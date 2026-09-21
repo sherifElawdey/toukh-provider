@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class AuthBrandHeader extends StatelessWidget {
   const AuthBrandHeader({

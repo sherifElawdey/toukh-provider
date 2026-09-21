@@ -5,7 +5,7 @@ import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_label.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_ui.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class OrderDetailStatusHeader extends StatelessWidget {
   const OrderDetailStatusHeader({super.key, required this.row});

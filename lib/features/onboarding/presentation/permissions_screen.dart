@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_item_card.dart';

@@ -5,7 +5,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
   FirestoreProviderOrdersRepository(

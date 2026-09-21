@@ -10,7 +10,7 @@ import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Password for all seeded provider accounts (matches CLI seed tool).
 const String kProviderSeedPassword = '1234567890';

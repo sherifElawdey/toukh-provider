@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Live stopwatch from slice [createdAt], ticking every second.
 class IncomingOrderWaitCounter extends StatelessWidget {

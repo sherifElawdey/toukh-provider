@@ -6,7 +6,7 @@ import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_in_progress_order_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardInProgressStrip extends StatelessWidget {
   const HomeDashboardInProgressStrip({

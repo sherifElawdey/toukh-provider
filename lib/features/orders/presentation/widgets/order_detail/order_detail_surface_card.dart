@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Bordered surface container shared by order detail sections.
 class OrderDetailSurfaceCard extends StatelessWidget {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/core/constants/legal_urls.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';

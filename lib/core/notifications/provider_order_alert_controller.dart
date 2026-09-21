@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Holds the active foreground new-order alert for the provider shell.
 class ProviderOrderAlertController extends ChangeNotifier {

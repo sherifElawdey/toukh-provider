@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/domain/entities/order_history_stats.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class OrderHistoryStatsHeader extends StatelessWidget {
   const OrderHistoryStatsHeader({

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/domain/entities/provider_review_summary.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/dashboard_shell.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ProviderReviewTile extends StatelessWidget {
   const ProviderReviewTile({super.key, required this.review});

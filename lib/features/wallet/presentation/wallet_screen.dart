@@ -9,7 +9,7 @@ import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart'
 import 'package:toukh_provider/features/wallet/cubit/wallet_cubit.dart';
 import 'package:toukh_provider/features/wallet/presentation/wallet_earning_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});

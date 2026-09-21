@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_option.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';

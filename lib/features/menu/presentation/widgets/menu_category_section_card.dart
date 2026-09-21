@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_item_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class MenuCategorySectionCard extends StatelessWidget {
   const MenuCategorySectionCard({

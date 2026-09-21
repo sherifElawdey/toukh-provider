@@ -6,7 +6,7 @@ import 'package:toukh_provider/features/home_service_requests/cubit/home_service
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/provider_home_service_request_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeServiceRequestsScreen extends StatelessWidget {
   const HomeServiceRequestsScreen({super.key});

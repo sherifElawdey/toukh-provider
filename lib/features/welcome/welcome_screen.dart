@@ -9,7 +9,7 @@ import 'package:toukh_provider/features/welcome/widgets/welcome_locale_choice_ca
 import 'package:toukh_provider/features/welcome/widgets/welcome_section_label.dart';
 import 'package:toukh_provider/features/welcome/widgets/welcome_theme_choice_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});

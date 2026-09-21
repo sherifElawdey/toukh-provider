@@ -1,5 +1,5 @@
 import 'package:toukh_provider/domain/entities/provider_review_summary.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 abstract final class ProviderReviewMapper {
   ProviderReviewMapper._();

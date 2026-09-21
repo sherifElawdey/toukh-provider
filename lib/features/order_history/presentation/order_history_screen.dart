@@ -6,7 +6,7 @@ import 'package:toukh_provider/features/order_history/presentation/widgets/order
 import 'package:toukh_provider/features/order_history/presentation/widgets/order_history_list_tile.dart';
 import 'package:toukh_provider/features/order_history/presentation/widgets/order_history_stats_header.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
   const OrderHistoryScreen({super.key});

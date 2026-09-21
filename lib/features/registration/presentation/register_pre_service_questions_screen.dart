@@ -8,7 +8,7 @@ import 'package:toukh_provider/features/registration/cubit/registration_cubit.da
 import 'package:toukh_provider/features/registration/presentation/widgets/pre_service_questions_editor.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class RegisterPreServiceQuestionsScreen extends StatefulWidget {
   const RegisterPreServiceQuestionsScreen({super.key});

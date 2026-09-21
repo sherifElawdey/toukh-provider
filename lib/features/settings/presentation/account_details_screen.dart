@@ -16,7 +16,7 @@ import 'package:toukh_provider/features/settings/presentation/provider_profile_d
 import 'package:toukh_provider/features/settings/presentation/widgets/editable_provider_avatar.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class AccountDetailsScreen extends StatefulWidget {
   const AccountDetailsScreen({super.key});

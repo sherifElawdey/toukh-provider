@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/features/revenues/cubit/revenues_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class RevenuesScreen extends StatelessWidget {
   const RevenuesScreen({super.key});

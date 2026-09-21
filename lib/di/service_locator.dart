@@ -55,7 +55,7 @@ import 'package:toukh_provider/features/home_service_requests/cubit/provider_hom
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
 
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 final getIt = GetIt.instance;
 

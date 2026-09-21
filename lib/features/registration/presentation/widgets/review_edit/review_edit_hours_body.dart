@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ReviewEditHoursBody extends StatefulWidget {
   const ReviewEditHoursBody({super.key});

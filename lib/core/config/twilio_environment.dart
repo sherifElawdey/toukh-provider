@@ -1,5 +1,5 @@
 import 'package:toukh_provider/core/config/twilio_local_secrets.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Twilio Verify credentials for normal runs.
 ///

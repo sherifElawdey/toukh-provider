@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Havit brand mark used across provider auth, registration, and status UI.
 class ToukhServiceLogo extends StatelessWidget {

@@ -5,7 +5,7 @@ import 'package:toukh_provider/features/home/presentation/widgets/dashboard_shel
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardBestsellersSection extends StatelessWidget {
   const HomeDashboardBestsellersSection({super.key, required this.rows});

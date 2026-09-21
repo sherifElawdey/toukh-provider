@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreNotificationInboxRepository implements NotificationInboxRepository {
   FirestoreNotificationInboxRepository(this._firestore);

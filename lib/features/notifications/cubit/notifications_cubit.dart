@@ -4,7 +4,7 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class NotificationsState extends Equatable {
   const NotificationsState({

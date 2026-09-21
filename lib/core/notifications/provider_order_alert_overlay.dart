@@ -8,7 +8,7 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 /// Persistent top banner for new orders while the provider app is in the foreground.
 class ProviderOrderAlertOverlay extends StatelessWidget {

@@ -11,7 +11,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

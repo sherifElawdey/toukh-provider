@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 String homeServiceVisitBadgeLabel(ProviderHomeServiceRequest request) {
   if (request.isOnTheWay) {

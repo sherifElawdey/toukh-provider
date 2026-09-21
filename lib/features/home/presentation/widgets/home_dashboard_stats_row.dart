@@ -4,7 +4,7 @@ import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_stat_cell.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardStatsRow extends StatelessWidget {
   const HomeDashboardStatsRow({

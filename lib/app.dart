@@ -14,7 +14,7 @@ import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/notifications/cubit/notifications_cubit.dart';
 import 'package:toukh_provider/features/shell/provider_notification_badge_cubit.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_provider/l10n/app_translations.dart';

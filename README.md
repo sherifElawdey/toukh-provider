@@ -1,6 +1,12 @@
-# Toukh Service
+# Havit Provider
 
-Flutter app for Toukh shop and service providers: registration wizard, Firebase Auth (synthetic `provider{phoneDigits}@toukh.com` emails), Firestore `providers` collection, Backblaze B2 media uploads, Bloc + GoRouter + GetIt + GetX + [`toukh_ui`](../packages/toukh_ui).
+Self-contained Flutter app for shops and home-service partners: registration, menu, orders, and home dashboard.
+
+- **Bundle ID:** `com.vaxon.havitprovider` (iOS + Android)
+- **No shared `toukh_ui` package** — UI/shared code lives in `lib/shared`
+- **No permission onboarding** — does not ask for notification or location permission on launch (maps use pin / default city)
+
+Firebase Auth (synthetic `provider{phoneDigits}@toukh.com` emails), Firestore `providers`, Backblaze B2 media, Bloc + GoRouter + GetIt + GetX.
 
 ## Setup
 
@@ -8,11 +14,18 @@ Flutter app for Toukh shop and service providers: registration wizard, Firebase 
 cd toukh_provider
 flutter pub get
 ```
-toukh_ui:
-git:
-url: https://github.com/sherifElawdey/toukh-ui-constants.git
 
-Configure Firebase for your bundle IDs (see `lib/firebase_options.dart`). For Google Maps, add API keys to:
+### Firebase (required after bundle rename)
+
+Add a new iOS and Android app in the Firebase Console with package/bundle id `com.vaxon.havitprovider`, then replace:
+
+- `android/app/google-services.json`
+- `ios/Runner/GoogleService-Info.plist`
+- regenerate `lib/firebase_options.dart` (FlutterFire CLI)
+
+String-only renames of the old configs will break Auth/FCM until real Firebase apps exist for this bundle.
+
+For Google Maps, add API keys to:
 
 - **Android**: `android/app/src/main/AndroidManifest.xml` (`com.google.android.geo.API_KEY`)
 - **iOS**: `ios/Runner/AppDelegate.swift` / `Info.plist` per Google Maps Flutter docs.
@@ -27,7 +40,7 @@ Without Twilio dart-defines (and without `twilio_local_secrets.dart`), OTP is no
 
 ## OTP (Twilio Verify)
 
-Registration, account phone verification, and forgot-password **send / verify / resend** use [Twilio Verify v2](https://www.twilio.com/docs/verify/api) when all three build-time defines are set. Implementation: `TwilioVerifyOtpRepository` + `TwilioVerifyClient` in [`packages/toukh_ui`](../packages/toukh_ui/README.md).
+Registration, account phone verification, and forgot-password **send / verify / resend** use [Twilio Verify v2](https://www.twilio.com/docs/verify/api) when all three build-time defines are set. Implementation: `TwilioVerifyOtpRepository` + `TwilioVerifyClient` in `lib/shared`.
 
 ### One-time setup (debug + release)
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class HomeDashboardEmptyPlaceholder extends StatelessWidget {
   const HomeDashboardEmptyPlaceholder({

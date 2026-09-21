@@ -6,18 +6,6 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>GMSApiKey</key>
-	<string>AIzaSyArN_FJmw4O5DneJ8ZGlK2zmkbeS1jqu1Y</string>
-	<key>NSCameraUsageDescription</key>
-	<string>We use the camera to take photos of your ID and business media.</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We use your photo library to upload ID and business images.</string>
-	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string>We may save images to your photo library when you choose to.</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>We use your location to set your business on the map and for delivery features.</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>We use your location while the app is open so we can show your position on the map.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Havit Partner</string>
 	<key>CFBundleExecutable</key>
@@ -36,8 +24,16 @@
 	<string>????</string>
 	<key>CFBundleVersion</key>
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
+	<key>GMSApiKey</key>
+	<string>AIzaSyArN_FJmw4O5DneJ8ZGlK2zmkbeS1jqu1Y</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>We use the camera to take photos of your ID and business media.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>We may save images to your photo library when you choose to.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We use your photo library to upload ID and business images.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -59,12 +55,12 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIApplicationSupportsIndirectInputEvents</key>
+	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
 	</array>
-	<key>UIApplicationSupportsIndirectInputEvents</key>
-	<true/>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

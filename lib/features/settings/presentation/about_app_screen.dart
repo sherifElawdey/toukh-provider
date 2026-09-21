@@ -6,7 +6,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class AboutAppScreen extends StatefulWidget {

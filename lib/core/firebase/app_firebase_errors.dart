@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 String appFirebaseError(Object error) {
   final msg = firebaseUserMessage(

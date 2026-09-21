@@ -5,7 +5,7 @@ import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard
 import 'package:toukh_provider/features/reviews/cubit/provider_reviews_cubit.dart';
 import 'package:toukh_provider/features/reviews/presentation/widgets/provider_review_tile.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class ProviderReviewsScreen extends StatelessWidget {
   const ProviderReviewsScreen({super.key});

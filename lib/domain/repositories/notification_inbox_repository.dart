@@ -1,4 +1,4 @@
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 abstract class NotificationInboxRepository {
   Stream<List<ToukhNotification>> watchInbox(String uid);

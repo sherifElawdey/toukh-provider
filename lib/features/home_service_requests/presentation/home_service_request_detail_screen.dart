@@ -18,7 +18,7 @@ import 'package:toukh_provider/features/home_service_requests/presentation/widge
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_client_details_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 const _pageBg = Color(0xFFF2F4F7);
 

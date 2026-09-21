@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/domain/entities/dashboard_firestore_payload.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/data/mappers/provider_review_mapper.dart';

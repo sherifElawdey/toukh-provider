@@ -1,4 +1,4 @@
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 abstract class ProviderOrdersRepository {
   Stream<List<MasterOrder>> watchOrders(String providerUid);

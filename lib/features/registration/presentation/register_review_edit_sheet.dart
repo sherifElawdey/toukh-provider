@@ -13,7 +13,7 @@ import 'package:toukh_provider/features/registration/presentation/widgets/review
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_pre_service_questions_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_profile_body.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 Future<void> showRegisterReviewEditSheet(
   BuildContext context, {

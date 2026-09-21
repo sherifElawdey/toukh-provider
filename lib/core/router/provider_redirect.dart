@@ -1,7 +1,7 @@
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_state.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
@@ -46,6 +46,12 @@ String? resolveProviderRedirect({
           loc == AppRoutes.walletTransactions ||
           loc.startsWith('${AppRoutes.wallet}/'))) {
     logRedirect(AppRoutes.home, 'wallet feature disabled');
+    return AppRoutes.home;
+  }
+
+  // Simple ecommerce: never land on the permissions onboarding screen.
+  if (loc == AppRoutes.permissions) {
+    logRedirect(AppRoutes.home, 'permissions screen disabled');
     return AppRoutes.home;
   }
 

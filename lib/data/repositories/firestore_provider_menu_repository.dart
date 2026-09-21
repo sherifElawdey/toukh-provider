@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/firestore/menu_category_slug.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
-import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/shared/shared.dart';
 
 class FirestoreProviderMenuRepository implements ProviderMenuRepository {
   FirestoreProviderMenuRepository(this._firestore);
