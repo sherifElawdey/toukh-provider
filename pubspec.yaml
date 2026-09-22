@@ -4,7 +4,7 @@ description: "Havit Provider — self-contained merchant app for shops and home-
 
 publish_to: 'none'
 
-version: 1.0.13+13
+version: 1.0.14+14
 
 environment:
   sdk: ^3.11.4
