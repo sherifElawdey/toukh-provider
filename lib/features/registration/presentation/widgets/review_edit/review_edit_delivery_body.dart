@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
@@ -131,7 +132,8 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
             SizedBox(height: AppSizes.spaceMd),
             TextField(
               controller: _price,
-              keyboardType: TextInputType.number,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: EnglishPriceInput.formatters,
               decoration: InputDecoration(
                 labelText: AppStrings.Registration.deliveryPriceLabel.tr,
               ),

@@ -1,10 +1,10 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:toukh_provider/core/media/safe_image_pick.dart';
+import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';

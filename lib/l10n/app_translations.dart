@@ -655,6 +655,19 @@ class AppTranslations extends Translations {
     'orders.detail_pickup_qr_hint': 'Show this code to the courier',
     'orders.detail_pickup_qr_driver_scan_hint':
         'The driver must scan this code to receive the order. Status updates after a successful scan.',
+    'orders.detail_pickup_handoff_title': 'Confirm pickup',
+    'orders.detail_pickup_handoff_hint':
+        'Show the pickup OTP or QR so the driver can confirm store handoff. This is not the customer delivery code.',
+    'orders.detail_pickup_otp_option': 'Option 1 · Pickup OTP (for the driver)',
+    'orders.detail_pickup_otp_hint':
+        'Ask the driver to enter this store pickup code — not the customer delivery OTP.',
+    'orders.detail_pickup_qr_option': 'Option 2 · QR code',
+    'orders.deliver_method_title': 'Confirm delivery',
+    'orders.deliver_method_subtitle':
+        'Choose how to confirm the customer received the order.',
+    'orders.deliver_with_qr': 'Scan customer QR',
+    'orders.deliver_with_otp': 'Enter OTP code',
+    'orders.scan_delivery_qr': 'Scan delivery QR',
     'orders.handoff_success_title': 'Handed to courier',
     'orders.handoff_success_body':
         'The courier scanned the QR and received the order. It is now out for delivery.',
@@ -1482,6 +1495,18 @@ class AppTranslations extends Translations {
     'orders.detail_pickup_qr_hint': 'اعرض هذا الرمز للسائق',
     'orders.detail_pickup_qr_driver_scan_hint':
         'يجب على السائق مسح هذا الرمز لاستلام الطلب. يتم تحديث الحالة بعد المسح الناجح.',
+    'orders.detail_pickup_handoff_title': 'تأكيد الاستلام',
+    'orders.detail_pickup_handoff_hint':
+        'اعرض رمز OTP أو QR للاستلام ليؤكد السائق تسليم المتجر. هذا ليس رمز تسليم العميل.',
+    'orders.detail_pickup_otp_option': 'الخيار 1 · رمز OTP للاستلام (للسائق)',
+    'orders.detail_pickup_otp_hint':
+        'اطلب من السائق إدخال رمز استلام المتجر — وليس رمز تسليم العميل.',
+    'orders.detail_pickup_qr_option': 'الخيار 2 · رمز QR',
+    'orders.deliver_method_title': 'تأكيد التسليم',
+    'orders.deliver_method_subtitle': 'اختر طريقة تأكيد استلام العميل للطلب.',
+    'orders.deliver_with_qr': 'مسح رمز QR للعميل',
+    'orders.deliver_with_otp': 'إدخال رمز OTP',
+    'orders.scan_delivery_qr': 'مسح رمز التسليم',
     'orders.handoff_success_title': 'تم التسليم للمندوب',
     'orders.handoff_success_body':
         'مسح المندوب رمز الاستلام واستلم الطلب. الطلب الآن في الطريق للعميل.',

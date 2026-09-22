@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
+import 'package:toukh_provider/domain/services/order_qr_service.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_state.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -206,6 +208,10 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
           orderId: orderId,
           completionCode: completionCode,
         ));
+  }
+
+  Future<void> markDeliveredViaQr(String qrPayload) async {
+    await _runAction('qr', () => getIt<OrderQrService>().verifyDeliveryQr(qrPayload));
   }
 
   ProviderMasterOrderRow? orderById(String id) => _findRow(id);

@@ -505,8 +505,18 @@ class _Orders {
   String get detailPickupQrHint => 'orders.detail_pickup_qr_hint';
   String get detailPickupQrDriverScanHint =>
       'orders.detail_pickup_qr_driver_scan_hint';
+  String get detailPickupHandoffTitle => 'orders.detail_pickup_handoff_title';
+  String get detailPickupHandoffHint => 'orders.detail_pickup_handoff_hint';
+  String get detailPickupOtpOption => 'orders.detail_pickup_otp_option';
+  String get detailPickupOtpHint => 'orders.detail_pickup_otp_hint';
+  String get detailPickupQrOption => 'orders.detail_pickup_qr_option';
   String get handoffSuccessTitle => 'orders.handoff_success_title';
   String get handoffSuccessBody => 'orders.handoff_success_body';
+  String get deliverMethodTitle => 'orders.deliver_method_title';
+  String get deliverMethodSubtitle => 'orders.deliver_method_subtitle';
+  String get deliverWithQr => 'orders.deliver_with_qr';
+  String get deliverWithOtp => 'orders.deliver_with_otp';
+  String get scanDeliveryQr => 'orders.scan_delivery_qr';
   String get detailCancelledByProvider => 'orders.detail_cancelled_by_provider';
   String get detailCancelledByCustomer => 'orders.detail_cancelled_by_customer';
   String get detailCancelledAt => 'orders.detail_cancelled_at';

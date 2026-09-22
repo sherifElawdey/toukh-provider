@@ -7,6 +7,7 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
+import 'package:toukh_provider/features/orders/presentation/delivery_qr_scan_screen.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_cancellation_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_client_details_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_items_card.dart';
@@ -224,6 +225,7 @@ class _OrderDetailBody extends StatelessWidget {
               masterOrderId: row.id,
               providerId: providerId,
               driverId: slice.driverId ?? row.master.driverAssignment?.driverId,
+              pickupCode: row.master.pickupCode,
             ),
           ],
           const SizedBox(height: AppSizes.spaceMd),
@@ -301,6 +303,24 @@ class _OrderDetailBody extends StatelessWidget {
   }
 
   Future<void> _finishWithCode(BuildContext context, String orderId) async {
+    final method = await showHandoffMethodSheet(
+      context,
+      title: AppStrings.Orders.deliverMethodTitle.tr,
+      subtitle: AppStrings.Orders.deliverMethodSubtitle.tr,
+      qrLabel: AppStrings.Orders.deliverWithQr.tr,
+      otpLabel: AppStrings.Orders.deliverWithOtp.tr,
+    );
+    if (method == null || !context.mounted) return;
+
+    if (method == HandoffMethod.qrCode) {
+      final payload = await Navigator.of(context).push<String>(
+        MaterialPageRoute(builder: (_) => const DeliveryQrScanScreen()),
+      );
+      if (payload == null || !context.mounted) return;
+      await context.read<ProviderOrdersCubit>().markDeliveredViaQr(payload);
+      return;
+    }
+
     final code = await showCompletionCodeSheet(context);
     if (code == null || !context.mounted) return;
     await context.read<ProviderOrdersCubit>().markDelivered(

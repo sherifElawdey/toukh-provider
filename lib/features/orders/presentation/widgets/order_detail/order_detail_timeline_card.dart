@@ -105,7 +105,7 @@ class OrderDetailTimelineCard extends StatelessWidget {
               icon: step.icon,
               done: done,
               showConnector: !isLast,
-              connectorDone: done && steps[i + 1].at != null,
+              connectorDone: !isLast && done && steps[i + 1].at != null,
             );
           }),
         ],

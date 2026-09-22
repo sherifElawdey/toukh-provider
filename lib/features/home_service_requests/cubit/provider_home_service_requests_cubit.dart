@@ -114,13 +114,18 @@ class ProviderHomeServiceRequestsCubit
     );
   }
 
-  Future<void> markCompleted(String requestId, {required String completionCode}) async {
+  Future<void> markCompleted(
+    String requestId, {
+    String? completionCode,
+    String? qrPayload,
+  }) async {
     final uid = state.providerUid;
     if (uid == null) return;
     await _requestsRepository.markCompleted(
       requestId: requestId,
       providerId: uid,
       completionCode: completionCode,
+      qrPayload: qrPayload,
     );
   }
 

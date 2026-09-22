@@ -5,6 +5,7 @@ import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
+import 'package:toukh_provider/features/orders/presentation/delivery_qr_scan_screen.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/orders_list_shimmer.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pickup_qr_sheet.dart';
@@ -197,6 +198,24 @@ class OrdersTabView extends StatelessWidget {
   }
 
   Future<void> _finishWithCode(BuildContext context, String orderId) async {
+    final method = await showHandoffMethodSheet(
+      context,
+      title: AppStrings.Orders.deliverMethodTitle.tr,
+      subtitle: AppStrings.Orders.deliverMethodSubtitle.tr,
+      qrLabel: AppStrings.Orders.deliverWithQr.tr,
+      otpLabel: AppStrings.Orders.deliverWithOtp.tr,
+    );
+    if (method == null || !context.mounted) return;
+
+    if (method == HandoffMethod.qrCode) {
+      final payload = await Navigator.of(context).push<String>(
+        MaterialPageRoute(builder: (_) => const DeliveryQrScanScreen()),
+      );
+      if (payload == null || !context.mounted) return;
+      await context.read<ProviderOrdersCubit>().markDeliveredViaQr(payload);
+      return;
+    }
+
     final code = await showCompletionCodeSheet(context);
     if (code == null || !context.mounted) return;
     await context.read<ProviderOrdersCubit>().markDelivered(

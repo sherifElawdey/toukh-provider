@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
@@ -198,6 +199,7 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
             TextField(
               controller: _subtotal,
               keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: EnglishPriceInput.formatters,
               decoration: InputDecoration(
                 labelText: AppStrings.Orders.pharmacyQuoteSubtotal.tr,
                 border: OutlineInputBorder(

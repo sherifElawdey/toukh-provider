@@ -222,14 +222,17 @@ class FirestoreProviderHomeServiceRequestsRepository
   Future<void> markCompleted({
     required String requestId,
     required String providerId,
-    required String completionCode,
+    String? completionCode,
+    String? qrPayload,
   }) async {
     final functions = _functions;
     if (functions != null) {
       try {
         await functions.httpsCallable('completeHomeServiceRequest').call({
           'requestId': requestId,
-          'completionCode': completionCode,
+          if (completionCode != null && completionCode.isNotEmpty)
+            'completionCode': completionCode,
+          if (qrPayload != null && qrPayload.isNotEmpty) 'qrPayload': qrPayload,
         });
         return;
       } on FirebaseFunctionsException catch (e) {
@@ -251,7 +254,7 @@ class FirestoreProviderHomeServiceRequestsRepository
     await _markCompletedFallback(
       requestId: requestId,
       providerId: providerId,
-      completionCode: completionCode,
+      completionCode: completionCode ?? '',
     );
   }
 

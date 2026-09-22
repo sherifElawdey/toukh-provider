@@ -16,6 +16,7 @@ import 'package:toukh_provider/features/home_service_requests/presentation/widge
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_trip_route_map_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
+import 'package:toukh_provider/features/orders/presentation/delivery_qr_scan_screen.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_client_details_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -275,8 +276,47 @@ class _HomeServiceRequestDetailBodyState
                                   onTap: _busy
                                       ? null
                                       : () async {
+                                          final method =
+                                              await showHandoffMethodSheet(
+                                            context,
+                                            title: AppStrings
+                                                .Orders.deliverMethodTitle.tr,
+                                            subtitle: AppStrings.Orders
+                                                .deliverMethodSubtitle.tr,
+                                            qrLabel: AppStrings
+                                                .Orders.deliverWithQr.tr,
+                                            otpLabel: AppStrings
+                                                .Orders.deliverWithOtp.tr,
+                                          );
+                                          if (method == null || !mounted) {
+                                            return;
+                                          }
+                                          if (method == HandoffMethod.qrCode) {
+                                            final payload =
+                                                await Navigator.of(context)
+                                                    .push<String>(
+                                              MaterialPageRoute(
+                                                builder: (_) =>
+                                                    const DeliveryQrScanScreen(),
+                                              ),
+                                            );
+                                            if (payload == null || !mounted) {
+                                              return;
+                                            }
+                                            await _respond(
+                                              () => context
+                                                  .read<
+                                                      ProviderHomeServiceRequestsCubit>()
+                                                  .markCompleted(
+                                                    request.id,
+                                                    qrPayload: payload,
+                                                  ),
+                                            );
+                                            return;
+                                          }
                                           final code =
-                                              await showCompletionCodeSheet(context);
+                                              await showCompletionCodeSheet(
+                                                  context);
                                           if (code == null || !mounted) return;
                                           await _respond(
                                             () => context

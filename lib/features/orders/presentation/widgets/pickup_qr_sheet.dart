@@ -128,30 +128,42 @@ class _PickupQrSheetBodyState extends State<_PickupQrSheetBody> {
           AppSizes.spaceBase,
           MediaQuery.paddingOf(context).bottom + AppSizes.spaceXl,
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CustomText(
-              AppStrings.Orders.actionShowPickupQr.tr,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-            const SizedBox(height: AppSizes.spaceSm),
-            CustomText(
-              AppStrings.Orders.detailPickupQrDriverScanHint.tr,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.7),
-                  ),
-            ),
-            const SizedBox(height: AppSizes.spaceMd),
-            PickupQrTile(
-              masterOrderId: widget.masterOrderId,
-              providerId: widget.providerId,
-              driverId: widget.driverId,
-            ),
-          ],
+        child: BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
+          builder: (context, state) {
+            String? pickupCode;
+            for (final order in state.orders) {
+              if (order.id == widget.masterOrderId) {
+                pickupCode = order.pickupCode;
+                break;
+              }
+            }
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                CustomText(
+                  AppStrings.Orders.detailPickupHandoffTitle.tr,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                ),
+                const SizedBox(height: AppSizes.spaceSm),
+                CustomText(
+                  AppStrings.Orders.detailPickupHandoffHint.tr,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.onSurface.withValues(alpha: 0.7),
+                      ),
+                ),
+                const SizedBox(height: AppSizes.spaceMd),
+                PickupQrTile(
+                  masterOrderId: widget.masterOrderId,
+                  providerId: widget.providerId,
+                  driverId: widget.driverId,
+                  pickupCode: pickupCode,
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

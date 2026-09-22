@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
@@ -160,7 +161,8 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
               SizedBox(height: AppSizes.spaceMd),
               TextField(
                 controller: _price,
-                keyboardType: TextInputType.number,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: EnglishPriceInput.formatters,
                 decoration: InputDecoration(
                   labelText: _mode == DeliveryPricingMode.perKm
                       ? 'Price per km (EGP)'

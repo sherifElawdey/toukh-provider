@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
+import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/data/services/customer_home_service_quote_notify_service.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_home_service_request.dart';
@@ -219,6 +220,7 @@ class _HomeServiceSubmitQuoteSheetState
           TextField(
             controller: _price,
             keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: EnglishPriceInput.formatters,
             decoration: InputDecoration(
               labelText: AppStrings.HomeServiceRequests.quotePriceLabel.tr,
               suffixText: 'EGP',
