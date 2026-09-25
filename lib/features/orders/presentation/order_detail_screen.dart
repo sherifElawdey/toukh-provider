@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -13,6 +14,7 @@ import 'package:toukh_provider/features/orders/presentation/widgets/order_detail
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_items_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_notes_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_pharmacy_request_card.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_section_title.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_status_header.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_timeline_card.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
@@ -174,10 +176,8 @@ class _OrderDetailBody extends StatelessWidget {
             OrderDetailCancellationCard(row: row),
           ],
           const SizedBox(height: AppSizes.spaceLg),
-          if (row.hasAssignedDriverEffective) ...[
-            _DetailDriverCard(row: row),
-            const SizedBox(height: AppSizes.spaceMd),
-          ],
+          OrderDetailItemsCard(row: row),
+          const SizedBox(height: AppSizes.spaceLg),
           ProviderOrderActionsBar(
             row: row,
             tab: tab,
@@ -209,6 +209,10 @@ class _OrderDetailBody extends StatelessWidget {
           ),
           const SizedBox(height: AppSizes.spaceLg),
           OrderDetailClientDetailsCard(row: row),
+          if (row.hasAssignedDriverEffective) ...[
+            const SizedBox(height: AppSizes.spaceMd),
+            _DetailDriverCard(row: row),
+          ],
           const SizedBox(height: AppSizes.spaceMd),
           OrderDetailTimelineCard(row: row),
           if (row.master.isPharmacyRequest) ...[
@@ -228,8 +232,6 @@ class _OrderDetailBody extends StatelessWidget {
               pickupCode: row.master.pickupCode,
             ),
           ],
-          const SizedBox(height: AppSizes.spaceMd),
-          OrderDetailItemsCard(row: row),
         ],
       ),
     );
@@ -342,13 +344,110 @@ class _DetailDriverCard extends StatelessWidget {
       assignment: row.master.driverAssignment,
       fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
     );
-    return AssignedDriverIdentityWithFallback(
-      fields: fields,
-      variant: AssignedDriverIdentityVariant.expanded,
-      eyebrow: AppStrings.Orders.detailDriverAssigned.tr,
-      fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
-      filled: true,
-      padding: const EdgeInsets.all(AppSizes.spaceMd),
+    final driverId = fields.driverId?.trim() ?? '';
+    if (driverId.isEmpty) {
+      return AssignedDriverIdentityWithFallback(
+        fields: fields,
+        variant: AssignedDriverIdentityVariant.expanded,
+        eyebrow: AppStrings.Orders.detailDriverAssigned.tr,
+        fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
+        filled: true,
+        padding: const EdgeInsets.all(AppSizes.spaceMd),
+      );
+    }
+
+    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+      stream: getIt<FirebaseFirestore>()
+          .collection('drivers')
+          .doc(driverId)
+          .snapshots(),
+      builder: (context, driverSnap) {
+        final data = driverSnap.data?.data();
+        final first = (data?['firstName'] as String?)?.trim() ?? '';
+        final last = (data?['lastName'] as String?)?.trim() ?? '';
+        final liveName = ('$first $last').trim();
+        final name = liveName.isNotEmpty
+            ? liveName
+            : (data?['displayName'] as String?)?.trim().isNotEmpty == true
+                ? (data!['displayName'] as String).trim()
+                : (data?['name'] as String?)?.trim().isNotEmpty == true
+                    ? (data!['name'] as String).trim()
+                    : (fields.name?.trim().isNotEmpty == true
+                        ? fields.name!.trim()
+                        : AppStrings.Orders.courierAssignedLabel.tr);
+        final photo =
+            (data?['profilePhotoUrl'] as String?)?.trim().isNotEmpty == true
+                ? (data!['profilePhotoUrl'] as String).trim()
+                : (data?['photoUrl'] as String?)?.trim().isNotEmpty == true
+                    ? (data!['photoUrl'] as String).trim()
+                    : fields.photoUrl;
+        final phone = (data?['phone'] as String?)?.trim().isNotEmpty == true
+            ? (data!['phone'] as String).trim()
+            : fields.phone;
+        final vehicle = (data?['vehicleType'] as String?)?.trim();
+
+        return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+          stream: getIt<FirebaseFirestore>()
+              .collection('drivers')
+              .doc(driverId)
+              .collection('Ratings')
+              .orderBy('createdAt', descending: true)
+              .limit(50)
+              .snapshots(),
+          builder: (context, ratingsSnap) {
+            final docs = ratingsSnap.data?.docs ?? const [];
+            var sum = 0.0;
+            final reviews =
+                <({double rating, String author, String comment, DateTime? at})>[];
+            for (final d in docs) {
+              final m = d.data();
+              final r = (m['rating'] as num?)?.toDouble() ?? 0;
+              sum += r;
+              reviews.add((
+                rating: r,
+                author: (m['authorName'] as String?)?.trim() ??
+                    (m['customerName'] as String?)?.trim() ??
+                    '—',
+                comment: (m['comment'] as String?)?.trim() ??
+                    (m['review'] as String?)?.trim() ??
+                    '',
+                at: ToukhFirestoreTimestamps.toDateTime(m['createdAt']),
+              ));
+            }
+            final avg = docs.isEmpty ? 0.0 : sum / docs.length;
+            final view = DriverProfileViewData(
+              driverId: driverId,
+              name: name,
+              photoUrl: photo,
+              phone: phone,
+              vehicleType: vehicle,
+              ratingAvg: avg,
+              reviewCount: docs.length,
+            );
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                OrderDetailSectionTitle(
+                  label: AppStrings.Orders.detailDriverAssigned.tr,
+                  icon: PhosphorIconsRegular.motorcycle,
+                ),
+                const SizedBox(height: AppSizes.spaceMd),
+                DriverProfileCard(
+                  data: view,
+                  eyebrow: AppStrings.Orders.detailDriverAssigned.tr,
+                  onTap: () => showDriverProfileSheet(
+                    context,
+                    data: view,
+                    title: AppStrings.Orders.detailDriverAssigned.tr,
+                    emptyReviews: 'No reviews yet',
+                    reviews: reviews,
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

@@ -310,6 +310,21 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
       ));
     }
 
+    final isRestaurant = draft.kind == ServiceType.restaurant &&
+        draft.shopCategory == ShopCategory.restaurant;
+    if (isRestaurant) {
+      final labels = draft.cuisineTags
+          .map((id) => RestaurantCuisineTaxonomy.byId[id]?.l10nKey.tr)
+          .whereType<String>()
+          .toList();
+      rows.add((
+        field: ReviewField.cuisineTags,
+        icon: PhosphorIconsRegular.tag,
+        titleKey: AppStrings.Registration.cuisineTitle,
+        value: labels.isEmpty ? '—' : labels.join(', '),
+      ));
+    }
+
     return rows
         .map(
           (r) => RegisterReviewTile(

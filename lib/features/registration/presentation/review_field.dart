@@ -7,5 +7,6 @@ enum ReviewField {
   location,
   hours,
   delivery,
+  cuisineTags,
   preServiceQuestions,
 }

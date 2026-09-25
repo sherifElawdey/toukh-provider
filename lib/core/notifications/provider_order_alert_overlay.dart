@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/core/notifications/notification_navigation.dart';
 import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
-import 'package:toukh_provider/features/orders/presentation/widgets/pharmacy_approve_order_sheet.dart';
-import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
@@ -30,7 +28,10 @@ class ProviderOrderAlertOverlay extends StatelessWidget {
                 top: 0,
                 left: 0,
                 right: 0,
-                child: _OrderAlertBanner(notification: alert),
+                child: _OrderAlertBanner(
+                  key: ValueKey(alert.id),
+                  notification: alert,
+                ),
               ),
           ],
         );
@@ -39,10 +40,19 @@ class ProviderOrderAlertOverlay extends StatelessWidget {
   }
 }
 
-class _OrderAlertBanner extends StatelessWidget {
-  const _OrderAlertBanner({required this.notification});
+class _OrderAlertBanner extends StatefulWidget {
+  const _OrderAlertBanner({super.key, required this.notification});
 
   final ToukhNotification notification;
+
+  @override
+  State<_OrderAlertBanner> createState() => _OrderAlertBannerState();
+}
+
+class _OrderAlertBannerState extends State<_OrderAlertBanner> {
+  bool _busy = false;
+
+  ToukhNotification get notification => widget.notification;
 
   String get _orderId =>
       notification.orderId ?? notification.payload['orderId']?.toString() ?? '';
@@ -80,6 +90,34 @@ class _OrderAlertBanner extends StatelessWidget {
     return notification.description;
   }
 
+  Future<void> _onShow() async {
+    if (_busy) return;
+    await handleProviderNotificationTap(notification);
+    ProviderOrderAlertController.instance.dismiss();
+  }
+
+  Future<void> _onReject() async {
+    if (_busy) return;
+    final isHomeService = _isHomeServiceRequest;
+    if (isHomeService) {
+      if (_requestId.isEmpty) return;
+    } else {
+      if (_orderId.isEmpty) return;
+    }
+
+    setState(() => _busy = true);
+    try {
+      if (isHomeService) {
+        await getIt<ProviderHomeServiceRequestsCubit>().decline(_requestId);
+      } else {
+        await getIt<ProviderOrdersCubit>().cancel(_orderId);
+      }
+      ProviderOrderAlertController.instance.dismiss();
+    } catch (_) {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -87,6 +125,8 @@ class _OrderAlertBanner extends StatelessWidget {
     final requestId = _requestId;
     final isHomeService = _isHomeServiceRequest;
     final imageUrl = notification.imageUrl;
+    final canAct =
+        !_busy && (isHomeService ? requestId.isNotEmpty : orderId.isNotEmpty);
 
     return Material(
       elevation: 8,
@@ -116,10 +156,7 @@ class _OrderAlertBanner extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     InkWell(
-                      onTap: () async {
-                        await handleProviderNotificationTap(notification);
-                        ProviderOrderAlertController.instance.dismiss();
-                      },
+                      onTap: canAct ? _onShow : null,
                       borderRadius: BorderRadius.circular(8),
                       child: Padding(
                         padding: const EdgeInsets.only(bottom: 2),
@@ -155,49 +192,13 @@ class _OrderAlertBanner extends StatelessWidget {
                       children: [
                         Expanded(
                           child: FilledButton(
-                            onPressed: (isHomeService
-                                    ? requestId.isEmpty
-                                    : orderId.isEmpty)
-                                ? null
-                                : () async {
-                                    if (isHomeService) {
-                                      final cubit = getIt<
-                                          ProviderHomeServiceRequestsCubit>();
-                                      final req =
-                                          cubit.requestById(requestId);
-                                      if (req != null && req.isPending) {
-                                        await showHomeServiceSubmitQuoteSheet(
-                                          context,
-                                          request: req,
-                                        );
-                                      }
-                                    } else {
-                                      final cubit =
-                                          getIt<ProviderOrdersCubit>();
-                                      final row = cubit.orderById(orderId);
-                                      final pendingPharmacy = row != null &&
-                                          row.master.isPharmacyRequest &&
-                                          row.slice.providerState ==
-                                              ProviderSubState
-                                                  .pending.wireValue;
-                                      if (pendingPharmacy) {
-                                        await showPharmacyApproveOrderSheet(
-                                          context,
-                                          row: row,
-                                        );
-                                      } else {
-                                        await cubit.approve(orderId);
-                                      }
-                                    }
-                                    ProviderOrderAlertController.instance
-                                        .dismiss();
-                                  },
+                            onPressed: canAct ? _onShow : null,
                             style: FilledButton.styleFrom(
-                              backgroundColor: AppColors.success,
+                              backgroundColor: AppColors.appColor,
                               padding: const EdgeInsets.symmetric(vertical: 8),
                             ),
                             child: CustomText(
-                              AppStrings.Orders.actionApprove.tr,
+                              AppStrings.Orders.seeDetails.tr,
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontWeight: FontWeight.w700,
@@ -209,34 +210,28 @@ class _OrderAlertBanner extends StatelessWidget {
                         const SizedBox(width: 8),
                         Expanded(
                           child: OutlinedButton(
-                            onPressed: (isHomeService
-                                    ? requestId.isEmpty
-                                    : orderId.isEmpty)
-                                ? null
-                                : () async {
-                                    if (isHomeService) {
-                                      await getIt<
-                                              ProviderHomeServiceRequestsCubit>()
-                                          .decline(requestId);
-                                    } else {
-                                      await getIt<ProviderOrdersCubit>()
-                                          .cancel(orderId);
-                                    }
-                                    ProviderOrderAlertController.instance
-                                        .dismiss();
-                                  },
+                            onPressed: canAct ? _onReject : null,
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.error,
                               side: const BorderSide(color: AppColors.error),
                               padding: const EdgeInsets.symmetric(vertical: 8),
                             ),
-                            child: CustomText(
-                              AppStrings.Orders.actionCancel.tr,
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w700,
-                                fontSize: 13,
-                              ),
-                            ),
+                            child: _busy
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: AppColors.error,
+                                    ),
+                                  )
+                                : CustomText(
+                                    AppStrings.Drivers.reject.tr,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 13,
+                                    ),
+                                  ),
                           ),
                         ),
                       ],
@@ -246,7 +241,9 @@ class _OrderAlertBanner extends StatelessWidget {
               ),
               IconButton(
                 tooltip: AppStrings.Orders.actionDismiss.tr,
-                onPressed: ProviderOrderAlertController.instance.dismiss,
+                onPressed: _busy
+                    ? null
+                    : ProviderOrderAlertController.instance.dismiss,
                 icon: Icon(ToukhIcons.close, color: scheme.onSurface),
               ),
             ],

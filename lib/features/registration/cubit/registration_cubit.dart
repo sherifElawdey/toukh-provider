@@ -11,6 +11,7 @@ import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/features/registration/models/registration_submit_data.dart';
 import 'package:toukh_provider/features/settings/domain/provider_profile_draft_mapper.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 ShopCategory? shopCategoryForSubmit(ServiceType kind, ShopCategory? draft) {
   switch (kind) {
@@ -49,6 +50,7 @@ class RegistrationDraft extends Equatable {
     this.workingHours = const {},
     this.deliveryConfig,
     this.avgPrepMinutes,
+    this.cuisineTags = const [],
     this.preServiceQuestions = const [],
   });
 
@@ -76,6 +78,7 @@ class RegistrationDraft extends Equatable {
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
   final int? avgPrepMinutes;
+  final List<String> cuisineTags;
   final List<PreServiceQuestion> preServiceQuestions;
 
   RegistrationDraft copyWith({
@@ -102,6 +105,7 @@ class RegistrationDraft extends Equatable {
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
     int? avgPrepMinutes,
+    List<String>? cuisineTags,
     List<PreServiceQuestion>? preServiceQuestions,
   }) {
     return RegistrationDraft(
@@ -129,6 +133,7 @@ class RegistrationDraft extends Equatable {
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
+      cuisineTags: cuisineTags ?? this.cuisineTags,
       preServiceQuestions: preServiceQuestions ?? this.preServiceQuestions,
     );
   }
@@ -158,6 +163,9 @@ class RegistrationDraft extends Equatable {
     if (phone.isEmpty) return null;
     if (password.length < 6) return null;
     if (!canProceedCategory) return null;
+    final isRestaurant = k == ServiceType.restaurant &&
+        shopCategoryForSubmit(k, shopCategory) == ShopCategory.restaurant;
+    if (isRestaurant && cuisineTags.isEmpty) return null;
 
     return RegistrationSubmitData(
       phone: phone,
@@ -179,6 +187,7 @@ class RegistrationDraft extends Equatable {
       workingHours: workingHours,
       deliveryConfig: deliveryConfig,
       avgPrepMinutes: avgPrepMinutes,
+      cuisineTags: isRestaurant ? cuisineTags : const [],
       preServiceQuestions: k == ServiceType.homeService
           ? PreServiceQuestion.normalize(preServiceQuestions)
           : const [],
@@ -206,6 +215,7 @@ class RegistrationDraft extends Equatable {
         workingHours,
         deliveryConfig,
         avgPrepMinutes,
+        cuisineTags,
         preServiceQuestions,
       ];
 }
@@ -336,6 +346,12 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
     emit(state.copyWith(
       deliveryConfig: deliveryConfig,
       avgPrepMinutes: avgPrepMinutes,
+    ));
+  }
+
+  void setCuisineTags(List<String> tags) {
+    emit(state.copyWith(
+      cuisineTags: RestaurantCuisineTaxonomy.sanitize(tags),
     ));
   }
 

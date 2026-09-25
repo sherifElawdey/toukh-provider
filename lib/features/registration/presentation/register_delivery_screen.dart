@@ -77,7 +77,11 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
       deliveryConfig: _buildConfig(),
       avgPrepMinutes: _isRestaurant(draft) ? prep : null,
     );
-    context.push(AppRoutes.registerReview);
+    context.push(
+      _isRestaurant(draft)
+          ? AppRoutes.registerCuisine
+          : AppRoutes.registerReview,
+    );
   }
 
   @override

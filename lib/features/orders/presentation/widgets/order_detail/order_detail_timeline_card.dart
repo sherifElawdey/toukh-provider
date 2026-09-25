@@ -1,22 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_section_title.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_surface_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
-
-class _TimelineStep {
-  const _TimelineStep({
-    required this.label,
-    required this.at,
-    required this.icon,
-  });
-
-  final String label;
-  final DateTime? at;
-  final IconData icon;
-}
 
 class OrderDetailTimelineCard extends StatelessWidget {
   const OrderDetailTimelineCard({super.key, required this.row});
@@ -26,63 +13,96 @@ class OrderDetailTimelineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final slice = row.slice;
-    final locale = Localizations.localeOf(context).toLanguageTag();
-    final fmt = DateFormat.yMMMd(locale).add_Hm();
-
     final searchStarted = row.effectiveDeliveryRequestedAt;
     final driverAssignedAt = row.master.driverAssignment?.assignedAt;
 
-    final steps = <_TimelineStep>[
-      _TimelineStep(
+    final candidates = <({
+      String id,
+      String label,
+      IconData icon,
+      DateTime? at,
+    })>[
+      (
+        id: 'created',
         label: AppStrings.Orders.detailCreated.tr,
+        icon: PhosphorIconsRegular.shoppingBag,
         at: slice.createdAt,
-        icon: ToukhIcons.orders,
       ),
-      _TimelineStep(
+      (
+        id: 'accepted',
         label: AppStrings.Orders.detailAccepted.tr,
+        icon: PhosphorIconsRegular.forkKnife,
         at: slice.acceptedAt,
-        icon: ToukhIcons.restaurant,
       ),
       if (!slice.isStoreDelivery && searchStarted != null)
-        _TimelineStep(
+        (
+          id: 'search',
           label: AppStrings.Orders.detailDriverSearchStarted.tr,
-          at: searchStarted,
           icon: PhosphorIconsRegular.magnifyingGlass,
+          at: searchStarted,
         ),
       if (!slice.isStoreDelivery &&
           (driverAssignedAt != null || row.hasAssignedDriverEffective))
-        _TimelineStep(
+        (
+          id: 'driver',
           label: AppStrings.Orders.detailDriverAssigned.tr,
+          icon: PhosphorIconsRegular.motorcycle,
           at: driverAssignedAt ?? slice.acceptedAt,
-          icon: ToukhIcons.delivery,
         ),
       if (!slice.isStoreDelivery)
-        _TimelineStep(
+        (
+          id: 'ready',
           label: AppStrings.Orders.statusReadyForPickup.tr,
-          at: slice.readyForPickupAt,
           icon: PhosphorIconsRegular.package,
+          at: slice.readyForPickupAt,
         ),
-      _TimelineStep(
+      (
+        id: 'out',
         label: AppStrings.Orders.statusOutForDelivery.tr,
+        icon: PhosphorIconsRegular.navigationArrow,
         at: slice.dispatchedAt,
-        icon: ToukhIcons.delivery,
       ),
-      _TimelineStep(
+      (
+        id: 'done',
         label: AppStrings.Orders.detailCompleted.tr,
+        icon: PhosphorIconsRegular.flagCheckered,
         at: slice.deliveredAt,
-        icon: ToukhIcons.success,
       ),
+      if (slice.cancelledAt != null)
+        (
+          id: 'cancelled',
+          label: AppStrings.Orders.detailCancelled.tr,
+          icon: PhosphorIconsRegular.prohibit,
+          at: slice.cancelledAt,
+        ),
     ];
 
-    if (slice.cancelledAt != null) {
-      steps.add(
-        _TimelineStep(
-          label: AppStrings.Orders.detailCancelled.tr,
-          at: slice.cancelledAt,
-          icon: PhosphorIconsRegular.prohibit,
-        ),
-      );
+    var activeIndex = -1;
+    for (var i = 0; i < candidates.length; i++) {
+      if (candidates[i].at != null) activeIndex = i;
     }
+    if (slice.cancelledAt == null &&
+        slice.deliveredAt == null &&
+        activeIndex < candidates.length - 1) {
+      activeIndex = (activeIndex + 1).clamp(0, candidates.length - 1);
+    }
+
+    final steps = <OrderTrackStepData>[
+      for (var i = 0; i < candidates.length; i++)
+        OrderTrackStepData(
+          id: candidates[i].id,
+          label: candidates[i].label,
+          icon: candidates[i].icon,
+          at: candidates[i].at,
+          isDone: candidates[i].at != null &&
+              (i < activeIndex ||
+                  slice.deliveredAt != null ||
+                  slice.cancelledAt != null),
+          isActive: i == activeIndex &&
+              slice.deliveredAt == null &&
+              slice.cancelledAt == null,
+        ),
+    ];
 
     return OrderDetailSurfaceCard(
       child: Column(
@@ -90,117 +110,10 @@ class OrderDetailTimelineCard extends StatelessWidget {
         children: [
           OrderDetailSectionTitle(
             label: AppStrings.Orders.detailSectionTimeline.tr,
-            icon: ToukhIcons.history,
+            icon: PhosphorIconsRegular.flagBanner,
           ),
           const SizedBox(height: AppSizes.spaceMd),
-          ...List.generate(steps.length, (i) {
-            final step = steps[i];
-            final done = step.at != null;
-            final isLast = i == steps.length - 1;
-            return _TimelineStepRow(
-              label: step.label,
-              timeLabel: done
-                  ? fmt.format(step.at!)
-                  : AppStrings.Orders.detailDatePending.tr,
-              icon: step.icon,
-              done: done,
-              showConnector: !isLast,
-              connectorDone: !isLast && done && steps[i + 1].at != null,
-            );
-          }),
-        ],
-      ),
-    );
-  }
-}
-
-class _TimelineStepRow extends StatelessWidget {
-  const _TimelineStepRow({
-    required this.label,
-    required this.timeLabel,
-    required this.icon,
-    required this.done,
-    required this.showConnector,
-    required this.connectorDone,
-  });
-
-  final String label;
-  final String timeLabel;
-  final IconData icon;
-  final bool done;
-  final bool showConnector;
-  final bool connectorDone;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final dotColor = done ? AppColors.success : scheme.onSurface.withValues(alpha: 0.25);
-    final lineColor = connectorDone
-        ? AppColors.success.withValues(alpha: 0.5)
-        : AppColors.borderSubtle;
-
-    return IntrinsicHeight(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 32,
-            child: Column(
-              children: [
-                Container(
-                  width: 28,
-                  height: 28,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: done
-                        ? AppColors.success.withValues(alpha: 0.15)
-                        : scheme.surface,
-                    border: Border.all(color: dotColor, width: 2),
-                  ),
-                  child: Icon(
-                    done ? ToukhIcons.success : icon,
-                    size: 14,
-                    color: dotColor,
-                  ),
-                ),
-                if (showConnector)
-                  Expanded(
-                    child: Container(
-                      width: 2,
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      color: lineColor,
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(width: AppSizes.spaceSm),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: showConnector ? AppSizes.spaceMd : 0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CustomText(
-                    label,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: done
-                              ? scheme.onSurface
-                              : scheme.onSurface.withValues(alpha: 0.55),
-                        ),
-                  ),
-                  const SizedBox(height: 2),
-                  CustomText(
-                    timeLabel,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: scheme.onSurface.withValues(alpha: 0.55),
-                        ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          OrderStepTrack(steps: steps),
         ],
       ),
     );

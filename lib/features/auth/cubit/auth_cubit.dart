@@ -188,6 +188,7 @@ class AuthCubit extends Cubit<AuthState> {
         workingHours: data.workingHours,
         deliveryConfig: data.deliveryConfig,
         avgPrepMinutes: data.avgPrepMinutes,
+        cuisineTags: data.cuisineTags,
         preServiceQuestions: data.kind == ServiceType.homeService
             ? data.preServiceQuestions
             : const [],
@@ -386,6 +387,20 @@ class AuthCubit extends Cubit<AuthState> {
         serviceAreaId: area.id,
       );
     }
+    await _profileRepository.upsertProfile(updated);
+    emit(Authenticated(user: current.user, profile: updated));
+  }
+
+  /// Updates restaurant cuisine tags from the Menu tab editor.
+  Future<void> updateCuisineTags(List<String> tags) async {
+    final current = state;
+    if (current is! Authenticated) {
+      throw StateError('Not signed in.');
+    }
+    final updated = current.profile.copyWith(
+      cuisineTags: RestaurantCuisineTaxonomy.sanitize(tags),
+      updatedAt: DateTime.now(),
+    );
     await _profileRepository.upsertProfile(updated);
     emit(Authenticated(user: current.user, profile: updated));
   }

@@ -23,6 +23,9 @@ class ProviderOrderAlertController extends ChangeNotifier {
 
     _active = notification;
     notifyListeners();
+    if (ToukhPushConfig.isOrderAlertType(notification.type)) {
+      ToukhNotifySound.playOrderAlert();
+    }
   }
 
   void dismiss() {

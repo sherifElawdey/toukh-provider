@@ -169,6 +169,10 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
         imageUrl: null,
         category: entity.category,
         sizes: entity.sizes,
+        isAvailable: entity.isAvailable,
+        offerType: entity.offerType,
+        discountPercent: entity.discountPercent,
+        offerPriceEgp: entity.offerPriceEgp,
       );
     }
 
@@ -187,6 +191,10 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
           imageUrl: up.url,
           category: entity.category,
           sizes: entity.sizes,
+          isAvailable: entity.isAvailable,
+          offerType: entity.offerType,
+          discountPercent: entity.discountPercent,
+          offerPriceEgp: entity.offerPriceEgp,
         );
       } catch (e) {
         return e.toString();

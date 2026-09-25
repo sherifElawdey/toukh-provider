@@ -3,31 +3,20 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
-import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_orders_repository.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
   FirestoreProviderOrdersRepository(
     this._firestore, {
-    CustomerOrderNotifyService? customerNotify,
     FirebaseFunctions? functions,
-  })  : _customerNotify = customerNotify,
-        _functions = functions;
+  }) : _functions = functions;
 
   final FirebaseFirestore _firestore;
-  final CustomerOrderNotifyService? _customerNotify;
   final FirebaseFunctions? _functions;
 
   static const deliveryRequestsCollection = ToukhFirestoreCollections.deliveryRequests;
   static final _epoch = DateTime.fromMillisecondsSinceEpoch(0);
-
-  Future<void> _notifyCustomer(String providerId, String masterOrderId) async {
-    await _customerNotify?.notifyCustomer(
-      providerId: providerId,
-      orderId: masterOrderId,
-    );
-  }
 
   DocumentReference<Map<String, dynamic>> _masterRef(String masterOrderId) =>
       _firestore.collection(ToukhOrderPaths.masterOrders).doc(masterOrderId);
@@ -334,7 +323,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       masterOrderId: orderId,
       patch: patch,
     );
-    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -356,7 +344,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         'cancelledByRole': 'provider',
       },
     );
-    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -523,8 +510,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       });
       resultRequestId = requestRef.id;
     });
-
-    await _notifyCustomer(providerId, orderId);
     return resultRequestId;
   }
 
@@ -541,7 +526,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         // CF sets readyForPickupAt on the slice map.
       },
     );
-    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -557,7 +541,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         // CF sets dispatchedAt on the slice map.
       },
     );
-    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -596,7 +579,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
         // CF sets dispatchedAt + handedToCourierAt on the slice map.
       },
     );
-    await _notifyCustomer(providerId, orderId);
   }
 
   @override
@@ -614,7 +596,6 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       },
       completionCode: completionCode,
     );
-    await _notifyCustomer(providerId, orderId);
   }
 
   @override

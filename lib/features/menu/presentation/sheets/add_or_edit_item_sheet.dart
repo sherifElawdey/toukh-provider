@@ -49,6 +49,10 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
   final _rows = <_SizeRow>[];
   File? _pickedImage;
   bool _removedImage = false;
+  bool _isAvailable = true;
+  MenuItemOfferType _offerType = MenuItemOfferType.none;
+  final _discountCtrl = TextEditingController();
+  final _offerPriceCtrl = TextEditingController();
 
   @override
   void initState() {
@@ -57,6 +61,14 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
     if (ex != null) {
       _titleCtrl.text = ex.name;
       _descCtrl.text = ex.description ?? '';
+      _isAvailable = ex.isAvailable;
+      _offerType = ex.offerType;
+      if (ex.discountPercent != null) {
+        _discountCtrl.text = _priceText(ex.discountPercent!);
+      }
+      if (ex.offerPriceEgp != null) {
+        _offerPriceCtrl.text = _priceText(ex.offerPriceEgp!);
+      }
       for (final s in ex.sizes) {
         _rows.add(
           _SizeRow(
@@ -92,6 +104,8 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
   void dispose() {
     _titleCtrl.dispose();
     _descCtrl.dispose();
+    _discountCtrl.dispose();
+    _offerPriceCtrl.dispose();
     for (final r in _rows) {
       r.labelController.dispose();
       r.priceController.dispose();
@@ -194,15 +208,49 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
     }
 
     final imageUrl = _effectiveImageUrl();
+    double? discountPercent;
+    double? offerPriceEgp;
+    if (_offerType == MenuItemOfferType.percent) {
+      discountPercent = double.tryParse(
+        _discountCtrl.text.trim().replaceAll(',', '.'),
+      );
+      if (discountPercent == null ||
+          discountPercent <= 0 ||
+          discountPercent > 100) {
+        AppSnack.show(
+          context,
+          message: AppStrings.Registration.menuOfferPercentLabel.tr,
+          state: AppSnackState.warning,
+          icon: PhosphorIconsRegular.percent,
+        );
+        return;
+      }
+    } else if (_offerType == MenuItemOfferType.fixed) {
+      offerPriceEgp = double.tryParse(
+        _offerPriceCtrl.text.trim().replaceAll(',', '.'),
+      );
+      if (offerPriceEgp == null || offerPriceEgp <= 0) {
+        AppSnack.show(
+          context,
+          message: AppStrings.Registration.menuOfferFixedLabel.tr,
+          state: AppSnackState.warning,
+          icon: PhosphorIconsRegular.currencyCircleDollar,
+        );
+        return;
+      }
+    }
+
     final entity = MenuItemEntity(
       id: widget.existing?.id ?? _uuid.v4(),
       name: _titleCtrl.text.trim(),
-      description: _descCtrl.text.trim().isEmpty
-          ? null
-          : _descCtrl.text.trim(),
+      description: _descCtrl.text.trim().isEmpty ? null : _descCtrl.text.trim(),
       imageUrl: imageUrl,
       category: _selectedCategory!,
       sizes: sizes,
+      isAvailable: _isAvailable,
+      offerType: _offerType,
+      discountPercent: discountPercent,
+      offerPriceEgp: offerPriceEgp,
     );
 
     final clearImage = _removedImage && _pickedImage == null;
@@ -252,9 +300,9 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
       children: [
         CustomText(
           AppStrings.Registration.menuItemPhoto,
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
         ),
         SizedBox(height: AppSizes.spaceSm),
         Row(
@@ -271,49 +319,45 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                   height: 96,
                   child: _pickedImage != null
                       ? ClipRRect(
-                          borderRadius:
-                              BorderRadius.circular(AppSizes.radiusMd),
-                          child: Image.file(
-                            _pickedImage!,
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusMd,
+                          ),
+                          child: Image.file(_pickedImage!, fit: BoxFit.cover),
+                        )
+                      : hasRemote
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusMd,
+                          ),
+                          child: HavitNetworkImage(
+                            imageUrl: remoteUrl,
                             fit: BoxFit.cover,
                           ),
                         )
-                      : hasRemote
-                          ? ClipRRect(
-                              borderRadius:
-                                  BorderRadius.circular(AppSizes.radiusMd),
-                              child: HavitNetworkImage(
-                                imageUrl: remoteUrl,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  ToukhIcons.image,
-                                  color: scheme.onSurface
-                                      .withValues(alpha: 0.45),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 6,
-                                  ),
-                                  child: Text(
-                                    AppStrings.Registration.menuTapAddItemPhoto
-                                        .tr,
-                                    textAlign: TextAlign.center,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .labelSmall
-                                        ?.copyWith(
-                                          color: scheme.onSurface
-                                              .withValues(alpha: 0.55),
-                                        ),
-                                  ),
-                                ),
-                              ],
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              ToukhIcons.image,
+                              color: scheme.onSurface.withValues(alpha: 0.45),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                              ),
+                              child: Text(
+                                AppStrings.Registration.menuTapAddItemPhoto.tr,
+                                textAlign: TextAlign.center,
+                                style: Theme.of(context).textTheme.labelSmall
+                                    ?.copyWith(
+                                      color: scheme.onSurface.withValues(
+                                        alpha: 0.55,
+                                      ),
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
             ),
@@ -384,9 +428,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                             widget.existing == null
                                 ? AppStrings.Registration.addItem
                                 : AppStrings.Registration.editItem,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
+                            style: Theme.of(context).textTheme.titleMedium
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                         ),
@@ -441,20 +483,90 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                 .toList(),
                             onChanged: (v) =>
                                 setState(() => _selectedCategory = v),
-                            validator: (v) =>
-                                v == null || v.isEmpty
-                                    ? AppStrings.Registration.selectCategory.tr
-                                    : null,
+                            validator: (v) => v == null || v.isEmpty
+                                ? AppStrings.Registration.selectCategory.tr
+                                : null,
                           ),
+                          SizedBox(height: AppSizes.spaceMd),
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: CustomText(
+                              _isAvailable
+                                  ? AppStrings.Registration.menuItemAvailable
+                                  : AppStrings.Registration.menuItemUnavailable,
+                            ),
+                            value: _isAvailable,
+                            onChanged: (v) => setState(() => _isAvailable = v),
+                          ),
+                          SizedBox(height: AppSizes.spaceSm),
+                          CustomText(
+                            AppStrings.Registration.menuItemOffer,
+                            style: Theme.of(context).textTheme.titleSmall
+                                ?.copyWith(fontWeight: FontWeight.w800),
+                          ),
+                          SizedBox(height: AppSizes.spaceSm),
+                          SegmentedButton<MenuItemOfferType>(
+                            segments: [
+                              ButtonSegment(
+                                value: MenuItemOfferType.none,
+                                label: Text(
+                                  AppStrings.Registration.menuOfferNone.tr,
+                                ),
+                              ),
+                              ButtonSegment(
+                                value: MenuItemOfferType.percent,
+                                label: Text(
+                                  AppStrings.Registration.menuOfferPercent.tr,
+                                ),
+                              ),
+                              ButtonSegment(
+                                value: MenuItemOfferType.fixed,
+                                label: Text(
+                                  AppStrings.Registration.menuOfferFixed.tr,
+                                ),
+                              ),
+                            ],
+                            selected: {_offerType},
+                            onSelectionChanged: (s) {
+                              setState(() => _offerType = s.first);
+                            },
+                          ),
+                          if (_offerType == MenuItemOfferType.percent) ...[
+                            SizedBox(height: AppSizes.spaceMd),
+                            AppTextField(
+                              controller: _discountCtrl,
+                              labelText:
+                                  AppStrings.Registration.menuOfferPercentLabel,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              inputFormatters: EnglishPriceInput.formatters,
+                              leadingIcon: PhosphorIconsRegular.percent,
+                            ),
+                          ],
+                          if (_offerType == MenuItemOfferType.fixed) ...[
+                            SizedBox(height: AppSizes.spaceMd),
+                            AppTextField(
+                              controller: _offerPriceCtrl,
+                              labelText:
+                                  AppStrings.Registration.menuOfferFixedLabel,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              inputFormatters: EnglishPriceInput.formatters,
+                              leadingIcon:
+                                  PhosphorIconsRegular.currencyCircleDollar,
+                            ),
+                          ],
                           SizedBox(height: AppSizes.spaceLg),
                           Row(
                             children: [
                               Expanded(
                                 child: CustomText(
                                   AppStrings.Registration.sizes,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleSmall
+                                  style: Theme.of(context).textTheme.titleSmall
                                       ?.copyWith(fontWeight: FontWeight.w800),
                                 ),
                               ),
@@ -501,9 +613,11 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                             top: 12,
                                           ),
                                           child: Icon(
-                                            PhosphorIconsRegular.dotsSixVertical,
-                                            color: scheme.onSurface
-                                                .withValues(alpha: 0.45),
+                                            PhosphorIconsRegular
+                                                .dotsSixVertical,
+                                            color: scheme.onSurface.withValues(
+                                              alpha: 0.45,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -514,8 +628,8 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                           controller: row.labelController,
                                           labelText:
                                               AppStrings.Registration.sizeLabel,
-                                          hintText: AppStrings
-                                              .Registration.regular,
+                                          hintText:
+                                              AppStrings.Registration.regular,
                                         ),
                                       ),
                                       SizedBox(width: 8),
@@ -524,26 +638,22 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                         child: AppTextField(
                                           controller: row.priceController,
                                           labelText: AppStrings
-                                              .Registration.pricePerSize,
+                                              .Registration
+                                              .pricePerSize,
                                           keyboardType:
                                               const TextInputType.numberWithOptions(
-                                            decimal: true,
-                                          ),
+                                                decimal: true,
+                                              ),
                                           suffixText: 'EGP',
-                                          inputFormatters: [
-                                            FilteringTextInputFormatter.allow(
-                                              RegExp(r'[\d.,]'),
-                                            ),
-                                          ],
+                                          inputFormatters:
+                                              EnglishPriceInput.formatters,
                                         ),
                                       ),
                                       IconButton(
                                         onPressed: _rows.length > 1
                                             ? () => _removeRow(index)
                                             : null,
-                                        icon: Icon(
-                                          ToukhIcons.delete,
-                                        ),
+                                        icon: Icon(ToukhIcons.delete),
                                       ),
                                     ],
                                   ),

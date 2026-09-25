@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_section_title.dart';
-import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_surface_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
+/// Order ticket: line items + fee breakdown (primary focus for the partner).
 class OrderDetailItemsCard extends StatelessWidget {
   const OrderDetailItemsCard({super.key, required this.row});
 
@@ -14,154 +13,69 @@ class OrderDetailItemsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final slice = row.slice;
+    final serviceFee = slice.serviceFeeEgp > 0
+        ? slice.serviceFeeEgp
+        : OrderFeeBreakdownData.prorateServiceFee(
+            masterServiceFeeEgp: row.master.serviceFeeEgp,
+            masterSubtotalEgp: row.master.subtotalEgp,
+            sliceOrderPriceEgp: slice.orderPriceEgp,
+          );
+    final delivery = slice.deliveryFeeEgp;
+    final total = slice.orderPriceEgp + delivery + serviceFee;
+    final items = slice.items.map(OrderItemCardData.fromSliceLine).toList();
+    final storeLabel = row.master.providerOrderRefs
+            .where((r) => r.providerId == slice.providerId)
+            .map((r) => r.providerName?.trim())
+            .whereType<String>()
+            .where((n) => n.isNotEmpty)
+            .firstOrNull ??
+        AppStrings.Orders.detailSectionItems.tr;
 
-    return OrderDetailSurfaceCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          OrderDetailSectionTitle(
-            label: AppStrings.Orders.detailSectionItems.tr,
-            icon: ToukhIcons.orders,
-          ),
-          const SizedBox(height: AppSizes.spaceMd),
-          if (slice.items.isEmpty)
-            CustomText(
-              '—',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.onSurface.withValues(alpha: 0.5),
-              ),
-            )
-          else
-            ...slice.items.asMap().entries.map((entry) {
-              final i = entry.key;
-              final item = entry.value;
-              return Column(
-                children: [
-                  if (i > 0)
-                    Divider(
-                      height: 1,
-                      color: AppColors.borderSubtle.withValues(alpha: 0.8),
-                    ),
-                  if (i > 0) const SizedBox(height: AppSizes.spaceSm),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppColors.appColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: CustomText(
-                          '${item.quantity}×',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: AppSizes.fontLabel,
-                            color: AppColors.appColor,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppSizes.spaceSm),
-                      Expanded(
-                        child: CustomText(
-                          item.name,
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                        ),
-                      ),
-                      CustomText(
-                        formatDashboardEgp(context, item.lineTotalEgp),
-                        style:
-                            Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
-                      ),
-                    ],
-                  ),
-                  if (i < slice.items.length - 1)
-                    const SizedBox(height: AppSizes.spaceSm),
-                ],
-              );
-            }),
-          const SizedBox(height: AppSizes.spaceMd),
-          Divider(color: AppColors.borderSubtle),
-          const SizedBox(height: AppSizes.spaceSm),
-          _SummaryRow(
-            label: AppStrings.Orders.detailSubtotal.tr,
-            value: formatDashboardEgp(context, slice.orderPriceEgp),
-          ),
-          const SizedBox(height: AppSizes.spaceXs),
-          _SummaryRow(
-            label: AppStrings.Orders.detailDeliveryFee.tr,
-            value: formatDashboardEgp(context, slice.deliveryFeeEgp),
-          ),
-          if (slice.fulfillmentMode == FulfillmentMode.courier) ...[
-            const SizedBox(height: AppSizes.spaceXs),
-            Text(
-              'Courier fee is calculated by Havit from optimized route distance '
-              '(frozen at order time).',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.65),
-                  ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OrderDetailSectionTitle(
+          label: AppStrings.Orders.detailSectionItems.tr,
+          icon: PhosphorIconsRegular.forkKnife,
+        ),
+        const SizedBox(height: AppSizes.spaceMd),
+        OrderVendorItemsBlock(
+          groups: [
+            OrderVendorGroupData(
+              providerId: slice.providerId,
+              providerName: storeLabel,
+              brandImageUrl: slice.providerBrandImageUrl,
+              items: items,
+              subtotalEgp: slice.orderPriceEgp,
             ),
           ],
+          fees: OrderFeeBreakdownData(
+            itemsSubtotalEgp: slice.orderPriceEgp,
+            serviceFeeEgp: serviceFee,
+            deliveryFeeEgp: delivery,
+            totalEgp: total,
+          ),
+          itemsSubtotalLabel: AppStrings.Orders.detailItemsTotal.tr,
+          deliveryLabel: AppStrings.Orders.detailDeliveryFee.tr,
+          serviceLabel: AppStrings.Orders.detailServiceFee.tr,
+          totalLabel: AppStrings.Orders.detailOrderTotal.tr,
+          onServiceInfoTap: () {
+            AppSnack.show(
+              context,
+              message: AppStrings.Orders.detailServiceFeeInfo.tr,
+              state: AppSnackState.alert,
+            );
+          },
+        ),
+        if (slice.fulfillmentMode == FulfillmentMode.courier) ...[
           const SizedBox(height: AppSizes.spaceSm),
-          _SummaryRow(
-            label: AppStrings.Orders.detailOrderTotal.tr,
-            value: formatDashboardEgp(context, slice.totalEgp),
-            emphasize: true,
-            valueColor: AppColors.appColor,
+          CustomText(
+            AppStrings.Orders.detailCourierFeeHint.tr,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.onSurface.withValues(alpha: 0.55),
+                ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({
-    required this.label,
-    required this.value,
-    this.emphasize = false,
-    this.valueColor,
-  });
-
-  final String label;
-  final String value;
-  final bool emphasize;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    final t = Theme.of(context).textTheme;
-    return Row(
-      children: [
-        Expanded(
-          child: CustomText(
-            label,
-            style: (emphasize ? t.titleSmall : t.bodyMedium)?.copyWith(
-              fontWeight: emphasize ? FontWeight.w800 : FontWeight.w500,
-              color: AppColors.onSurface.withValues(
-                alpha: emphasize ? 1 : 0.65,
-              ),
-            ),
-          ),
-        ),
-        CustomText(
-          value,
-          style: (emphasize ? t.titleMedium : t.bodyMedium)?.copyWith(
-            fontWeight: FontWeight.w800,
-            color: valueColor,
-          ),
-        ),
       ],
     );
   }

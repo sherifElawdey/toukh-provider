@@ -41,6 +41,7 @@ abstract final class ProviderProfileDraftMapper {
       workingHours: wh,
       deliveryConfig: profile.deliveryConfig,
       avgPrepMinutes: profile.avgPrepMinutes,
+      cuisineTags: profile.cuisineTags,
       preServiceQuestions: profile.preServiceQuestions,
     );
   }
@@ -80,6 +81,11 @@ abstract final class ProviderProfileDraftMapper {
         return base.copyWith(
           deliveryConfig: draft.deliveryConfig,
           avgPrepMinutes: draft.avgPrepMinutes,
+          updatedAt: now,
+        );
+      case ReviewField.cuisineTags:
+        return base.copyWith(
+          cuisineTags: draft.cuisineTags,
           updatedAt: now,
         );
       case ReviewField.preServiceQuestions:

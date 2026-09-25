@@ -72,7 +72,7 @@ class ClientDetailsCard extends StatelessWidget {
         children: [
           OrderDetailSectionTitle(
             label: AppStrings.Orders.detailClient.tr,
-            icon: ToukhIcons.profile,
+            icon: PhosphorIconsRegular.userCircle,
           ),
           const SizedBox(height: AppSizes.spaceMd),
           if (!data.canView)

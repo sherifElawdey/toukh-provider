@@ -10,6 +10,9 @@ class ProviderLinkedDriver extends Equatable {
     required this.status,
     required this.online,
     this.enabledByProvider = true,
+    this.activeOrderId,
+    this.activeDeliveryTaskId,
+    this.activeRideId,
   });
 
   final String uid;
@@ -20,6 +23,15 @@ class ProviderLinkedDriver extends Equatable {
   final String status;
   final bool online;
   final bool enabledByProvider;
+  final String? activeOrderId;
+  final String? activeDeliveryTaskId;
+  final String? activeRideId;
+
+  /// True when the driver already holds an active delivery or ride.
+  bool get isBusy =>
+      (activeOrderId != null && activeOrderId!.isNotEmpty) ||
+      (activeDeliveryTaskId != null && activeDeliveryTaskId!.isNotEmpty) ||
+      (activeRideId != null && activeRideId!.isNotEmpty);
 
   @override
   List<Object?> get props => [
@@ -31,5 +43,8 @@ class ProviderLinkedDriver extends Equatable {
         status,
         online,
         enabledByProvider,
+        activeOrderId,
+        activeDeliveryTaskId,
+        activeRideId,
       ];
 }

@@ -17,6 +17,106 @@ import 'package:toukh_ui/toukh_ui.dart';
 class MenuBuilderView extends StatelessWidget {
   const MenuBuilderView({super.key});
 
+  Future<void> _editCuisines(BuildContext context) async {
+    final auth = context.read<AuthCubit>();
+    final state = auth.state;
+    if (state is! Authenticated || !state.profile.isRestaurantShop) return;
+    var selected = List<String>.from(state.profile.cuisineTags);
+    final saved = await showModalBottomSheet<List<String>>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      backgroundColor: Theme.of(context).colorScheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppSizes.radiusXl),
+        ),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModal) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.viewInsetsOf(ctx).bottom,
+              ),
+              child: SizedBox(
+                height: MediaQuery.sizeOf(ctx).height * 0.85,
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 8, 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: CustomText(
+                              AppStrings.Registration.menuEditCuisines,
+                              style: Theme.of(ctx)
+                                  .textTheme
+                                  .titleMedium
+                                  ?.copyWith(fontWeight: FontWeight.w800),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            icon: Icon(ToukhIcons.close),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      child: ListView(
+                        padding: AppSizes.screenPadding,
+                        children: [
+                          CuisineTagsPicker(
+                            selectedIds: selected,
+                            onChanged: (ids) => setModal(() => selected = ids),
+                            labelForTag: (tag) => tag.l10nKey.tr,
+                            labelForGroup: (group) => group.l10nKey.tr,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: AppSizes.screenPadding,
+                      child: AppFilledButton(
+                        text: AppStrings.Common.save,
+                        onTap: () {
+                          if (selected.isEmpty) {
+                            AppSnack.show(
+                              ctx,
+                              message:
+                                  AppStrings.Registration.cuisineRequired.tr,
+                              state: AppSnackState.warning,
+                              icon: ToukhIcons.category,
+                            );
+                            return;
+                          }
+                          Navigator.pop(ctx, selected);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (saved == null || !context.mounted) return;
+    try {
+      await context.withAppLoading(() => auth.updateCuisineTags(saved));
+    } catch (e) {
+      if (!context.mounted) return;
+      AppSnack.show(
+        context,
+        message: e.toString(),
+        state: AppSnackState.error,
+        icon: ToukhIcons.error,
+      );
+    }
+  }
+
   Future<void> _showAddCategorySheet(BuildContext context) async {
     final cubit = context.read<MenuBuilderCubit>();
     final name = await showModalBottomSheet<String>(
@@ -253,11 +353,28 @@ class MenuBuilderView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authState = context.watch<AuthCubit>().state;
+    final isRestaurant =
+        authState is Authenticated && authState.profile.isRestaurantShop;
+
     return BlocBuilder<MenuBuilderCubit, MenuBuilderState>(
       builder: (context, state) {
         return Scaffold(
           body: Column(
             children: [
+              if (isRestaurant)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerEnd,
+                    child: AppTextButton(
+                      text: AppStrings.Registration.menuEditCuisines,
+                      icon: PhosphorIconsRegular.tag,
+                      size: AppButtonSize.small,
+                      onTap: () => _editCuisines(context),
+                    ),
+                  ),
+                ),
               Expanded(
                 child: ToukhRefresh(
                   onRefresh: () => _refresh(context),

@@ -18,6 +18,9 @@ abstract final class ProviderDriverMapper {
       status: _string(data['status']) ?? 'pending',
       online: data['online'] as bool? ?? false,
       enabledByProvider: data['enabledByProvider'] as bool? ?? true,
+      activeOrderId: _string(data['activeOrderId']),
+      activeDeliveryTaskId: _string(data['activeDeliveryTaskId']),
+      activeRideId: _string(data['activeRideId']),
     );
   }
 

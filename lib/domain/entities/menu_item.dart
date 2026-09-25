@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class MenuItemSize extends Equatable {
   const MenuItemSize({required this.label, required this.priceEgp});
@@ -6,15 +7,12 @@ class MenuItemSize extends Equatable {
   final String label;
   final double priceEgp;
 
-  Map<String, dynamic> toMap() => {
-        'label': label,
-        'priceEgp': priceEgp,
-      };
+  Map<String, dynamic> toMap() => {'label': label, 'priceEgp': priceEgp};
 
   static MenuItemSize fromMap(Map<String, dynamic> m) => MenuItemSize(
-        label: m['label'] as String? ?? '',
-        priceEgp: (m['priceEgp'] as num?)?.toDouble() ?? 0,
-      );
+    label: m['label'] as String? ?? '',
+    priceEgp: (m['priceEgp'] as num?)?.toDouble() ?? 0,
+  );
 
   @override
   List<Object?> get props => [label, priceEgp];
@@ -28,6 +26,10 @@ class MenuItemEntity extends Equatable {
     this.imageUrl,
     this.category,
     required this.sizes,
+    this.isAvailable = true,
+    this.offerType = MenuItemOfferType.none,
+    this.discountPercent,
+    this.offerPriceEgp,
   });
 
   final String id;
@@ -36,18 +38,40 @@ class MenuItemEntity extends Equatable {
   final String? imageUrl;
   final String? category;
   final List<MenuItemSize> sizes;
+  final bool isAvailable;
+  final MenuItemOfferType offerType;
+  final double? discountPercent;
+  final double? offerPriceEgp;
+
+  bool get hasOffer =>
+      offerType != MenuItemOfferType.none &&
+      (offerType == MenuItemOfferType.percent
+          ? (discountPercent ?? 0) > 0
+          : (offerPriceEgp ?? 0) > 0);
+
+  double effectivePriceFor(MenuItemSize size) => menuItemEffectivePrice(
+    sizePriceEgp: size.priceEgp,
+    offerType: offerType,
+    discountPercent: discountPercent,
+    offerPriceEgp: offerPriceEgp,
+  );
 
   Map<String, dynamic> toFirestore() => {
-        'id': id,
-        'name': name,
-        if (description != null) 'description': description,
-        if (imageUrl != null) 'imageUrl': imageUrl,
-        if (category != null) 'category': category,
-        'sizes': sizes.map((e) => e.toMap()).toList(),
-      };
+    'id': id,
+    'name': name,
+    if (description != null) 'description': description,
+    if (imageUrl != null) 'imageUrl': imageUrl,
+    if (category != null) 'category': category,
+    'sizes': sizes.map((e) => e.toMap()).toList(),
+    'isAvailable': isAvailable,
+    'offerType': offerType.wireValue,
+    if (discountPercent != null) 'discountPercent': discountPercent,
+    if (offerPriceEgp != null) 'offerPriceEgp': offerPriceEgp,
+  };
 
   static MenuItemEntity fromFirestore(Map<String, dynamic> m) {
     final sizesRaw = m['sizes'] as List<dynamic>? ?? [];
+    final available = m['isAvailable'] ?? m['available'] ?? m['active'];
     return MenuItemEntity(
       id: m['id'] as String? ?? '',
       name: m['name'] as String? ?? '',
@@ -57,9 +81,24 @@ class MenuItemEntity extends Equatable {
       sizes: sizesRaw
           .map((e) => MenuItemSize.fromMap(Map<String, dynamic>.from(e as Map)))
           .toList(),
+      isAvailable: available is bool ? available : true,
+      offerType: MenuItemOfferType.tryParse(m['offerType'] as String?),
+      discountPercent: (m['discountPercent'] as num?)?.toDouble(),
+      offerPriceEgp: (m['offerPriceEgp'] as num?)?.toDouble(),
     );
   }
 
   @override
-  List<Object?> get props => [id, name, description, imageUrl, category, sizes];
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    imageUrl,
+    category,
+    sizes,
+    isAvailable,
+    offerType,
+    discountPercent,
+    offerPriceEgp,
+  ];
 }

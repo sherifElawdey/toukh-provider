@@ -11,10 +11,14 @@ Future<void> handleProviderNotificationTap(ToukhNotification notification) async
   final auth = getIt<AuthCubit>().state;
   final uid = auth is Authenticated ? auth.user.uid : null;
   if (uid != null && notification.id.isNotEmpty) {
-    await getIt<NotificationInboxRepository>().markOpened(
-      uid: uid,
-      notificationId: notification.id,
-    );
+    try {
+      await getIt<NotificationInboxRepository>().markOpened(
+        uid: uid,
+        notificationId: notification.id,
+      );
+    } catch (_) {
+      // Never block deep-link navigation on inbox mark failures.
+    }
   }
 
   if (notification.link != null && notification.link!.isNotEmpty) {

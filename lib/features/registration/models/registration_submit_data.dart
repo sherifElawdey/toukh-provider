@@ -28,6 +28,7 @@ class RegistrationSubmitData {
     required this.workingHours,
     this.deliveryConfig,
     this.avgPrepMinutes,
+    this.cuisineTags = const [],
     this.preServiceQuestions = const [],
   });
 
@@ -54,5 +55,6 @@ class RegistrationSubmitData {
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
   final int? avgPrepMinutes;
+  final List<String> cuisineTags;
   final List<PreServiceQuestion> preServiceQuestions;
 }

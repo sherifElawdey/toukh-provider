@@ -81,9 +81,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     final galleryRepo = getIt<ProviderGalleryRepository>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: CustomText(AppStrings.Registration.portfolioTitle),
-      ),
+      // appBar: AppBar(
+      //   title: CustomText(AppStrings.Registration.portfolioTitle),
+      // ),
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

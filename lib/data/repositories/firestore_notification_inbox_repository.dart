@@ -31,10 +31,16 @@ class FirestoreNotificationInboxRepository implements NotificationInboxRepositor
     required String uid,
     required String notificationId,
   }) async {
-    await _inbox(uid).doc(notificationId).update({
-      'opened': true,
-      'openedAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      await _inbox(uid).doc(notificationId).update({
+        'opened': true,
+        'openedAt': FieldValue.serverTimestamp(),
+      });
+    } on FirebaseException catch (e) {
+      // Foreground alerts often use orderId as notificationId (no inbox row).
+      if (e.code == 'not-found') return;
+      rethrow;
+    }
   }
 
   @override

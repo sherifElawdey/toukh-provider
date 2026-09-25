@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_section_helpers.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_label.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/provider_order_status_ui.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -35,60 +34,61 @@ class OrderDetailStatusHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppSizes.spaceLg),
+      padding: const EdgeInsets.all(AppSizes.spaceBase),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            statusColor.withValues(alpha: 0.18),
-            Theme.of(context).colorScheme.surface,
+            statusColor.withValues(alpha: 0.16),
+            AppColors.surface,
           ],
         ),
-        borderRadius: BorderRadius.circular(AppSizes.radiusXl),
-        border: Border.all(color: AppColors.borderSubtle),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        border: Border.all(color: statusColor.withValues(alpha: 0.22)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CustomText(
-            '${AppStrings.Orders.detailOrderIdLabel.tr} · #${_shortRef()}',
-            style: t.labelLarge?.copyWith(
-              color: AppColors.onSurface.withValues(alpha: 0.55),
-              fontWeight: FontWeight.w600,
+          Container(
+            width: 52,
+            height: 52,
+            decoration: BoxDecoration(
+              color: statusColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
             ),
+            child: Icon(statusIcon, color: statusColor, size: 26),
           ),
-          if (placedAt != null) ...[
-            const SizedBox(height: AppSizes.spaceXs),
-            CustomText(
-              placedAt,
-              style: t.bodySmall?.copyWith(
-                color: AppColors.onSurface.withValues(alpha: 0.5),
-              ),
-            ),
-          ],
-          const SizedBox(height: AppSizes.spaceMd),
-          Row(
-            children: [
-              Icon(statusIcon, color: statusColor, size: 32),
-              const SizedBox(width: AppSizes.spaceMd),
-              Expanded(
-                child: CustomText(
+          const SizedBox(width: AppSizes.spaceMd),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText(
                   providerOrderStatusLabel(row),
-                  style: t.headlineSmall?.copyWith(
+                  style: t.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: statusColor,
                   ),
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSizes.spaceMd),
-          CustomText(
-            formatDashboardEgp(context, slice.totalEgp),
-            style: t.titleLarge?.copyWith(
-              fontWeight: FontWeight.w900,
-              color: AppColors.appColor,
+                const SizedBox(height: 2),
+                CustomText(
+                  '${AppStrings.Orders.detailOrderIdLabel.tr} · #${_shortRef()}',
+                  style: t.labelMedium?.copyWith(
+                    color: AppColors.onSurface.withValues(alpha: 0.55),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (placedAt != null) ...[
+                  const SizedBox(height: 2),
+                  CustomText(
+                    placedAt,
+                    style: t.labelSmall?.copyWith(
+                      color: AppColors.onSurface.withValues(alpha: 0.45),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

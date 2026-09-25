@@ -35,6 +35,7 @@ class ProviderProfile extends Equatable {
     this.deliveryConfig,
     /// Prep time for restaurants (minutes), independent of delivery toggle.
     this.avgPrepMinutes,
+    this.cuisineTags = const [],
     this.menuItems,
     this.portfolioImageUrls,
     this.preServiceQuestions = const [],
@@ -77,6 +78,9 @@ class ProviderProfile extends Equatable {
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
   final int? avgPrepMinutes;
+
+  /// Restaurant cuisine taxonomy wire ids (see [RestaurantCuisineTaxonomy]).
+  final List<String> cuisineTags;
 
   final List<MenuItemEntity>? menuItems;
   final List<String>? portfolioImageUrls;
@@ -129,6 +133,7 @@ class ProviderProfile extends Equatable {
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
     int? avgPrepMinutes,
+    List<String>? cuisineTags,
     List<MenuItemEntity>? menuItems,
     List<String>? portfolioImageUrls,
     List<PreServiceQuestion>? preServiceQuestions,
@@ -168,6 +173,7 @@ class ProviderProfile extends Equatable {
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
+      cuisineTags: cuisineTags ?? this.cuisineTags,
       menuItems: menuItems ?? this.menuItems,
       portfolioImageUrls: portfolioImageUrls ?? this.portfolioImageUrls,
       preServiceQuestions: preServiceQuestions ?? this.preServiceQuestions,
@@ -215,6 +221,7 @@ class ProviderProfile extends Equatable {
       'workingHours': wh,
       if (deliveryConfig != null) 'deliveryConfig': deliveryConfig!.toFirestore(),
       if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
+      'cuisineTags': cuisineTags,
       // Menu items live under providers/{id}/Menu/{category}/items/{itemId}.
       if (portfolioImageUrls != null) 'portfolioImageUrls': portfolioImageUrls,
       'preServiceQuestions':
@@ -262,6 +269,9 @@ class ProviderProfile extends Equatable {
       uid: uid ?? data['id'] as String? ?? data['providerId'] as String? ?? '',
 
       avgPrepMinutes: data['avgPrepMinutes'] as int?,
+      cuisineTags: RestaurantCuisineTaxonomy.sanitize(
+        (data['cuisineTags'] as List<dynamic>?)?.map((e) => '$e'),
+      ),
       phone: data['phone'] as String? ?? '',
       email: data['email'] as String? ?? '',
       password: data['password'] as String? ?? '',
@@ -353,6 +363,7 @@ class ProviderProfile extends Equatable {
         workingHours,
         deliveryConfig,
         avgPrepMinutes,
+        cuisineTags,
         menuItems,
         portfolioImageUrls,
         preServiceQuestions,

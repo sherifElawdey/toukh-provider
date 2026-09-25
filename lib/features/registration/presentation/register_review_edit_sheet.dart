@@ -5,6 +5,7 @@ import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_category_body.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_cuisine_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_delivery_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_hours_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_kind_body.dart';
@@ -59,6 +60,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
   final _locationKey = GlobalKey<ReviewEditLocationBodyState>();
   final _hoursKey = GlobalKey<ReviewEditHoursBodyState>();
   final _deliveryKey = GlobalKey<ReviewEditDeliveryBodyState>();
+  final _cuisineKey = GlobalKey<ReviewEditCuisineBodyState>();
   final _preServiceQuestionsKey =
       GlobalKey<ReviewEditPreServiceQuestionsBodyState>();
 
@@ -92,6 +94,8 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         return AppStrings.Registration.hoursTitle;
       case ReviewField.delivery:
         return AppStrings.Registration.deliveryTitle;
+      case ReviewField.cuisineTags:
+        return AppStrings.Registration.cuisineTitle;
       case ReviewField.preServiceQuestions:
         return AppStrings.Registration.preServiceQuestionsTitle;
     }
@@ -103,6 +107,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
       case ReviewField.location:
       case ReviewField.hours:
       case ReviewField.delivery:
+      case ReviewField.cuisineTags:
       case ReviewField.category:
       case ReviewField.preServiceQuestions:
         return true;
@@ -138,6 +143,8 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         return _hoursKey.currentState?.save(sheetContext) ?? false;
       case ReviewField.delivery:
         return _deliveryKey.currentState?.save(sheetContext) ?? false;
+      case ReviewField.cuisineTags:
+        return _cuisineKey.currentState?.apply() ?? false;
       case ReviewField.preServiceQuestions:
         return _preServiceQuestionsKey.currentState?.save() ?? false;
     }
@@ -181,6 +188,8 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         return ReviewEditHoursBody(key: _hoursKey);
       case ReviewField.delivery:
         return ReviewEditDeliveryBody(key: _deliveryKey);
+      case ReviewField.cuisineTags:
+        return ReviewEditCuisineBody(key: _cuisineKey);
       case ReviewField.preServiceQuestions:
         return ReviewEditPreServiceQuestionsBody(key: _preServiceQuestionsKey);
     }

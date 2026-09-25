@@ -499,7 +499,11 @@ class _Orders {
   String get detailPlacedAt => 'orders.detail_placed_at';
   String get detailSectionItems => 'orders.detail_section_items';
   String get detailSubtotal => 'orders.detail_subtotal';
+  String get detailItemsTotal => 'orders.detail_items_total';
   String get detailDeliveryFee => 'orders.detail_delivery_fee';
+  String get detailServiceFee => 'orders.detail_service_fee';
+  String get detailServiceFeeInfo => 'orders.detail_service_fee_info';
+  String get detailCourierFeeHint => 'orders.detail_courier_fee_hint';
   String get detailOrderTotal => 'orders.detail_order_total';
   String get detailPickupQrTitle => 'orders.detail_pickup_qr_title';
   String get detailPickupQrHint => 'orders.detail_pickup_qr_hint';
@@ -738,6 +742,19 @@ class _Registration {
   String get menuItemPhoto => 'registration.menu_item_photo';
   String get menuTapAddItemPhoto => 'registration.menu_tap_add_item_photo';
   String get menuRemoveItemPhoto => 'registration.menu_remove_item_photo';
+
+  String get cuisineTitle => 'registration.cuisine_title';
+  String get cuisineSubtitle => 'registration.cuisine_subtitle';
+  String get cuisineRequired => 'registration.cuisine_required';
+  String get menuEditCuisines => 'registration.menu_edit_cuisines';
+  String get menuItemAvailable => 'registration.menu_item_available';
+  String get menuItemUnavailable => 'registration.menu_item_unavailable';
+  String get menuItemOffer => 'registration.menu_item_offer';
+  String get menuOfferNone => 'registration.menu_offer_none';
+  String get menuOfferPercent => 'registration.menu_offer_percent';
+  String get menuOfferFixed => 'registration.menu_offer_fixed';
+  String get menuOfferPercentLabel => 'registration.menu_offer_percent_label';
+  String get menuOfferFixedLabel => 'registration.menu_offer_fixed_label';
 }
 
 class _Pending {

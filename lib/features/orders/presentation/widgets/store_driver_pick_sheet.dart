@@ -46,13 +46,16 @@ class _StoreDriverPickSheetState extends State<_StoreDriverPickSheet> {
 
   List<ProviderLinkedDriver> _filtered(List<ProviderLinkedDriver> all) {
     final q = _search.text.trim().toLowerCase();
-    final enabled = all.where((d) => d.enabledByProvider).toList()
+    // Only enabled + free drivers can take a store soft-assign.
+    final available = all
+        .where((d) => d.enabledByProvider && !d.isBusy)
+        .toList()
       ..sort((a, b) {
         if (a.online != b.online) return a.online ? -1 : 1;
         return a.displayName.toLowerCase().compareTo(b.displayName.toLowerCase());
       });
-    if (q.isEmpty) return enabled;
-    return enabled.where((d) {
+    if (q.isEmpty) return available;
+    return available.where((d) {
       return d.displayName.toLowerCase().contains(q) ||
           d.phone.toLowerCase().contains(q);
     }).toList();

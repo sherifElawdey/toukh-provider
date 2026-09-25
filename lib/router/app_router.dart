@@ -43,6 +43,7 @@ import 'package:toukh_provider/features/registration/cubit/registration_cubit.da
 import 'package:toukh_provider/features/registration/presentation/register_category_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_credentials_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_delivery_screen.dart';
+import 'package:toukh_provider/features/registration/presentation/register_cuisine_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_hours_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_kind_screen.dart';
 import 'package:toukh_provider/features/registration/presentation/register_map_screen.dart';
@@ -456,6 +457,10 @@ GoRouter createAppRouter({
           GoRoute(
             path: AppRoutes.registerDelivery,
             builder: (context, state) => const RegisterDeliveryScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.registerCuisine,
+            builder: (context, state) => const RegisterCuisineScreen(),
           ),
           GoRoute(
             path: AppRoutes.registerReview,

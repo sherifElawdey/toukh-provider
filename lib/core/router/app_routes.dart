@@ -14,6 +14,7 @@ abstract final class AppRoutes {
   static const registerMap = '/register/map';
   static const registerHours = '/register/hours';
   static const registerDelivery = '/register/delivery';
+  static const registerCuisine = '/register/cuisine';
   static const registerReview = '/register/review';
 
   static const requestSubmitted = '/request-submitted';
@@ -70,6 +71,7 @@ abstract final class AppRoutes {
     registerMap,
     registerHours,
     registerDelivery,
+    registerCuisine,
     registerReview,
   };
 

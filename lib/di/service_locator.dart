@@ -16,7 +16,6 @@ import 'package:toukh_provider/data/repositories/firestore_home_service_categori
 import 'package:toukh_provider/data/repositories/firestore_provider_dashboard_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_order_history_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_orders_repository.dart';
-import 'package:toukh_provider/data/services/customer_order_notify_service.dart';
 import 'package:toukh_provider/data/repositories/firestore_notification_inbox_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_profile_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_drivers_repository.dart';
@@ -75,12 +74,6 @@ Future<void> configureDependencies() async {
       region: toukhFunctionsRegion,
     ),
   );
-  getIt.registerLazySingleton<CustomerOrderNotifyService>(
-    () => CustomerOrderNotifyService(
-      getIt<FirebaseFunctions>(),
-      getIt<FirebaseFirestore>(),
-    ),
-  );
   getIt.registerLazySingleton<FirebaseMessaging>(
     () => FirebaseMessaging.instance,
   );
@@ -117,7 +110,6 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<FirestoreProviderOrdersRepository>(
     () => FirestoreProviderOrdersRepository(
       getIt<FirebaseFirestore>(),
-      customerNotify: getIt<CustomerOrderNotifyService>(),
       functions: getIt<FirebaseFunctions>(),
     ),
   );
