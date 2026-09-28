@@ -10,6 +10,9 @@ import 'package:toukh_provider/features/home/cubit/home_dashboard_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_sections.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_permissions_banner.dart';
+import 'package:toukh_provider/di/service_locator.dart';
+import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
+import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -137,10 +140,13 @@ class HomeDashboardOverviewTab extends StatelessWidget {
                     },
                   ),
                   const SizedBox(height: AppSizes.spaceXl),
-                  HomeDashboardWalletCard(
-                    balanceEgp: state.walletBalanceEgp,
-                    pendingEgp: state.walletPendingEgp,
+                  HomeDashboardRevenueCard(
+                    revenueEgp: state.todayMetrics.revenueEgp,
+                    weekRevenueEgp: state.weekMetrics.revenueEgp,
+                    weekRate: state.weekMetrics.completionRatio,
                   ),
+                  const SizedBox(height: AppSizes.spaceMd),
+                  _HomeWalletCard(fallbackBalance: state.walletBalanceEgp),
                   const SizedBox(height: AppSizes.spaceXl),
                   HomeDashboardStatsRow(metrics: state.todayMetrics),
                   const SizedBox(height: AppSizes.spaceXl),
@@ -162,6 +168,44 @@ class HomeDashboardOverviewTab extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HomeWalletCard extends StatelessWidget {
+  const _HomeWalletCard({required this.fallbackBalance});
+
+  final double fallbackBalance;
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthCubit>().state;
+    if (auth is! Authenticated) {
+      return HomeDashboardWalletCard(balanceEgp: fallbackBalance);
+    }
+    final uid = auth.user.uid;
+    final serviceWire = auth.profile.serviceType.wireValue;
+    return StreamBuilder(
+      stream: getIt<ProviderWalletRepository>().watchWalletSummary(uid),
+      builder: (context, walletSnap) {
+        final summary = walletSnap.data;
+        final balance = summary?.balanceEgp ?? fallbackBalance;
+        return StreamBuilder<WalletBalanceLimits>(
+          stream: getIt<AppSettingsRepository>().watchWalletBalanceLimits(),
+          builder: (context, limitsSnap) {
+            final limits = limitsSnap.data ?? WalletBalanceLimits.defaults;
+            final limit = limits.forProviderService(serviceWire);
+            return HomeDashboardWalletCard(
+              balanceEgp: balance,
+              pendingEgp: summary?.pendingEgp,
+              needsRecharge: limits.needsRecharge(
+                balanceEgp: balance,
+                limitEgp: limit,
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

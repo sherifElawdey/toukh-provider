@@ -175,6 +175,42 @@ class FirestoreProviderHomeServiceRequestsRepository
   }
 
   @override
+  Future<void> proposeDateChange({
+    required String requestId,
+    required String providerId,
+    required DateTime proposedAt,
+    required String reason,
+  }) async {
+    final trimmed = reason.trim();
+    if (trimmed.isEmpty) {
+      throw StateError('Reason required');
+    }
+    final ref = _fs.collection(_kCollection).doc(requestId);
+    final snap = await ref.get();
+    if (!snap.exists) {
+      throw StateError('Request not found');
+    }
+    final data = snap.data()!;
+    if ((data['providerId'] as String?) != providerId) {
+      throw StateError('Not authorized');
+    }
+    final current = (data['status'] as String? ?? '').trim().toLowerCase();
+    if (current != 'accepted' && current != 'in_progress') {
+      throw StateError('Request cannot be updated');
+    }
+    if (data['scheduledAt'] == null) {
+      throw StateError('Visit is not scheduled');
+    }
+    await ref.update({
+      'dateChangeRequest': {
+        'proposedAt': Timestamp.fromDate(proposedAt.toUtc()),
+        'reason': trimmed,
+        'status': 'pending',
+      },
+    });
+  }
+
+  @override
   Future<void> markOnMyWay({
     required String requestId,
     required String providerId,

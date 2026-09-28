@@ -60,6 +60,8 @@ class SettingsProfileHeaderCard extends StatelessWidget {
         return 'registration.kind_grocery'.tr;
       case ServiceType.pharmacy:
         return 'registration.kind_pharmacy'.tr;
+      case ServiceType.otherShops:
+        return 'registration.kind_other_shops'.tr;
       case ServiceType.homeBrands:
         return 'registration.kind_home_brands'.tr;
     }

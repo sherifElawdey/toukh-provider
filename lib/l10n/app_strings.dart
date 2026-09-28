@@ -242,6 +242,7 @@ class _Home {
   String get dashboardViewOrders => 'home.dashboard_view_orders';
   String get dashboardWalletTitle => 'home.dashboard_wallet_title';
   String get dashboardWalletPending => 'home.dashboard_wallet_pending';
+  String get dashboardWalletRecharge => 'home.dashboard_wallet_recharge';
   String get dashboardStatOrders => 'home.dashboard_stat_orders';
   String get dashboardStatCompletion => 'home.dashboard_stat_completion';
   String get dashboardStatCompletionSub => 'home.dashboard_stat_completion_sub';
@@ -347,6 +348,11 @@ class _HomeServiceRequests {
   String get fieldClientPrice => 'home_service_requests.field_client_price';
   String get fieldQuotedPrice => 'home_service_requests.field_quoted_price';
   String get fieldVisitDate => 'home_service_requests.field_visit_date';
+  String get dateChangeTitle => 'home_service_requests.date_change_title';
+  String get dateChangeReason => 'home_service_requests.date_change_reason';
+  String get dateChangeSend => 'home_service_requests.date_change_send';
+  String get dateChangeSent => 'home_service_requests.date_change_sent';
+  String get dateChangePickDate => 'home_service_requests.date_change_pick_date';
   String get onMyWay => 'home_service_requests.on_my_way';
   String get finishVisit => 'home_service_requests.finish_visit';
   String get onMyWayBlocked => 'home_service_requests.on_my_way_blocked';
@@ -681,6 +687,7 @@ class _Registration {
   String get kindSupermarket => 'registration.kind_supermarket';
   String get kindGrocery => 'registration.kind_grocery';
   String get kindPharmacy => 'registration.kind_pharmacy';
+  String get kindOtherShops => 'registration.kind_other_shops';
   String get kindHomeBrands => 'registration.kind_home_brands';
   String get brandLogoTitle => 'registration.brand_logo_title';
   String get brandImageRequired => 'registration.brand_image_required';

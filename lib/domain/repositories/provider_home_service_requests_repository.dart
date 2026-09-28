@@ -17,6 +17,13 @@ abstract class ProviderHomeServiceRequestsRepository {
     required String providerId,
   });
 
+  Future<void> proposeDateChange({
+    required String requestId,
+    required String providerId,
+    required DateTime proposedAt,
+    required String reason,
+  });
+
   Future<void> markOnMyWay({
     required String requestId,
     required String providerId,

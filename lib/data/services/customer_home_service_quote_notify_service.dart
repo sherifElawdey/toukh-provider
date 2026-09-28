@@ -8,6 +8,30 @@ class CustomerHomeServiceQuoteNotifyService {
 
   final FirebaseFirestore _firestore;
 
+  Future<void> notifyDateChange({required String requestId}) async {
+    if (requestId.trim().isEmpty) return;
+    try {
+      final writer = ToukhInboxNotificationWriter(_firestore);
+      final snap = await _firestore
+          .collection(ToukhHomeServiceNotificationTemplates
+              .homeServiceRequestsCollection())
+          .doc(requestId)
+          .get();
+      if (!snap.exists) return;
+      final providerId = snap.data()?['providerId']?.toString();
+      String? providerImageUrl;
+      if (providerId != null && providerId.isNotEmpty) {
+        providerImageUrl = await writer.fetchProviderImageUrl(providerId);
+      }
+      await writer.deliverCustomerHomeServiceDateChange(
+        requestId: requestId,
+        providerImageUrl: providerImageUrl,
+      );
+    } catch (e, st) {
+      debugPrint('CustomerHomeServiceQuoteNotifyService date change failed: $e\n$st');
+    }
+  }
+
   Future<void> notifyQuote({required String requestId}) async {
     if (requestId.trim().isEmpty) return;
     try {

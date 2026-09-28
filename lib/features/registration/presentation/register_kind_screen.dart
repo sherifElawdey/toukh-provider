@@ -15,6 +15,7 @@ const List<ServiceType> _kRegistrationKindOrder = [
   ServiceType.supermarket,
   ServiceType.grocery,
   ServiceType.pharmacy,
+  ServiceType.otherShops,
   ServiceType.homeService,
   ServiceType.homeBrands,
 ];
@@ -33,6 +34,8 @@ String _kindLabelKey(ServiceType t) {
       return AppStrings.Registration.kindHomeBrands;
     case ServiceType.pharmacy:
       return AppStrings.Registration.kindPharmacy;
+    case ServiceType.otherShops:
+      return AppStrings.Registration.kindOtherShops;
   }
 }
 
@@ -50,6 +53,8 @@ IconData _kindIcon(ServiceType t) {
       return PhosphorIconsRegular.seal;
     case ServiceType.pharmacy:
       return PhosphorIconsRegular.firstAid;
+    case ServiceType.otherShops:
+      return PhosphorIconsRegular.storefront;
   }
 }
 

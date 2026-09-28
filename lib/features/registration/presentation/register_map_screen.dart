@@ -202,22 +202,10 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
 
   Future<void> _onCameraIdle() async {
     if (!_mapReady || !mounted) return;
-    final controller = _map;
-    if (controller == null) return;
-    try {
-      final region = await controller.getVisibleRegion();
-      final center = LatLng(
-        (region.northeast.latitude + region.southwest.latitude) / 2,
-        (region.northeast.longitude + region.southwest.longitude) / 2,
-      );
-      if (!mounted) return;
-      setState(() => _target = center);
-      final last = _lastHandledCenter;
-      if (last != null && !_movedEnough(last, center)) return;
-      await _handleCenterChanged(center);
-    } catch (_) {
-      if (mounted) await _handleCenterChanged(_target);
-    }
+    final center = _target;
+    final last = _lastHandledCenter;
+    if (last != null && !_movedEnough(last, center)) return;
+    await _handleCenterChanged(center);
   }
 
   Future<void> _zoomBy(double delta) async {
@@ -322,14 +310,10 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
             ),
           ),
           IgnorePointer(
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.only(bottom: 40),
-                child: Icon(
-                  ToukhIcons.location,
-                  size: 48,
-                  color: ToukhMapColors.pickup,
-                ),
+            child: Padding(
+              padding: EdgeInsets.only(bottom: bottomInset),
+              child: const Center(
+                child: _RegisterMapPin(),
               ),
             ),
           ),
@@ -464,6 +448,25 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Pin tip sits on the map's padded camera target.
+class _RegisterMapPin extends StatelessWidget {
+  const _RegisterMapPin();
+
+  static const _size = 48.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: const Offset(0, -_size / 2),
+      child: Icon(
+        ToukhIcons.location,
+        size: _size,
+        color: ToukhMapColors.pickup,
       ),
     );
   }

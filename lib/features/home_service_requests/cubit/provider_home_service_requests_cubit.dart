@@ -96,6 +96,21 @@ class ProviderHomeServiceRequestsCubit
     );
   }
 
+  Future<void> proposeDateChange({
+    required String requestId,
+    required DateTime proposedAt,
+    required String reason,
+  }) async {
+    final uid = state.providerUid;
+    if (uid == null) return;
+    await _requestsRepository.proposeDateChange(
+      requestId: requestId,
+      providerId: uid,
+      proposedAt: proposedAt,
+      reason: reason,
+    );
+  }
+
   Future<void> decline(String requestId) async {
     final uid = state.providerUid;
     if (uid == null) return;

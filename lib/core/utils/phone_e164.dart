@@ -9,10 +9,21 @@ String toFirebaseE164(String raw) {
 
 const String kEgyptCallingCodeDigits = '20';
 
-String egyptMobileE164(String tenNationalDigits) {
-  final d = tenNationalDigits.replaceAll(RegExp(r'\D'), '');
+String egyptMobileE164(String nationalDigits) {
+  var d = nationalDigits.replaceAll(RegExp(r'\D'), '');
+  if (d.length == 11 && d.startsWith('0')) {
+    d = d.substring(1);
+  }
   if (d.length != 10) return '';
   return '+$kEgyptCallingCodeDigits$d';
+}
+
+/// `1012345678` → `01012345678` for phone fields.
+String egyptLocalElevenFromTen(String tenNationalDigits) {
+  final d = tenNationalDigits.replaceAll(RegExp(r'\D'), '');
+  if (d.length == 11 && d.startsWith('0')) return d;
+  if (d.length == 10) return '0$d';
+  return '';
 }
 
 /// E.164 for a provider profile phone field (national digits or stored E.164).

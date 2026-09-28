@@ -25,6 +25,7 @@ ShopCategory? shopCategoryForSubmit(ServiceType kind, ShopCategory? draft) {
       return ShopCategory.fruitVeg;
     case ServiceType.homeService:
     case ServiceType.homeBrands:
+    case ServiceType.otherShops:
       return null;
   }
 }
@@ -270,6 +271,7 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
           clearServiceCategoryId: true,
         ));
       case ServiceType.homeBrands:
+      case ServiceType.otherShops:
         emit(state.copyWith(
           kind: kind,
           clearShopCategory: true,

@@ -260,22 +260,10 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
 
   Future<void> _onCameraIdle() async {
     if (!_mapReady || !mounted) return;
-    final controller = _map;
-    if (controller == null) return;
-    try {
-      final region = await controller.getVisibleRegion();
-      final center = LatLng(
-        (region.northeast.latitude + region.southwest.latitude) / 2,
-        (region.northeast.longitude + region.southwest.longitude) / 2,
-      );
-      if (!mounted) return;
-      setState(() => _target = center);
-      final last = _lastHandledCenter;
-      if (last != null && !_movedEnough(last, center)) return;
-      await _handleCenterChanged(center, reverseGeocode: true);
-    } catch (_) {
-      if (mounted) await _handleCenterChanged(_target, reverseGeocode: true);
-    }
+    final center = _target;
+    final last = _lastHandledCenter;
+    if (last != null && !_movedEnough(last, center)) return;
+    await _handleCenterChanged(center, reverseGeocode: true);
   }
 
   Future<void> _zoomBy(double delta) async {
@@ -377,16 +365,9 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
           },
           onCameraIdle: _onCameraIdle,
         ),
-        IgnorePointer(
+        const IgnorePointer(
           child: Center(
-            child: Padding(
-              padding: const EdgeInsets.only(bottom: 32),
-              child: Icon(
-                ToukhIcons.location,
-                size: 48,
-                color: ToukhMapColors.pickup,
-              ),
-            ),
+            child: _ReviewMapPin(),
           ),
         ),
         if (!_hasLocationPermission)
@@ -478,6 +459,25 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Pin tip sits on the camera target.
+class _ReviewMapPin extends StatelessWidget {
+  const _ReviewMapPin();
+
+  static const _size = 48.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: const Offset(0, -_size / 2),
+      child: Icon(
+        ToukhIcons.location,
+        size: _size,
+        color: ToukhMapColors.pickup,
+      ),
     );
   }
 }

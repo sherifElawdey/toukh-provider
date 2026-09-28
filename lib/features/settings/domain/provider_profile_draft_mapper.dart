@@ -22,7 +22,9 @@ abstract final class ProviderProfileDraftMapper {
       }
     }
 
-    final phoneNational = egyptTenDigitsFromStored(profile.phone) ?? '';
+    final ten = egyptTenDigitsFromStored(profile.phone);
+    final phoneNational =
+        ten == null ? '' : egyptLocalElevenFromTen(ten);
 
     return RegistrationDraft(
       kind: profile.serviceType,

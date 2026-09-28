@@ -13,6 +13,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_contact_customer.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_date_change_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_trip_route_map_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
@@ -456,6 +457,29 @@ class _HomeServiceRequestDetailBodyState
                           .add_jm()
                           .format(request.scheduledAt!.toLocal()),
                     ),
+                  if (request.scheduledAt != null &&
+                      (request.statusNormalized == 'accepted' ||
+                          request.statusNormalized == 'in_progress')) ...[
+                    const SizedBox(height: AppSizes.spaceMd),
+                    AppOutlinedButton(
+                      text: AppStrings.HomeServiceRequests.dateChangeTitle.tr,
+                      onTap: () async {
+                        final sent = await showHomeServiceDateChangeSheet(
+                          context,
+                          request: request,
+                        );
+                        if (sent == true && context.mounted) {
+                          AppSnack.show(
+                            context,
+                            message: AppStrings
+                                .HomeServiceRequests.dateChangeSent.tr,
+                            state: AppSnackState.success,
+                            icon: ToukhIcons.success,
+                          );
+                        }
+                      },
+                    ),
+                  ],
                   if (created != null)
                     _DetailRow(
                       label: AppStrings.HomeServiceRequests.fieldRequested.tr,

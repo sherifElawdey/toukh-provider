@@ -39,6 +39,8 @@ String _kindKey(ServiceType k) {
       return AppStrings.Registration.kindHomeBrands;
     case ServiceType.pharmacy:
       return AppStrings.Registration.kindPharmacy;
+    case ServiceType.otherShops:
+      return AppStrings.Registration.kindOtherShops;
   }
 }
 

@@ -147,9 +147,15 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     final weekOrders = _ordersInRollingWindow(orders, 7);
     final monthOrders = _ordersInRollingWindow(orders, 30);
 
-    final weekMetrics = _metrics(weekOrders);
+    final weekMetrics = _metrics(
+      weekOrders,
+      revenueIncludesOpen: true,
+    );
     final monthMetrics = _metrics(monthOrders);
-    final todayMetrics = _metrics(_ordersToday(orders));
+    final todayMetrics = _metrics(
+      _ordersToday(orders),
+      revenueIncludesOpen: true,
+    );
 
     final periodDays = chartPeriod == DashboardChartPeriod.week ? 7 : 30;
     final chartBuckets = _buildBucketsFilled(
@@ -216,15 +222,20 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     }).toList();
   }
 
-  static DashboardPeriodMetrics _metrics(List<ProviderOrderDashboard> window) {
+  static DashboardPeriodMetrics _metrics(
+    List<ProviderOrderDashboard> window, {
+    bool revenueIncludesOpen = false,
+  }) {
     final placed = window.length;
     final denomPool =
         window.where((o) => !o.isCancelled && o.reachedAcceptedStage).toList();
     final denom = denomPool.length;
     final completed = denomPool.where((o) => o.isDelivered).length;
     final ratio = denom == 0 ? 0.0 : completed / denom;
-    final revenue =
-        window.where((o) => o.isDelivered).fold<double>(0, (a, o) => a + o.revenueEgp);
+    final revenue = window.where((o) {
+      if (o.isCancelled || o.revenueEgp <= 0) return false;
+      return revenueIncludesOpen || o.isDelivered;
+    }).fold<double>(0, (a, o) => a + o.revenueEgp);
     final canceled = window.where((o) => o.isCancelled).length;
     return DashboardPeriodMetrics(
       ordersPlaced: placed,

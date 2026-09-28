@@ -7,11 +7,24 @@ class FirestoreAppSettingsRepository implements AppSettingsRepository {
 
   final FirebaseFirestore _fs;
 
+  DocumentReference<Map<String, dynamic>> get _global => _fs
+      .collection(ToukhFirestoreCollections.appSettings)
+      .doc(ToukhFirestoreDocs.appSettingsGlobal);
+
   @override
   Stream<OrderAcceptanceSla> watchAcceptanceSla() {
-    return _fs.collection(ToukhFirestoreCollections.appSettings).doc(ToukhFirestoreDocs.appSettingsGlobal).snapshots().map(
+    return _global.snapshots().map(
           (snap) => OrderAcceptanceSla.fromFirestore(
             snap.data()?['orderAcceptanceSla'] as Map<String, dynamic>?,
+          ),
+        );
+  }
+
+  @override
+  Stream<WalletBalanceLimits> watchWalletBalanceLimits() {
+    return _global.snapshots().map(
+          (snap) => WalletBalanceLimits.fromMap(
+            snap.data()?[WalletBalanceLimits.firestoreKey] as Map<String, dynamic>?,
           ),
         );
   }
