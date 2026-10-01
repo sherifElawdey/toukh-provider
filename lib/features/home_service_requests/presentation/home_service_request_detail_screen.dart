@@ -496,20 +496,31 @@ class _HomeServiceRequestDetailBodyState
               ),
               const SizedBox(height: AppSizes.spaceMd),
               ClientDetailsCard(
-                data: ClientDetailsViewData(
-                  name: request.customerName?.trim().isNotEmpty == true
-                      ? request.customerName!.trim()
-                      : AppStrings.HomeServiceRequests.customerFallback.tr,
-                  phone: request.customerPhone,
-                  photoUrl: request.customerPhotoUrl,
-                  addressTitle: request.startAddressTitle ?? request.addressTitle,
-                  addressFormatted: request.startAddressFormatted ??
-                      request.addressFormatted,
-                  lat: request.startLat ?? request.addressLat ?? 0,
-                  lng: request.startLng ?? request.addressLng ?? 0,
-                ),
+                data: request.isTerminal
+                    ? ClientDetailsViewData(
+                        name: request.customerName?.trim().isNotEmpty == true
+                            ? request.customerName!.trim()
+                            : AppStrings
+                                .HomeServiceRequests.customerFallback.tr,
+                        nameOnly: true,
+                      )
+                    : ClientDetailsViewData(
+                        name: request.customerName?.trim().isNotEmpty == true
+                            ? request.customerName!.trim()
+                            : AppStrings
+                                .HomeServiceRequests.customerFallback.tr,
+                        phone: request.customerPhone,
+                        photoUrl: request.customerPhotoUrl,
+                        addressTitle:
+                            request.startAddressTitle ?? request.addressTitle,
+                        addressFormatted: request.startAddressFormatted ??
+                            request.addressFormatted,
+                        lat: request.startLat ?? request.addressLat ?? 0,
+                        lng: request.startLng ?? request.addressLng ?? 0,
+                      ),
               ),
-              if (request.destinationAddressFormatted != null &&
+              if (!request.isTerminal &&
+                  request.destinationAddressFormatted != null &&
                   request.destinationAddressFormatted!.trim().isNotEmpty) ...[
                 const SizedBox(height: AppSizes.spaceMd),
                 _InfoCard(

@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/block_info.dart';
+import 'package:toukh_provider/domain/entities/brand_info.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_provider/domain/entities/pre_service_question.dart';
@@ -43,6 +44,7 @@ class ProviderProfile extends Equatable {
     this.blockInfo,
     this.b2FileIds = const {},
     this.registrationExtrasComplete = false,
+    this.brandInfo = const BrandInfo(),
     this.fcmTokens = const [],
     this.walletBalanceEgp,
     this.walletPendingEgp,
@@ -95,6 +97,8 @@ class ProviderProfile extends Equatable {
   /// True after post-OTP menu or portfolio was saved.
   final bool registrationExtrasComplete;
 
+  final BrandInfo brandInfo;
+
   final List<String> fcmTokens;
 
   /// Settled balance shown on provider dashboard (EGP).
@@ -141,6 +145,7 @@ class ProviderProfile extends Equatable {
     BlockInfo? blockInfo,
     Map<String, String>? b2FileIds,
     bool? registrationExtrasComplete,
+    BrandInfo? brandInfo,
     List<String>? fcmTokens,
     double? walletBalanceEgp,
     double? walletPendingEgp,
@@ -182,6 +187,7 @@ class ProviderProfile extends Equatable {
       b2FileIds: b2FileIds ?? this.b2FileIds,
       registrationExtrasComplete:
           registrationExtrasComplete ?? this.registrationExtrasComplete,
+      brandInfo: brandInfo ?? this.brandInfo,
       fcmTokens: fcmTokens ?? this.fcmTokens,
       walletBalanceEgp: walletBalanceEgp ?? this.walletBalanceEgp,
       walletPendingEgp: walletPendingEgp ?? this.walletPendingEgp,
@@ -230,6 +236,7 @@ class ProviderProfile extends Equatable {
       if (blockInfo != null) 'blockInfo': blockInfo!.toFirestore(),
       if (b2FileIds.isNotEmpty) 'b2FileIds': b2FileIds,
       'registrationExtrasComplete': registrationExtrasComplete,
+      'brandInfo': brandInfo.toFirestore(),
       if (fcmTokens.isNotEmpty) 'fcmTokens': fcmTokens,
       if (walletBalanceEgp != null) 'walletBalanceEgp': walletBalanceEgp,
       if (walletPendingEgp != null) 'walletPendingEgp': walletPendingEgp,
@@ -314,6 +321,7 @@ class ProviderProfile extends Equatable {
       ),
       registrationExtrasComplete:
           data['registrationExtrasComplete'] as bool? ?? false,
+      brandInfo: BrandInfo.fromFirestore(data['brandInfo']),
       fcmTokens:
           (data['fcmTokens'] as List<dynamic>?)?.map((e) => e as String).toList() ??
               const [],
@@ -369,6 +377,7 @@ class ProviderProfile extends Equatable {
         preServiceQuestions,
         status,
         registrationExtrasComplete,
+        brandInfo,
         walletBalanceEgp,
         walletPendingEgp,
         blackPointsTotal,

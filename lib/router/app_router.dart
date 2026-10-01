@@ -52,6 +52,7 @@ import 'package:toukh_provider/features/registration/presentation/register_profi
 import 'package:toukh_provider/features/registration/presentation/register_review_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/about_app_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/account_details_screen.dart';
+import 'package:toukh_provider/features/settings/presentation/brand_info_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/legal_document_screen.dart';
 import 'package:toukh_provider/features/settings/presentation/settings_screen.dart';
 import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
@@ -269,6 +270,11 @@ GoRouter createAppRouter({
             child: const AccountDetailsScreen(),
           );
         },
+      ),
+      GoRoute(
+        path: AppRoutes.brandInfo,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) => const BrandInfoScreen(),
       ),
       GoRoute(
         path: AppRoutes.aboutApp,

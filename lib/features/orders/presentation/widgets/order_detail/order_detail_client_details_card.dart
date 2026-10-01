@@ -18,6 +18,7 @@ class ClientDetailsViewData {
     this.lng = 0,
     this.canView = true,
     this.hiddenMessage,
+    this.nameOnly = false,
   });
 
   final String name;
@@ -29,6 +30,7 @@ class ClientDetailsViewData {
   final double lng;
   final bool canView;
   final String? hiddenMessage;
+  final bool nameOnly;
 
   bool get hasCoords => lat != 0 || lng != 0;
 
@@ -99,7 +101,13 @@ class OrderDetailClientDetailsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClientDetailsCard(data: ClientDetailsViewData.fromOrderRow(row));
+    final finished = row.slice.isDelivered || row.slice.isTerminal;
+    final data = ClientDetailsViewData.fromOrderRow(row);
+    return ClientDetailsCard(
+      data: finished
+          ? ClientDetailsViewData(name: data.name, nameOnly: true)
+          : data,
+    );
   }
 }
 
@@ -143,6 +151,15 @@ class _ClientDetailsBody extends StatelessWidget {
     final phone = data.phone?.trim();
     final addressTitle = data.addressTitle?.trim();
     final addressLine = data.addressFormatted?.trim();
+
+    if (data.nameOnly) {
+      return CustomText(
+        data.name,
+        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

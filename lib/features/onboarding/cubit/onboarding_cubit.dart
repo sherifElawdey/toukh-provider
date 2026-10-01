@@ -106,8 +106,11 @@ class OnboardingCubit extends Cubit<OnboardingState> {
 
       emit(const OnboardingState(gate: OnboardingGate.ready));
       if (status.notification) {
+        final uid = auth.profile.uid.trim().isNotEmpty
+            ? auth.profile.uid
+            : auth.user.uid;
         await ToukhPushMessaging.instance.syncToken(
-          auth.user.uid,
+          uid,
           existingFcmTokens: auth.profile.fcmTokens,
         );
       }

@@ -11,6 +11,7 @@ import 'package:toukh_provider/core/util/city_key.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_required_sheet.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/features/registration/presentation/map_pin_lat_lng.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -32,6 +33,8 @@ class ReviewEditLocationBody extends StatefulWidget {
 }
 
 class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
+  final _mapKey = GlobalKey();
+  final _pinKey = GlobalKey();
   GoogleMapController? _map;
   late LatLng _target;
   String _address = '';
@@ -72,7 +75,8 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     final serviceOn = await Geolocator.isLocationServiceEnabled();
     final perm = await Geolocator.checkPermission();
     if (!mounted) return;
-    final granted = serviceOn &&
+    final granted =
+        serviceOn &&
         (perm == LocationPermission.always ||
             perm == LocationPermission.whileInUse);
     setState(() {
@@ -184,9 +188,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
         return;
       }
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          timeLimit: _locationTimeout,
-        ),
+        locationSettings: const LocationSettings(timeLimit: _locationTimeout),
       );
       if (!mounted) return;
       final next = LatLng(pos.latitude, pos.longitude);
@@ -258,9 +260,26 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     await _checkServiceArea(center);
   }
 
+  Future<LatLng> _resolvePin() async {
+    try {
+      final point = await latLngAtPinTip(
+        controller: _map,
+        pinKey: _pinKey,
+        mapKey: _mapKey,
+        devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+      );
+      if (point != null) {
+        _target = point;
+        return point;
+      }
+    } catch (_) {}
+    return _target;
+  }
+
   Future<void> _onCameraIdle() async {
     if (!_mapReady || !mounted) return;
-    final center = _target;
+    final center = await _resolvePin();
+    if (!mounted) return;
     final last = _lastHandledCenter;
     if (last != null && !_movedEnough(last, center)) return;
     await _handleCenterChanged(center, reverseGeocode: true);
@@ -275,12 +294,14 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   }
 
   Future<bool> save(RegistrationCubit cubit) async {
+    final point = await _resolvePin();
+    if (!mounted) return false;
     final formattedAddress = _address.isEmpty
-        ? '${_target.latitude},${_target.longitude}'
+        ? '${point.latitude},${point.longitude}'
         : _address;
     final area = await getIt<GeofenceService>().findContaining(
-      lat: _target.latitude,
-      lng: _target.longitude,
+      lat: point.latitude,
+      lng: point.longitude,
     );
     if (!mounted) return false;
     if (area == null) {
@@ -294,13 +315,13 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
       return false;
     }
     final city = await resolveUserCityKey(
-      lat: _target.latitude,
-      lng: _target.longitude,
+      lat: point.latitude,
+      lng: point.longitude,
       formattedAddress: formattedAddress,
     );
     cubit.setLocation(
-      lat: _target.latitude,
-      lng: _target.longitude,
+      lat: point.latitude,
+      lng: point.longitude,
       formattedAddress: formattedAddress,
       city: city,
       serviceAreaId: area.id,
@@ -317,10 +338,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
       color: scheme.surface.withValues(alpha: 0.92),
       shape: const CircleBorder(),
       elevation: 2,
-      child: IconButton(
-        onPressed: onPressed,
-        icon: icon,
-      ),
+      child: IconButton(onPressed: onPressed, icon: icon),
     );
   }
 
@@ -331,11 +349,9 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
       fit: StackFit.expand,
       children: [
         ToukhGoogleMap(
+          key: _mapKey,
           debugScreenName: 'review_edit_location',
-          initialCameraPosition: CameraPosition(
-            target: _target,
-            zoom: _zoom,
-          ),
+          initialCameraPosition: CameraPosition(target: _target, zoom: _zoom),
           myLocationEnabled: _hasLocationPermission,
           myLocationButtonEnabled: false,
           compassEnabled: true,
@@ -350,9 +366,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
           },
           onMapCreated: (c) async {
             _map = c;
-            await c.animateCamera(
-              CameraUpdate.newLatLngZoom(_target, _zoom),
-            );
+            await c.animateCamera(CameraUpdate.newLatLngZoom(_target, _zoom));
             if (!mounted) return;
             // Allow the settle idle to pass without rewriting the saved address.
             await Future<void>.delayed(const Duration(milliseconds: 350));
@@ -365,10 +379,8 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
           },
           onCameraIdle: _onCameraIdle,
         ),
-        const IgnorePointer(
-          child: Center(
-            child: _ReviewMapPin(),
-          ),
+        IgnorePointer(
+          child: Center(child: _ReviewMapPin(pinKey: _pinKey)),
         ),
         if (!_hasLocationPermission)
           Positioned(
@@ -465,8 +477,9 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
 
 /// Pin tip sits on the camera target.
 class _ReviewMapPin extends StatelessWidget {
-  const _ReviewMapPin();
+  const _ReviewMapPin({required this.pinKey});
 
+  final GlobalKey pinKey;
   static const _size = 48.0;
 
   @override
@@ -474,6 +487,7 @@ class _ReviewMapPin extends StatelessWidget {
     return Transform.translate(
       offset: const Offset(0, -_size / 2),
       child: Icon(
+        key: pinKey,
         ToukhIcons.location,
         size: _size,
         color: ToukhMapColors.pickup,

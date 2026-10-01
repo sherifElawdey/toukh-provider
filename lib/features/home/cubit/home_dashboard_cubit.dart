@@ -5,20 +5,22 @@ import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
 import 'package:toukh_provider/domain/entities/dashboard_firestore_payload.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
+import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
+import 'package:toukh_provider/features/home/cubit/provider_business_day.dart';
 
 class HomeDashboardCubit extends Cubit<HomeDashboardState> {
   HomeDashboardCubit({
     required AuthCubit authCubit,
     required ProviderDashboardRepository dashboardRepository,
     required ProviderMenuRepository menuRepository,
-  })  : _authCubit = authCubit,
-        _dashboardRepository = dashboardRepository,
-        _menuRepository = menuRepository,
-        super(HomeDashboardState.initial());
+  }) : _authCubit = authCubit,
+       _dashboardRepository = dashboardRepository,
+       _menuRepository = menuRepository,
+       super(HomeDashboardState.initial());
 
   final AuthCubit _authCubit;
   final ProviderDashboardRepository _dashboardRepository;
@@ -47,7 +49,12 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _menuSub = null;
       _lastPayload = null;
       _hasMenuItems = false;
-      emit(HomeDashboardState.initial().copyWith(loading: false, authenticated: false));
+      emit(
+        HomeDashboardState.initial().copyWith(
+          loading: false,
+          authenticated: false,
+        ),
+      );
       return;
     }
 
@@ -76,22 +83,24 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
         ),
       );
 
-      _dashSub = _dashboardRepository.watchFirestorePayload(uid).listen(
-        (payload) {
-          _lastPayload = payload;
-          final current = _authCubit.state;
-          if (current is! Authenticated) return;
-          emit(_compute(current.profile, payload, state.chartPeriod));
-        },
-        onError: (Object e, StackTrace st) {
-          emit(
-            state.copyWith(
-              loading: false,
-              errorMessage: appFirebaseError(e),
-            ),
+      _dashSub = _dashboardRepository
+          .watchFirestorePayload(uid)
+          .listen(
+            (payload) {
+              _lastPayload = payload;
+              final current = _authCubit.state;
+              if (current is! Authenticated) return;
+              emit(_compute(current.profile, payload, state.chartPeriod));
+            },
+            onError: (Object e, StackTrace st) {
+              emit(
+                state.copyWith(
+                  loading: false,
+                  errorMessage: appFirebaseError(e),
+                ),
+              );
+            },
           );
-        },
-      );
     } else {
       if (_lastPayload != null) {
         emit(_compute(auth.profile, _lastPayload!, state.chartPeriod));
@@ -139,21 +148,17 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
 
     final inProgress = orders.where((o) => o.isInProgress).toList()
       ..sort(
-        (a, b) => (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)).compareTo(
-              a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0),
-            ),
+        (a, b) => (b.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+            .compareTo(a.createdAt ?? DateTime.fromMillisecondsSinceEpoch(0)),
       );
 
     final weekOrders = _ordersInRollingWindow(orders, 7);
     final monthOrders = _ordersInRollingWindow(orders, 30);
 
-    final weekMetrics = _metrics(
-      weekOrders,
-      revenueIncludesOpen: true,
-    );
+    final weekMetrics = _metrics(weekOrders, revenueIncludesOpen: true);
     final monthMetrics = _metrics(monthOrders);
     final todayMetrics = _metrics(
-      _ordersToday(orders),
+      _ordersToday(orders, profile.workingHours),
       revenueIncludesOpen: true,
     );
 
@@ -211,14 +216,16 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
 
   static List<ProviderOrderDashboard> _ordersToday(
     List<ProviderOrderDashboard> all,
+    Map<Weekday, DaySchedule> workingHours,
   ) {
-    final now = DateTime.now();
-    final todayStart = DateTime(now.year, now.month, now.day);
-    final tomorrowStart = todayStart.add(const Duration(days: 1));
+    final window = providerBusinessDayWindow(
+      now: DateTime.now(),
+      workingHours: workingHours,
+    );
     return all.where((o) {
       final c = o.createdAt;
       if (c == null) return false;
-      return !c.isBefore(todayStart) && c.isBefore(tomorrowStart);
+      return !c.isBefore(window.start) && c.isBefore(window.end);
     }).toList();
   }
 
@@ -227,15 +234,18 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     bool revenueIncludesOpen = false,
   }) {
     final placed = window.length;
-    final denomPool =
-        window.where((o) => !o.isCancelled && o.reachedAcceptedStage).toList();
+    final denomPool = window
+        .where((o) => !o.isCancelled && o.reachedAcceptedStage)
+        .toList();
     final denom = denomPool.length;
     final completed = denomPool.where((o) => o.isDelivered).length;
     final ratio = denom == 0 ? 0.0 : completed / denom;
-    final revenue = window.where((o) {
-      if (o.isCancelled || o.revenueEgp <= 0) return false;
-      return revenueIncludesOpen || o.isDelivered;
-    }).fold<double>(0, (a, o) => a + o.revenueEgp);
+    final revenue = window
+        .where((o) {
+          if (o.isCancelled || o.revenueEgp <= 0) return false;
+          return revenueIncludesOpen || o.isDelivered;
+        })
+        .fold<double>(0, (a, o) => a + o.revenueEgp);
     final canceled = window.where((o) => o.isCancelled).length;
     return DashboardPeriodMetrics(
       ordersPlaced: placed,
@@ -273,10 +283,14 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     return out;
   }
 
-  static List<BestsellerRow> _bestsellers(List<ProviderOrderDashboard> all, int days) {
-    final window = _ordersInRollingWindow(all, days)
-        .where((o) => o.isDelivered && !o.isHomeService)
-        .toList();
+  static List<BestsellerRow> _bestsellers(
+    List<ProviderOrderDashboard> all,
+    int days,
+  ) {
+    final window = _ordersInRollingWindow(
+      all,
+      days,
+    ).where((o) => o.isDelivered && !o.isHomeService).toList();
     final agg = <String, ({String label, int qty, double rev})>{};
 
     for (final o in window) {
@@ -294,17 +308,18 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       }
     }
 
-    final rows = agg.entries
-        .map(
-          (e) => BestsellerRow(
-            label: e.value.label,
-            itemId: e.key.startsWith('whole-') ? null : e.key,
-            unitsSold: e.value.qty,
-            revenueEgp: e.value.rev,
-          ),
-        )
-        .toList()
-      ..sort((a, b) => b.unitsSold.compareTo(a.unitsSold));
+    final rows =
+        agg.entries
+            .map(
+              (e) => BestsellerRow(
+                label: e.value.label,
+                itemId: e.key.startsWith('whole-') ? null : e.key,
+                unitsSold: e.value.qty,
+                revenueEgp: e.value.rev,
+              ),
+            )
+            .toList()
+          ..sort((a, b) => b.unitsSold.compareTo(a.unitsSold));
 
     return rows.take(10).toList();
   }

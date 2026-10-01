@@ -10,6 +10,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_required_sheet.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/features/registration/presentation/map_pin_lat_lng.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -23,6 +24,8 @@ class RegisterMapScreen extends StatefulWidget {
 }
 
 class _RegisterMapScreenState extends State<RegisterMapScreen> {
+  final _mapKey = GlobalKey();
+  final _pinKey = GlobalKey();
   GoogleMapController? _map;
   LatLng _target = const LatLng(30.0444, 31.2357);
   String _address = '';
@@ -76,12 +79,12 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
         await openAppSettings();
         final perm = await Geolocator.checkPermission();
         if (!mounted) return;
-        final granted = perm == LocationPermission.always ||
+        final granted =
+            perm == LocationPermission.always ||
             perm == LocationPermission.whileInUse;
         setState(() {
           _hasLocationPermission = granted;
-          _locationPermanentlyDenied =
-              perm == LocationPermission.deniedForever;
+          _locationPermanentlyDenied = perm == LocationPermission.deniedForever;
         });
         if (granted) await _initLocation(request: false);
       } else {
@@ -130,9 +133,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       }
       setState(() => _locating = true);
       final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          timeLimit: _locationTimeout,
-        ),
+        locationSettings: const LocationSettings(timeLimit: _locationTimeout),
       );
       if (!mounted) return;
       setState(() {
@@ -200,9 +201,26 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     await _checkServiceArea(center);
   }
 
+  Future<LatLng> _resolvePin() async {
+    try {
+      final point = await latLngAtPinTip(
+        controller: _map,
+        pinKey: _pinKey,
+        mapKey: _mapKey,
+        devicePixelRatio: MediaQuery.devicePixelRatioOf(context),
+      );
+      if (point != null) {
+        _target = point;
+        return point;
+      }
+    } catch (_) {}
+    return _target;
+  }
+
   Future<void> _onCameraIdle() async {
     if (!_mapReady || !mounted) return;
-    final center = _target;
+    final center = await _resolvePin();
+    if (!mounted) return;
     final last = _lastHandledCenter;
     if (last != null && !_movedEnough(last, center)) return;
     await _handleCenterChanged(center);
@@ -230,12 +248,14 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   }
 
   Future<void> _continue() async {
+    final point = await _resolvePin();
+    if (!mounted) return;
     final formattedAddress = _address.isEmpty
-        ? '${_target.latitude},${_target.longitude}'
+        ? '${point.latitude},${point.longitude}'
         : _address;
     final area = await getIt<GeofenceService>().findContaining(
-      lat: _target.latitude,
-      lng: _target.longitude,
+      lat: point.latitude,
+      lng: point.longitude,
     );
     if (!mounted) return;
     if (area == null) {
@@ -249,18 +269,18 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       return;
     }
     final city = await resolveUserCityKey(
-      lat: _target.latitude,
-      lng: _target.longitude,
+      lat: point.latitude,
+      lng: point.longitude,
       formattedAddress: formattedAddress,
     );
     if (!mounted) return;
     context.read<RegistrationCubit>().setLocation(
-          lat: _target.latitude,
-          lng: _target.longitude,
-          formattedAddress: formattedAddress,
-          city: city,
-          serviceAreaId: area.id,
-        );
+      lat: point.latitude,
+      lng: point.longitude,
+      formattedAddress: formattedAddress,
+      city: city,
+      serviceAreaId: area.id,
+    );
     context.push(AppRoutes.registerHours);
   }
 
@@ -281,6 +301,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
         children: [
           Positioned.fill(
             child: ToukhGoogleMap(
+              key: _mapKey,
               debugScreenName: 'register_map',
               initialCameraPosition: CameraPosition(
                 target: _target,
@@ -312,9 +333,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           IgnorePointer(
             child: Padding(
               padding: EdgeInsets.only(bottom: bottomInset),
-              child: const Center(
-                child: _RegisterMapPin(),
-              ),
+              child: Center(child: _RegisterMapPin(pinKey: _pinKey)),
             ),
           ),
           if (!_hasLocationPermission)
@@ -455,8 +474,9 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
 
 /// Pin tip sits on the map's padded camera target.
 class _RegisterMapPin extends StatelessWidget {
-  const _RegisterMapPin();
+  const _RegisterMapPin({required this.pinKey});
 
+  final GlobalKey pinKey;
   static const _size = 48.0;
 
   @override
@@ -464,6 +484,7 @@ class _RegisterMapPin extends StatelessWidget {
     return Transform.translate(
       offset: const Offset(0, -_size / 2),
       child: Icon(
+        key: pinKey,
         ToukhIcons.location,
         size: _size,
         color: ToukhMapColors.pickup,

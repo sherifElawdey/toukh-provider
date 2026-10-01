@@ -6,9 +6,10 @@ import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class OrderDetailNotesCard extends StatelessWidget {
-  const OrderDetailNotesCard({super.key, required this.note});
+  const OrderDetailNotesCard({super.key, required this.note, this.label});
 
   final String note;
+  final String? label;
 
   @override
   Widget build(BuildContext context) {
@@ -17,7 +18,7 @@ class OrderDetailNotesCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           OrderDetailSectionTitle(
-            label: AppStrings.Orders.detailSectionNotes.tr,
+            label: label ?? AppStrings.Orders.detailSectionNotes.tr,
             icon: PhosphorIconsRegular.note,
           ),
           const SizedBox(height: AppSizes.spaceMd),

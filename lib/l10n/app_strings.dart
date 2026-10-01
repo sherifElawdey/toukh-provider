@@ -487,6 +487,8 @@ class _Orders {
   String get detailSectionAddresses => 'orders.detail_section_addresses';
   String get detailClient => 'orders.detail_client';
   String get detailSectionNotes => 'orders.detail_section_notes';
+  String get detailStoreNote => 'orders.detail_store_note';
+  String get detailSharedNote => 'orders.detail_shared_note';
   String get detailCreated => 'orders.detail_created';
   String get detailAccepted => 'orders.detail_accepted';
   String get detailPickedUp => 'orders.detail_picked_up';
@@ -631,6 +633,22 @@ class _Settings {
   String get pickFromGallery => 'settings.pick_from_gallery';
   String get profilePhotoUpdated => 'settings.profile_photo_updated';
   String get profilePhotoFailed => 'settings.profile_photo_failed';
+  String get brandInfo => 'settings.brand_info';
+  String get brandInfoBannerTitle => 'settings.brand_info_banner_title';
+  String get brandInfoBannerBody => 'settings.brand_info_banner_body';
+  String get brandInfoNotAdded => 'settings.brand_info_not_added';
+  String get brandPhone => 'settings.brand_phone';
+  String get brandPhoneWhatsapp => 'settings.brand_phone_whatsapp';
+  String get brandAddPhone => 'settings.brand_add_phone';
+  String get brandRemovePhone => 'settings.brand_remove_phone';
+  String get brandWebsite => 'settings.brand_website';
+  String get brandFacebook => 'settings.brand_facebook';
+  String get brandInstagram => 'settings.brand_instagram';
+  String get brandTiktok => 'settings.brand_tiktok';
+  String get brandEmail => 'settings.brand_email';
+  String get brandEmailInvalid => 'settings.brand_email_invalid';
+  String get brandSaved => 'settings.brand_saved';
+  String get brandSaveFailed => 'settings.brand_save_failed';
 }
 
 class _Welcome {

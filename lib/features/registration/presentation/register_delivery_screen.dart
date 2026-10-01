@@ -23,7 +23,7 @@ class RegisterDeliveryScreen extends StatefulWidget {
 
 class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
   bool _offers = false;
-  bool _free = true;
+  bool _free = false;
   DeliveryPricingMode _mode = DeliveryPricingMode.fixed;
   final _price = TextEditingController();
   final _prep = TextEditingController();

@@ -51,11 +51,15 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
     final badgeCubit = getIt<ProviderNotificationBadgeCubit>();
     void onAuth(AuthState state) {
       if (state is Authenticated) {
-        unawaited(_syncFcmForProvider(state.user.uid));
+        final uid = state.profile.uid.trim().isNotEmpty
+            ? state.profile.uid
+            : state.user.uid;
+        unawaited(_syncFcmForProvider(uid));
         if (state.profile.status == ProviderAccountStatus.active) {
           notificationsCubit.bindUser(state.user.uid);
-          final unread =
-              notificationsCubit.state.items.where((n) => !n.opened).length;
+          final unread = notificationsCubit.state.items
+              .where((n) => !n.opened)
+              .length;
           badgeCubit.setNotificationCount(unread);
         } else {
           notificationsCubit.bindUser(null);
@@ -96,19 +100,20 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
   Future<void> _onAppResumed() async {
     final auth = getIt<AuthCubit>().state;
     if (auth is! Authenticated) return;
+    final uid = auth.profile.uid.trim().isNotEmpty
+        ? auth.profile.uid
+        : auth.user.uid;
     final status = await getIt<OnboardingCubit>().readPermissionStatus();
     if (!status.notification) return;
-    await _syncFcmForProvider(auth.user.uid);
+    await _syncFcmForProvider(uid);
   }
 
   Future<void> _syncFcmForProvider(String uid) async {
     final auth = getIt<AuthCubit>().state;
-    final tokens =
-        auth is Authenticated ? auth.profile.fcmTokens : const <String>[];
-    await ToukhPushMessaging.instance.syncToken(
-      uid,
-      existingFcmTokens: tokens,
-    );
+    final tokens = auth is Authenticated
+        ? auth.profile.fcmTokens
+        : const <String>[];
+    await ToukhPushMessaging.instance.syncToken(uid, existingFcmTokens: tokens);
   }
 
   @override
@@ -144,8 +149,8 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
               debugShowCheckedModeBanner: false,
               translations: AppTranslations(),
               fallbackLocale: const Locale('en'),
-              theme: ToukhTheme.light(),
-              darkTheme: ToukhTheme.dark(),
+              theme: _withDividerTheme(ToukhTheme.light()),
+              darkTheme: _withDividerTheme(ToukhTheme.dark()),
               themeMode: settings.themeMode,
               locale: settings.locale,
               localizationsDelegates: const [
@@ -163,4 +168,13 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
       ),
     );
   }
+}
+
+ThemeData _withDividerTheme(ThemeData base) {
+  return base.copyWith(
+    dividerTheme: DividerThemeData(
+      thickness: 0.5,
+      color: base.colorScheme.onSurface.withValues(alpha: 0.32),
+    ),
+  );
 }

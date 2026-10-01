@@ -44,7 +44,7 @@ class DeliveryConfig extends Equatable {
     if (!offers) {
       return DeliveryConfig(
         offersDelivery: false,
-        isFree: true,
+        isFree: m['isFree'] as bool? ?? false,
         avgPrepMinutes: m['avgPrepMinutes'] as int?,
       );
     }

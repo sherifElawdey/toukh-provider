@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:toukh_provider/domain/entities/brand_info.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
@@ -41,7 +42,9 @@ String shopCategoryLabel(ShopCategory category) {
   }
 }
 
-(String titleKey, String value)? categoryEntryFromDraft(RegistrationDraft draft) {
+(String titleKey, String value)? categoryEntryFromDraft(
+  RegistrationDraft draft,
+) {
   final kind = draft.kind;
   if (kind == ServiceType.homeService &&
       draft.serviceCategoryId != null &&
@@ -49,7 +52,9 @@ String shopCategoryLabel(ShopCategory category) {
     final title = draft.serviceCategoryTitle?.trim();
     return (
       AppStrings.Registration.serviceCategoryTitle,
-      (title != null && title.isNotEmpty) ? title : draft.serviceCategoryId!.trim(),
+      (title != null && title.isNotEmpty)
+          ? title
+          : draft.serviceCategoryId!.trim(),
     );
   }
   final shopCategory = draft.shopCategory;
@@ -89,6 +94,7 @@ String hoursSummaryFromDraft(RegistrationDraft draft) {
     final mm = minutes % 60;
     return '${hh.toString().padLeft(2, '0')}:${mm.toString().padLeft(2, '0')}';
   }
+
   return '$openDays · ${fmt(from)}–${fmt(to)}';
 }
 
@@ -106,8 +112,8 @@ String? deliverySummaryFromDraft(RegistrationDraft draft) {
       : AppStrings.Registration.deliveryModeFixed.tr;
   final priceStr = price != null && price > 0
       ? (price == price.roundToDouble()
-          ? price.toInt().toString()
-          : price.toStringAsFixed(2))
+            ? price.toInt().toString()
+            : price.toStringAsFixed(2))
       : '—';
   return AppStrings.Registration.reviewDeliveryPaid.tr
       .replaceAll('@price', priceStr)
@@ -125,6 +131,29 @@ String formatProviderPhone(String phone) {
     return '+20 $digits';
   }
   return trimmed;
+}
+
+String brandInfoSummary(BrandInfo info) {
+  if (info.isEmpty) return AppStrings.Settings.brandInfoNotAdded.tr;
+  final parts = <String>[];
+  if (info.phones.isNotEmpty) {
+    parts.add(
+      info.phones.map((phone) => formatProviderPhone(phone.number)).join(' · '),
+    );
+  }
+  for (final value in [
+    info.website,
+    info.email,
+    info.facebook,
+    info.instagram,
+    info.tiktok,
+  ]) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) continue;
+    parts.add(trimmed);
+    break;
+  }
+  return parts.join(' · ');
 }
 
 String formatMemberSince(DateTime createdAt, String locale) {

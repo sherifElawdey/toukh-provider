@@ -151,7 +151,7 @@ class _OrderDetailSection extends StatelessWidget {
               _lineRow(context, Map<String, dynamic>.from(raw)),
               const SizedBox(height: 4),
             ],
-          const Divider(height: AppSizes.spaceLg),
+          const Divider(height: AppSizes.spaceLg, thickness: 0.5),
           Row(
             children: [
               Expanded(

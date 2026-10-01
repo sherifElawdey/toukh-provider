@@ -52,6 +52,7 @@ abstract final class AppRoutes {
   static const legalDeclaration = '/legal/declaration';
 
   static const accountDetails = '/settings/account';
+  static const brandInfo = '/settings/brand';
   static const settingsGallery = '/settings/gallery';
   static const aboutApp = '/settings/about';
 

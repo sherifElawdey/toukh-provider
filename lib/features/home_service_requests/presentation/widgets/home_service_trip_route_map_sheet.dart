@@ -1,8 +1,7 @@
-import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -38,7 +37,7 @@ Future<void> showTripRouteMapSheet({
   );
 }
 
-class _TripRouteMapSheet extends StatefulWidget {
+class _TripRouteMapSheet extends StatelessWidget {
   const _TripRouteMapSheet({
     required this.start,
     required this.destination,
@@ -52,75 +51,14 @@ class _TripRouteMapSheet extends StatefulWidget {
   final String? destinationLabel;
 
   @override
-  State<_TripRouteMapSheet> createState() => _TripRouteMapSheetState();
-}
-
-class _TripRouteMapSheetState extends State<_TripRouteMapSheet> {
-  GoogleMapController? _map;
-
-  @override
-  void dispose() {
-    _map?.dispose();
-    super.dispose();
-  }
-
-  Future<void> _fitBounds() async {
-    final c = _map;
-    if (c == null) return;
-    final a = widget.start;
-    final b = widget.destination;
-    final south = math.min(a.latitude, b.latitude);
-    final north = math.max(a.latitude, b.latitude);
-    final west = math.min(a.longitude, b.longitude);
-    final east = math.max(a.longitude, b.longitude);
-    try {
-      await c.animateCamera(
-        CameraUpdate.newLatLngBounds(
-          LatLngBounds(
-            southwest: LatLng(south, west),
-            northeast: LatLng(north, east),
-          ),
-          64,
-        ),
-      );
-    } catch (_) {
-      await c.animateCamera(
-        CameraUpdate.newLatLngZoom(
-          LatLng((a.latitude + b.latitude) / 2, (a.longitude + b.longitude) / 2),
-          12,
-        ),
-      );
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     final height = MediaQuery.sizeOf(context).height * 0.72;
-    final startTitle = (widget.startLabel ?? '').trim().isNotEmpty
-        ? widget.startLabel!.trim()
+    final startTitle = (startLabel ?? '').trim().isNotEmpty
+        ? startLabel!.trim()
         : AppStrings.HomeServiceRequests.fieldStartLocation.tr;
-    final destTitle = (widget.destinationLabel ?? '').trim().isNotEmpty
-        ? widget.destinationLabel!.trim()
+    final destTitle = (destinationLabel ?? '').trim().isNotEmpty
+        ? destinationLabel!.trim()
         : AppStrings.HomeServiceRequests.fieldDestination.tr;
-
-    final markers = <Marker>{
-      Marker(
-        markerId: const MarkerId('start'),
-        position: widget.start,
-        infoWindow: InfoWindow(title: startTitle),
-      ),
-      Marker(
-        markerId: const MarkerId('destination'),
-        position: widget.destination,
-        infoWindow: InfoWindow(title: destTitle),
-      ),
-    };
-    final polylines = <Polyline>{
-      ToukhMapPolyline.build(
-        id: 'trip_route',
-        points: [widget.start, widget.destination],
-      ),
-    };
 
     return SizedBox(
       height: height,
@@ -146,30 +84,36 @@ class _TripRouteMapSheetState extends State<_TripRouteMapSheet> {
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(AppSizes.radiusMd),
               ),
-              child: ToukhGoogleMap(
+              child: ToukhRouteMap(
                 debugScreenName: 'provider_trip_route',
-                initialCameraPosition: CameraPosition(
-                  target: LatLng(
-                    (widget.start.latitude + widget.destination.latitude) / 2,
-                    (widget.start.longitude + widget.destination.longitude) / 2,
-                  ),
-                  zoom: 12,
-                ),
                 gestureRecognizers: <Factory<OneSequenceGestureRecognizer>>{
                   Factory<OneSequenceGestureRecognizer>(
                     () => EagerGestureRecognizer(),
                   ),
                 },
-                markers: markers,
-                polylines: polylines,
-                myLocationEnabled: false,
-                myLocationButtonEnabled: false,
-                onMapCreated: (controller) {
-                  _map = controller;
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _fitBounds();
-                  });
+                locateMe: () async {
+                  try {
+                    final pos = await Geolocator.getCurrentPosition();
+                    return LatLng(pos.latitude, pos.longitude);
+                  } catch (_) {
+                    return null;
+                  }
                 },
+                stops: [
+                  ToukhRouteStop(
+                    id: 'start',
+                    position: start,
+                    role: ToukhMapPinRole.provider,
+                    title: startTitle,
+                    service: ToukhServiceCategory.homeServices,
+                  ),
+                  ToukhRouteStop(
+                    id: 'destination',
+                    position: destination,
+                    role: ToukhMapPinRole.destination,
+                    title: destTitle,
+                  ),
+                ],
               ),
             ),
           ),

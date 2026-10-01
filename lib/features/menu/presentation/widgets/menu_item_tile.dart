@@ -227,8 +227,7 @@ class MenuItemTile extends StatelessWidget {
           if (showDivider)
             Divider(
               height: 1,
-              thickness: 0.6,
-              color: AppColors.borderSubtle,
+              thickness: 0.5,
             ),
         ],
       ),

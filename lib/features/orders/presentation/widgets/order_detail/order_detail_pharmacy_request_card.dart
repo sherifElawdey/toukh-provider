@@ -60,7 +60,7 @@ class OrderDetailPharmacyRequestCard extends StatelessWidget {
             const SizedBox(height: AppSizes.spaceSm),
           ],
           if (quote != null) ...[
-            Divider(color: AppColors.borderSubtle.withValues(alpha: 0.8)),
+            const Divider(height: 1, thickness: 0.5),
             const SizedBox(height: AppSizes.spaceSm),
             if (quote.pharmacistNote != null &&
                 quote.pharmacistNote!.trim().isNotEmpty)
@@ -91,7 +91,7 @@ class OrderDetailPharmacyRequestCard extends StatelessWidget {
                   master.deliveryFeeEgp > 0 ||
                   master.serviceFeeEgp > 0)) ...[
             const SizedBox(height: AppSizes.spaceSm),
-            Divider(color: AppColors.borderSubtle.withValues(alpha: 0.8)),
+            const Divider(height: 1, thickness: 0.5),
             const SizedBox(height: AppSizes.spaceSm),
             CustomText(
               'Subtotal EGP ${master.subtotalEgp.toStringAsFixed(0)}',

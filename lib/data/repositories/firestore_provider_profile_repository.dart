@@ -50,17 +50,16 @@ class FirestoreProviderProfileRepository implements ProviderProfileRepository {
   @override
   Future<void> addFcmToken({required String uid, required String token}) async {
     if (token.isEmpty) return;
-    final snap = await _providers.doc(uid).get();
+    final ref = _providers.doc(uid);
+    final snap = await ref.get();
+    if (!snap.exists) return;
     final existing =
         (snap.data()?['fcmTokens'] as List<dynamic>?)?.cast<String>() ?? [];
     if (existing.contains(token)) return;
     final merged = ToukhFcmTokenSync.mergeFcmToken(existing, token);
-    await _providers.doc(uid).set(
-      {
-        'fcmTokens': merged,
-        'updatedAt': FieldValue.serverTimestamp(),
-      },
-      SetOptions(merge: true),
-    );
+    await ref.update({
+      'fcmTokens': merged,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 }

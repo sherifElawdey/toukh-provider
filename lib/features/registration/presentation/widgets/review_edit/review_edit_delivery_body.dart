@@ -33,7 +33,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
     final d = context.read<RegistrationCubit>().state;
     final c = d.deliveryConfig;
     _offers = c?.offersDelivery ?? false;
-    _free = c?.isFree ?? true;
+    _free = c?.isFree ?? false;
     _mode = c?.pricingMode ?? DeliveryPricingMode.fixed;
     _price = TextEditingController(
       text: c?.priceEgp != null && c!.priceEgp! > 0
@@ -58,7 +58,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
     if (!_offers) {
       return DeliveryConfig(
         offersDelivery: false,
-        isFree: true,
+        isFree: _free,
         avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
       );
     }

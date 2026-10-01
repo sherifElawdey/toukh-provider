@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
@@ -11,7 +12,6 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/register_review_edit_sheet.dart';
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
-import 'package:toukh_provider/features/registration/presentation/widgets/register_review_tile.dart';
 import 'package:toukh_provider/features/settings/presentation/provider_profile_display.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/editable_provider_avatar.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
@@ -78,8 +78,88 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
           final profile = authState.profile;
           final draft = context.watch<RegistrationCubit>().state;
-          final scheme = Theme.of(context).colorScheme;
           final locale = Localizations.localeOf(context).languageCode;
+
+          final businessRows = <_ProfileRow>[
+            _ProfileRow(
+              labelKey: AppStrings.Registration.reviewBusinessType,
+              value: draft.kind == null
+                  ? '—'
+                  : providerKindLabelKey(draft.kind!).tr,
+              locked: true,
+              onTap: () => _showLockedSnack(context),
+            ),
+            if (categoryEntryFromDraft(draft) case final cat?)
+              _ProfileRow(
+                labelKey: cat.$1,
+                value: cat.$2,
+                locked: true,
+                onTap: () => _showLockedSnack(context),
+              ),
+            _ProfileRow(
+              labelKey: AppStrings.Registration.brandName,
+              value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
+              onTap: () => _openEdit(context, ReviewField.profile),
+            ),
+            if (draft.description.trim().isNotEmpty)
+              _ProfileRow(
+                labelKey: AppStrings.Registration.description,
+                value: draft.description.trim(),
+                onTap: () => _openEdit(context, ReviewField.profile),
+              ),
+            if (draft.kind == ServiceType.homeService)
+              _ProfileRow(
+                labelKey: AppStrings.Registration.preServiceQuestionsTitle,
+                value: draft.preServiceQuestions.isEmpty
+                    ? AppStrings.Registration.preServiceQuestionsNone.tr
+                    : AppStrings.Registration.preServiceQuestionsCount.trParams(
+                        {'count': '${draft.preServiceQuestions.length}'},
+                      ),
+                onTap: () =>
+                    _openEdit(context, ReviewField.preServiceQuestions),
+              ),
+          ];
+
+          final contactRows = <_ProfileRow>[
+            _ProfileRow(
+              labelKey: AppStrings.Auth.phoneNumber,
+              value: formatProviderPhone(profile.phone),
+              locked: true,
+              onTap: () => _showLockedSnack(context),
+            ),
+            _ProfileRow(
+              labelKey: AppStrings.Settings.brandInfo,
+              value: brandInfoSummary(profile.brandInfo),
+              onTap: () => context.push(AppRoutes.brandInfo),
+            ),
+          ];
+
+          final locationValue = () {
+            final fromProfile = profile.address?.trim() ?? '';
+            if (fromProfile.isNotEmpty) return fromProfile;
+            final fromDraft = draft.formattedAddress.trim();
+            return fromDraft.isEmpty ? '—' : fromDraft;
+          }();
+
+          final operationRows = <_ProfileRow>[
+            _ProfileRow(
+              labelKey: AppStrings.Registration.hoursTitle,
+              value: hoursSummaryFromDraft(draft),
+              onTap: () => _openEdit(context, ReviewField.hours),
+            ),
+            if (deliverySummaryFromDraft(draft) case final delivery?)
+              _ProfileRow(
+                labelKey: AppStrings.Registration.deliveryTitle,
+                value: delivery,
+                onTap: () => _openEdit(context, ReviewField.delivery),
+              ),
+            if (draft.avgPrepMinutes != null && draft.avgPrepMinutes! > 0)
+              _ProfileRow(
+                labelKey: AppStrings.Registration.reviewPrepTime,
+                value: '${draft.avgPrepMinutes}',
+                onTap: () => _openEdit(context, ReviewField.delivery),
+              ),
+          ];
 
           return Scaffold(
             appBar: AppBar(
@@ -98,137 +178,48 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                   bottom: AppSizes.space2xl,
                 ),
                 children: [
-                  _AccountDetailsHero(profile: profile),
+                  _ProfileHeader(profile: profile),
                   SizedBox(height: AppSizes.spaceXl),
-                  SettingsSectionTitle(
-                    labelKey: AppStrings.Settings.businessInfo,
+                  _ProfileSection(
+                    titleKey: AppStrings.Settings.businessInfo,
+                    rows: businessRows,
                   ),
-                  SizedBox(height: AppSizes.spaceSm),
-                  RegisterReviewTile(
-                    icon: ToukhIcons.store,
-                    titleKey: AppStrings.Registration.reviewBusinessType,
-                    value: draft.kind == null
-                        ? '—'
-                        : providerKindLabelKey(draft.kind!).tr,
-                    scheme: scheme,
-                    onTap: () => _showLockedSnack(context),
+                  SizedBox(height: AppSizes.spaceXl),
+                  _ProfileSection(
+                    titleKey: AppStrings.Settings.contactInfo,
+                    rows: contactRows,
                   ),
-                  if (categoryEntryFromDraft(draft) case final cat?) ...[
-                    RegisterReviewTile(
-                      icon: PhosphorIconsRegular.tag,
-                      titleKey: cat.$1,
-                      value: cat.$2,
-                      scheme: scheme,
-                      onTap: () => _showLockedSnack(context),
-                    ),
-                  ],
-                  RegisterReviewTile(
-                    icon: PhosphorIconsRegular.identificationBadge,
-                    titleKey: AppStrings.Registration.brandName,
-                    value:
-                        draft.name.trim().isEmpty ? '—' : draft.name.trim(),
-                    scheme: scheme,
-                    onTap: () => _openEdit(context, ReviewField.profile),
+                  SizedBox(height: AppSizes.spaceXl),
+                  _ProfileSection(
+                    titleKey: AppStrings.Settings.location,
+                    rows: [
+                      _ProfileRow(
+                        labelKey: AppStrings.Registration.mapTitle,
+                        value: locationValue,
+                        onTap: () => _openEdit(context, ReviewField.location),
+                      ),
+                    ],
                   ),
-                  if (draft.description.trim().isNotEmpty)
-                    RegisterReviewTile(
-                      icon: PhosphorIconsRegular.notepad,
-                      titleKey: AppStrings.Registration.description,
-                      value: draft.description.trim(),
-                      scheme: scheme,
-                      onTap: () => _openEdit(context, ReviewField.profile),
-                    ),
-                  if (draft.kind == ServiceType.homeService)
-                    RegisterReviewTile(
-                      icon: PhosphorIconsRegular.chatCircleDots,
-                      titleKey:
-                          AppStrings.Registration.preServiceQuestionsTitle,
-                      value: draft.preServiceQuestions.isEmpty
-                          ? AppStrings.Registration.preServiceQuestionsNone.tr
-                          : AppStrings.Registration.preServiceQuestionsCount
-                              .trParams({
-                              'count': '${draft.preServiceQuestions.length}',
-                            }),
-                      scheme: scheme,
-                      onTap: () =>
-                          _openEdit(context, ReviewField.preServiceQuestions),
-                    ),
-                  SizedBox(height: AppSizes.spaceLg),
-                  SettingsSectionTitle(
-                    labelKey: AppStrings.Settings.contactInfo,
+                  SizedBox(height: AppSizes.spaceXl),
+                  _ProfileSection(
+                    titleKey: AppStrings.Settings.operations,
+                    rows: operationRows,
                   ),
-                  SizedBox(height: AppSizes.spaceSm),
-                  RegisterReviewTile(
-                    icon: ToukhIcons.phone,
-                    titleKey: AppStrings.Auth.phoneNumber,
-                    value: formatProviderPhone(profile.phone),
-                    scheme: scheme,
-                    onTap: () => _showLockedSnack(context),
-                  ),
-                  SizedBox(height: AppSizes.spaceLg),
-                  SettingsSectionTitle(labelKey: AppStrings.Settings.location),
-                  SizedBox(height: AppSizes.spaceSm),
-                  RegisterReviewTile(
-                    icon: ToukhIcons.location,
-                    titleKey: AppStrings.Registration.mapTitle,
-                    value: () {
-                      final fromProfile = profile.address?.trim() ?? '';
-                      if (fromProfile.isNotEmpty) return fromProfile;
-                      final fromDraft = draft.formattedAddress.trim();
-                      return fromDraft.isEmpty ? '—' : fromDraft;
-                    }(),
-                    scheme: scheme,
-                    onTap: () => _openEdit(context, ReviewField.location),
-                  ),
-                  SizedBox(height: AppSizes.spaceLg),
-                  SettingsSectionTitle(
-                    labelKey: AppStrings.Settings.operations,
-                  ),
-                  SizedBox(height: AppSizes.spaceSm),
-                  RegisterReviewTile(
-                    icon: ToukhIcons.clock,
-                    titleKey: AppStrings.Registration.hoursTitle,
-                    value: hoursSummaryFromDraft(draft),
-                    scheme: scheme,
-                    onTap: () => _openEdit(context, ReviewField.hours),
-                  ),
-                  if (deliverySummaryFromDraft(draft) case final delivery?) ...[
-                    RegisterReviewTile(
-                      icon: ToukhIcons.delivery,
-                      titleKey: AppStrings.Registration.deliveryTitle,
-                      value: delivery,
-                      scheme: scheme,
-                      onTap: () => _openEdit(context, ReviewField.delivery),
-                    ),
-                  ],
-                  if (draft.avgPrepMinutes != null && draft.avgPrepMinutes! > 0)
-                    RegisterReviewTile(
-                      icon: ToukhIcons.clock,
-                      titleKey: AppStrings.Registration.reviewPrepTime,
-                      value: '${draft.avgPrepMinutes}',
-                      scheme: scheme,
-                      onTap: () => _openEdit(context, ReviewField.delivery),
-                    ),
-                  SizedBox(height: AppSizes.spaceLg),
-                  SettingsSectionTitle(
-                    labelKey: AppStrings.Settings.accountInfo,
-                  ),
-                  SizedBox(height: AppSizes.spaceSm),
-                  RegisterReviewTile(
-                    icon: ToukhIcons.calendar,
-                    titleKey: AppStrings.Settings.memberSince,
-                    value: formatMemberSince(profile.createdAt, locale),
-                    scheme: scheme,
-                  ),
-                  RegisterReviewTile(
-                    icon: profile.phoneVerified
-                        ? ToukhIcons.success
-                        : ToukhIcons.warning,
-                    titleKey: AppStrings.Settings.phoneVerified,
-                    value: profile.phoneVerified
-                        ? AppStrings.Common.success.tr
-                        : AppStrings.Settings.statusUnverified.tr,
-                    scheme: scheme,
+                  SizedBox(height: AppSizes.spaceXl),
+                  _ProfileSection(
+                    titleKey: AppStrings.Settings.accountInfo,
+                    rows: [
+                      _ProfileRow(
+                        labelKey: AppStrings.Settings.memberSince,
+                        value: formatMemberSince(profile.createdAt, locale),
+                      ),
+                      _ProfileRow(
+                        labelKey: AppStrings.Settings.phoneVerified,
+                        value: profile.phoneVerified
+                            ? AppStrings.Common.success.tr
+                            : AppStrings.Settings.statusUnverified.tr,
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -240,8 +231,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
   }
 }
 
-class _AccountDetailsHero extends StatelessWidget {
-  const _AccountDetailsHero({required this.profile});
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader({required this.profile});
 
   final ProviderProfile profile;
 
@@ -263,63 +254,148 @@ class _AccountDetailsHero extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final statusColor = _statusColor(profile.status);
 
-    return Material(
-      elevation: 0,
-      color: AppColors.appColor.withValues(alpha: 0.12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSizes.spaceLg),
-        child: Column(
-          children: [
-            EditableProviderAvatar(
-              imageUrl: profile.brandImageUrl,
-              size: 88,
-            ),
-            SizedBox(height: AppSizes.spaceMd),
-            CustomText(
-              profile.name.trim().isEmpty ? '—' : profile.name.trim(),
-              style: TextStyle(
-                fontSize: AppSizes.fontHeadline,
-                fontWeight: FontWeight.w800,
-                color: scheme.onSurface,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: AppSizes.spaceXs),
-            CustomText(
-              serviceTypeSubtitle(profile),
-              style: TextStyle(
-                fontSize: AppSizes.fontLabel,
-                fontWeight: FontWeight.w600,
-                color: AppColors.secondColor,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(height: AppSizes.spaceMd),
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSizes.spaceMd,
-                vertical: AppSizes.spaceXs,
-              ),
-              decoration: BoxDecoration(
-                color: statusColor.withValues(alpha: 0.14),
-                borderRadius: BorderRadius.circular(AppSizes.radiusXl),
-                border: Border.all(color: statusColor.withValues(alpha: 0.35)),
-              ),
-              child: CustomText(
-                accountStatusLabelKey(profile.status).tr,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        EditableProviderAvatar(imageUrl: profile.brandImageUrl, size: 72),
+        SizedBox(width: AppSizes.spaceMd),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              CustomText(
+                profile.name.trim().isEmpty ? '—' : profile.name.trim(),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  fontSize: AppSizes.fontLabel,
+                  fontSize: AppSizes.fontTitle,
                   fontWeight: FontWeight.w700,
-                  color: statusColor,
+                  color: scheme.onSurface,
                 ),
               ),
+              SizedBox(height: AppSizes.spaceXs),
+              CustomText(
+                serviceTypeSubtitle(profile),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: AppSizes.fontLabel,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.secondColor,
+                ),
+              ),
+              SizedBox(height: AppSizes.spaceSm),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSizes.spaceSm,
+                  vertical: 2,
+                ),
+                decoration: BoxDecoration(
+                  color: statusColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusXl),
+                ),
+                child: CustomText(
+                  accountStatusLabelKey(profile.status).tr,
+                  style: TextStyle(
+                    fontSize: AppSizes.fontLabel,
+                    fontWeight: FontWeight.w700,
+                    color: statusColor,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ProfileSection extends StatelessWidget {
+  const _ProfileSection({required this.titleKey, required this.rows});
+
+  final String titleKey;
+  final List<_ProfileRow> rows;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SettingsSectionTitle(labelKey: titleKey),
+        SizedBox(height: AppSizes.spaceSm),
+        for (var i = 0; i < rows.length; i++) ...[
+          rows[i],
+          if (i < rows.length - 1) const Divider(height: 1, thickness: 0.5),
+        ],
+      ],
+    );
+  }
+}
+
+class _ProfileRow extends StatelessWidget {
+  const _ProfileRow({
+    required this.labelKey,
+    required this.value,
+    this.onTap,
+    this.locked = false,
+  });
+
+  final String labelKey;
+  final String value;
+  final VoidCallback? onTap;
+  final bool locked;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final content = Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceMd),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText(
+                  labelKey,
+                  style: TextStyle(
+                    fontSize: AppSizes.fontLabel,
+                    fontWeight: FontWeight.w600,
+                    color: scheme.onSurface.withValues(alpha: 0.55),
+                  ),
+                ),
+                SizedBox(height: AppSizes.spaceXs),
+                Text(
+                  value,
+                  style: TextStyle(
+                    fontSize: AppSizes.fontBody,
+                    height: 1.35,
+                    fontWeight: FontWeight.w500,
+                    color: scheme.onSurface,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          if (onTap != null) ...[
+            SizedBox(width: AppSizes.spaceSm),
+            Icon(
+              locked ? ToukhIcons.lock : ToukhIcons.chevronRight,
+              size: locked ? 18 : 20,
+              color: scheme.onSurface.withValues(alpha: locked ? 0.35 : 0.45),
             ),
           ],
-        ),
+        ],
       ),
+    );
+
+    if (onTap == null) return content;
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(onTap: onTap, child: content),
     );
   }
 }

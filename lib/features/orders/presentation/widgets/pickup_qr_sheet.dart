@@ -122,11 +122,11 @@ class _PickupQrSheetBodyState extends State<_PickupQrSheetBody> {
       },
       listener: (context, state) => _onHandoffDetected(),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(
+        padding: const EdgeInsets.fromLTRB(
           AppSizes.spaceBase,
           AppSizes.spaceSm,
           AppSizes.spaceBase,
-          MediaQuery.paddingOf(context).bottom + AppSizes.spaceXl,
+          AppSizes.spaceBase,
         ),
         child: BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
           builder: (context, state) {
@@ -137,31 +137,33 @@ class _PickupQrSheetBodyState extends State<_PickupQrSheetBody> {
                 break;
               }
             }
-            return Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                CustomText(
-                  AppStrings.Orders.detailPickupHandoffTitle.tr,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                ),
-                const SizedBox(height: AppSizes.spaceSm),
-                CustomText(
-                  AppStrings.Orders.detailPickupHandoffHint.tr,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.onSurface.withValues(alpha: 0.7),
-                      ),
-                ),
-                const SizedBox(height: AppSizes.spaceMd),
-                PickupQrTile(
-                  masterOrderId: widget.masterOrderId,
-                  providerId: widget.providerId,
-                  driverId: widget.driverId,
-                  pickupCode: pickupCode,
-                ),
-              ],
+            return SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  CustomText(
+                    AppStrings.Orders.detailPickupHandoffTitle.tr,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: AppSizes.spaceSm),
+                  CustomText(
+                    AppStrings.Orders.detailPickupHandoffHint.tr,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: AppColors.onSurface.withValues(alpha: 0.7),
+                        ),
+                  ),
+                  const SizedBox(height: AppSizes.spaceMd),
+                  PickupQrTile(
+                    masterOrderId: widget.masterOrderId,
+                    providerId: widget.providerId,
+                    driverId: widget.driverId,
+                    pickupCode: pickupCode,
+                  ),
+                ],
+              ),
             );
           },
         ),

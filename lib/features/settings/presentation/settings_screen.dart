@@ -7,6 +7,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/brand_info_banner.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_sheet.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_app_version_footer.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_profile_header_card.dart';
@@ -102,6 +103,12 @@ class SettingsScreen extends StatelessWidget {
                     profile: auth.profile,
                     onTap: () => context.push(AppRoutes.accountDetails),
                   ),
+                  if (auth.profile.brandInfo.isEmpty) ...[
+                    SizedBox(height: AppSizes.spaceMd),
+                    BrandInfoBanner(
+                      onTap: () => context.push(AppRoutes.brandInfo),
+                    ),
+                  ],
                   SizedBox(height: AppSizes.spaceMd),
                   ReputationMiniCardsRow(
                     blackPointsTotal: auth.profile.blackPointsTotal,

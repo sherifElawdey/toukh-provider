@@ -9,6 +9,7 @@ import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/core/util/city_key.dart';
 import 'package:toukh_provider/core/utils/phone_auth_helpers.dart';
 import 'package:toukh_provider/di/service_locator.dart';
+import 'package:toukh_provider/domain/entities/brand_info.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
@@ -20,6 +21,7 @@ import 'package:toukh_provider/features/registration/cubit/registration_cubit.da
 import 'package:toukh_provider/features/registration/models/registration_submit_data.dart';
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/settings/domain/provider_profile_draft_mapper.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 export 'auth_state.dart';
@@ -30,11 +32,11 @@ class AuthCubit extends Cubit<AuthState> {
     required ProviderProfileRepository profileRepository,
     required MediaUploadService mediaUploadService,
     required ProviderGalleryRepository galleryRepository,
-  })  : _authRepository = authRepository,
-        _profileRepository = profileRepository,
-        _media = mediaUploadService,
-        _galleryRepository = galleryRepository,
-        super(const AuthInitial());
+  }) : _authRepository = authRepository,
+       _profileRepository = profileRepository,
+       _media = mediaUploadService,
+       _galleryRepository = galleryRepository,
+       super(const AuthInitial());
 
   final AuthRepository _authRepository;
   final ProviderProfileRepository _profileRepository;
@@ -52,7 +54,9 @@ class AuthCubit extends Cubit<AuthState> {
     await _authSub?.cancel();
     _logAuth('subscribe() -> emit AuthLoading');
     emit(const AuthLoading());
-    _authSub = _authRepository.authStateChanges().listen(_onFirebaseUserChanged);
+    _authSub = _authRepository.authStateChanges().listen(
+      _onFirebaseUserChanged,
+    );
   }
 
   Future<void> _onFirebaseUserChanged(User? user) async {
@@ -73,9 +77,9 @@ class AuthCubit extends Cubit<AuthState> {
 
   Future<void> _bootstrapProfile(String uid) async {
     try {
-      final profile = await _profileRepository.getProfile(uid).timeout(
-            const Duration(seconds: 25),
-          );
+      final profile = await _profileRepository
+          .getProfile(uid)
+          .timeout(const Duration(seconds: 25));
       _onProviderProfileChanged(profile);
     } catch (e, st) {
       debugPrint('AuthCubit: profile bootstrap failed: $e\n$st');
@@ -102,10 +106,7 @@ class AuthCubit extends Cubit<AuthState> {
     emit(Authenticated(user: user, profile: profile));
   }
 
-  Future<void> signIn({
-    required String phone,
-    required String password,
-  }) async {
+  Future<void> signIn({required String phone, required String password}) async {
     _logAuth('signIn(phone=$phone) -> emit AuthLoading');
     emit(const AuthLoading());
     try {
@@ -122,10 +123,25 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Creates Firebase user, uploads ID + brand to B2, writes `providers/{uid}`.
   Future<void> registerProviderInitial(RegistrationSubmitData data) async {
-    _logAuth('registerProviderInitial(phone=${data.phone}) -> emit AuthLoading');
+    _logAuth(
+      'registerProviderInitial(phone=${data.phone}) -> emit AuthLoading',
+    );
     emit(const AuthLoading());
     final uploaded = <UploadedMedia>[];
     try {
+      final area = await getIt<GeofenceService>().findContaining(
+        lat: data.lat,
+        lng: data.lng,
+      );
+      if (area == null) {
+        emit(
+          AuthFailure(
+            message: AppStrings.Registration.locationOutsideServiceArea,
+          ),
+        );
+        return;
+      }
+
       final cred = await _authRepository.registerWithPhonePassword(
         phone: data.phone,
         password: data.password,
@@ -155,6 +171,7 @@ class AuthCubit extends Cubit<AuthState> {
       final phoneDigits = displayDigits(data.phone);
       final now = DateTime.now();
       final email = syntheticEmailFromPhone(data.phone);
+      final fcmToken = await _currentFcmToken();
       final city = data.city?.trim().isNotEmpty == true
           ? data.city!.trim()
           : await resolveUserCityKey(
@@ -184,7 +201,7 @@ class AuthCubit extends Cubit<AuthState> {
         lng: data.lng,
         address: data.formattedAddress,
         city: city,
-        serviceAreaId: data.serviceAreaId,
+        serviceAreaId: area.id,
         workingHours: data.workingHours,
         deliveryConfig: data.deliveryConfig,
         avgPrepMinutes: data.avgPrepMinutes,
@@ -199,11 +216,24 @@ class AuthCubit extends Cubit<AuthState> {
           'brand': brand.fileId,
         },
         registrationExtrasComplete: false,
+        fcmTokens: fcmToken == null ? const [] : [fcmToken],
         createdAt: now,
         updatedAt: now,
       );
       await _profileRepository.upsertProfile(profile);
-      emit(Authenticated(user: user, profile: profile));
+      final savedToken = fcmToken ?? await _currentFcmToken();
+      if (savedToken != null && savedToken.isNotEmpty) {
+        await _profileRepository.addFcmToken(uid: user.uid, token: savedToken);
+      }
+      final storedTokens = savedToken == null || savedToken.isEmpty
+          ? profile.fcmTokens
+          : ToukhFcmTokenSync.mergeFcmToken(profile.fcmTokens, savedToken);
+      emit(
+        Authenticated(
+          user: user,
+          profile: profile.copyWith(fcmTokens: storedTokens),
+        ),
+      );
     } on FirebaseAuthException catch (e) {
       for (final u in uploaded) {
         await _media.deleteImage(u);
@@ -236,10 +266,7 @@ class AuthCubit extends Cubit<AuthState> {
         return;
       }
       final now = DateTime.now();
-      final updated = profile.copyWith(
-        phoneVerified: true,
-        updatedAt: now,
-      );
+      final updated = profile.copyWith(phoneVerified: true, updatedAt: now);
       await _profileRepository.upsertProfile(updated);
       emit(Authenticated(user: user, profile: updated));
     } on FirebaseAuthException catch (e) {
@@ -375,6 +402,7 @@ class AuthCubit extends Cubit<AuthState> {
               lng: draft.lng!,
               formattedAddress: draft.formattedAddress,
             );
+      // Draft coordinates are the pin just saved, not the previous profile point.
       final area = await getIt<GeofenceService>().findContaining(
         lat: draft.lat!,
         lng: draft.lng!,
@@ -382,11 +410,22 @@ class AuthCubit extends Cubit<AuthState> {
       if (area == null) {
         throw StateError('location_outside_service_area');
       }
-      updated = updated.copyWith(
-        city: city,
-        serviceAreaId: area.id,
-      );
+      updated = updated.copyWith(city: city, serviceAreaId: area.id);
     }
+    await _profileRepository.upsertProfile(updated);
+    emit(Authenticated(user: current.user, profile: updated));
+  }
+
+  /// Persists public brand contacts from the brand information screen.
+  Future<void> updateBrandInfo(BrandInfo brandInfo) async {
+    final current = state;
+    if (current is! Authenticated) {
+      throw StateError('Not signed in.');
+    }
+    final updated = current.profile.copyWith(
+      brandInfo: brandInfo.normalized(),
+      updatedAt: DateTime.now(),
+    );
     await _profileRepository.upsertProfile(updated);
     emit(Authenticated(user: current.user, profile: updated));
   }
@@ -405,6 +444,17 @@ class AuthCubit extends Cubit<AuthState> {
     emit(Authenticated(user: current.user, profile: updated));
   }
 
+  Future<String?> _currentFcmToken() async {
+    try {
+      return await ToukhPushMessaging.instance
+          .getToken()
+          .timeout(const Duration(seconds: 4));
+    } catch (e, st) {
+      debugPrint('AuthCubit: FCM token unavailable during register: $e\n$st');
+      return null;
+    }
+  }
+
   Future<void> signOut() async {
     final uid = _authRepository.currentUser?.uid;
     if (uid != null && uid.isNotEmpty) {
@@ -421,12 +471,9 @@ class AuthCubit extends Cubit<AuthState> {
   /// when the underlying B2 object path is unchanged.
   static String _cacheBustedImageUrl(String url, String version) {
     final uri = Uri.parse(url);
-    return uri.replace(
-      queryParameters: {
-        ...uri.queryParameters,
-        'v': version,
-      },
-    ).toString();
+    return uri
+        .replace(queryParameters: {...uri.queryParameters, 'v': version})
+        .toString();
   }
 
   /// Re-fetch the provider profile without dropping the current state.

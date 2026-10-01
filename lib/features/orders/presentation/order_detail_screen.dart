@@ -213,15 +213,27 @@ class _OrderDetailBody extends StatelessWidget {
             const SizedBox(height: AppSizes.spaceMd),
             _DetailDriverCard(row: row),
           ],
-          const SizedBox(height: AppSizes.spaceMd),
-          OrderDetailTimelineCard(row: row),
+          if (!(slice.isDelivered || slice.isTerminal)) ...[
+            const SizedBox(height: AppSizes.spaceMd),
+            OrderDetailTimelineCard(row: row),
+          ],
           if (row.master.isPharmacyRequest) ...[
             const SizedBox(height: AppSizes.spaceMd),
             OrderDetailPharmacyRequestCard(row: row),
           ],
           if (slice.note != null && slice.note!.trim().isNotEmpty) ...[
             const SizedBox(height: AppSizes.spaceMd),
-            OrderDetailNotesCard(note: slice.note!.trim()),
+            OrderDetailNotesCard(
+              note: slice.note!.trim(),
+              label: AppStrings.Orders.detailStoreNote.tr,
+            ),
+          ],
+          if ((row.master.note ?? '').trim().isNotEmpty) ...[
+            const SizedBox(height: AppSizes.spaceMd),
+            OrderDetailNotesCard(
+              note: row.master.note!.trim(),
+              label: AppStrings.Orders.detailSharedNote.tr,
+            ),
           ],
           if (row.canShowPickupQr) ...[
             const SizedBox(height: AppSizes.spaceMd),
