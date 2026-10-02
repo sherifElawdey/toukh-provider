@@ -23,6 +23,7 @@ class RegisterDeliveryScreen extends StatefulWidget {
 
 class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
   bool _offers = false;
+  bool _manageFromAccount = false;
   bool _free = false;
   DeliveryPricingMode _mode = DeliveryPricingMode.fixed;
   final _price = TextEditingController();
@@ -44,6 +45,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
       return DeliveryConfig(
         offersDelivery: false,
         isFree: _free,
+        manageFromAccount: _manageFromAccount,
         avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
       );
     }
@@ -51,6 +53,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
     return DeliveryConfig(
       offersDelivery: true,
       isFree: _free,
+      manageFromAccount: _manageFromAccount,
       pricingMode: _free ? null : _mode,
       priceEgp: _free ? null : p,
       avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
@@ -119,6 +122,14 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
             title: CustomText(AppStrings.Registration.deliveryOffers),
             value: _offers,
             onChanged: (v) => setState(() => _offers = v),
+          ),
+          SwitchListTile(
+            title: CustomText(AppStrings.Registration.deliveryManageFromAccount),
+            subtitle: CustomText(
+              AppStrings.Registration.deliveryManageFromAccountHint,
+            ),
+            value: _manageFromAccount,
+            onChanged: (v) => setState(() => _manageFromAccount = v),
           ),
           if (!_offers) ...[
             Padding(

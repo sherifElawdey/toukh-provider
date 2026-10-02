@@ -428,6 +428,7 @@ class _Orders {
   String get detailDriverSearchStarted => 'orders.detail_driver_search_started';
   String get detailDriverAssigned => 'orders.detail_driver_assigned';
   String get actionDeliver => 'orders.action_deliver';
+  String get actionOutForDelivery => 'orders.action_out_for_delivery';
   String get actionChangeDriver => 'orders.action_change_driver';
   String get awaitingDriverApproval => 'orders.awaiting_driver_approval';
   String get actionConfirmHandoff => 'orders.action_confirm_handoff';
@@ -682,6 +683,10 @@ class _Registration {
   String get hoursEndAfterStart => 'registration.hours_end_after_start';
   String get deliveryTitle => 'registration.delivery_title';
   String get deliveryOffers => 'registration.delivery_offers';
+  String get deliveryManageFromAccount =>
+      'registration.delivery_manage_from_account';
+  String get deliveryManageFromAccountHint =>
+      'registration.delivery_manage_from_account_hint';
   String get deliveryPriceLabel => 'registration.delivery_price_label';
   String get deliveryPriceRequired => 'registration.delivery_price_required';
   String get reviewBusinessType => 'registration.review_business_type';

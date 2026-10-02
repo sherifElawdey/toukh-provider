@@ -18,6 +18,7 @@ class ReviewEditDeliveryBody extends StatefulWidget {
 
 class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
   late bool _offers;
+  late bool _manageFromAccount;
   late bool _free;
   late DeliveryPricingMode _mode;
   late final TextEditingController _price;
@@ -33,6 +34,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
     final d = context.read<RegistrationCubit>().state;
     final c = d.deliveryConfig;
     _offers = c?.offersDelivery ?? false;
+    _manageFromAccount = c?.manageFromAccount ?? false;
     _free = c?.isFree ?? false;
     _mode = c?.pricingMode ?? DeliveryPricingMode.fixed;
     _price = TextEditingController(
@@ -59,6 +61,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
       return DeliveryConfig(
         offersDelivery: false,
         isFree: _free,
+        manageFromAccount: _manageFromAccount,
         avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
       );
     }
@@ -66,6 +69,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
     return DeliveryConfig(
       offersDelivery: true,
       isFree: _free,
+      manageFromAccount: _manageFromAccount,
       pricingMode: _free ? null : _mode,
       priceEgp: _free ? null : p,
       avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
@@ -107,6 +111,14 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
           title: CustomText(AppStrings.Registration.deliveryOffers),
           value: _offers,
           onChanged: (v) => setState(() => _offers = v),
+        ),
+        SwitchListTile(
+          title: CustomText(AppStrings.Registration.deliveryManageFromAccount),
+          subtitle: CustomText(
+            AppStrings.Registration.deliveryManageFromAccountHint,
+          ),
+          value: _manageFromAccount,
+          onChanged: (v) => setState(() => _manageFromAccount = v),
         ),
         if (_offers) ...[
           SwitchListTile(

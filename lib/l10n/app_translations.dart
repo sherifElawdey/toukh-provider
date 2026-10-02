@@ -159,6 +159,10 @@ class AppTranslations extends Translations {
         'End time must be after start time.',
     'registration.delivery_title': 'Delivery options',
     'registration.delivery_offers': 'Offers delivery',
+    'registration.delivery_manage_from_account':
+        'Manage delivery from the same account',
+    'registration.delivery_manage_from_account_hint':
+        'You deliver this order yourself. No driver is requested.',
     'registration.delivery_price_label': 'Price (EGP)',
     'registration.delivery_price_required':
         'Enter a valid delivery price (greater than 0) to continue.',
@@ -631,6 +635,7 @@ class AppTranslations extends Translations {
     'orders.detail_driver_search_started': 'Driver search started',
     'orders.detail_driver_assigned': 'Driver assigned',
     'orders.action_deliver': 'Deliver',
+    'orders.action_out_for_delivery': 'Out for delivery',
     'orders.action_change_driver': 'Change driver',
     'orders.awaiting_driver_approval': 'Waiting for driver approval',
     'orders.action_confirm_handoff': 'Hand to courier',
@@ -1082,6 +1087,10 @@ class AppTranslations extends Translations {
         'وقت الإغلاق يجب أن يكون بعد وقت الفتح.',
     'registration.delivery_title': 'خيارات التوصيل',
     'registration.delivery_offers': 'يوفّر توصيلًا',
+    'registration.delivery_manage_from_account':
+        'إدارة التوصيل من نفس الحساب',
+    'registration.delivery_manage_from_account_hint':
+        'ستوصّل الطلب بنفسك. لن يُطلب سائق.',
     'registration.delivery_price_label': 'السعر (جنيه)',
     'registration.delivery_price_required':
         'أدخل سعر توصيل صالحًا (أكبر من صفر) للمتابعة.',
@@ -1550,6 +1559,7 @@ class AppTranslations extends Translations {
     'orders.detail_driver_search_started': 'بدء البحث عن سائق',
     'orders.detail_driver_assigned': 'تم تعيين السائق',
     'orders.action_deliver': 'تسليم',
+    'orders.action_out_for_delivery': 'خرج للتوصيل',
     'orders.action_change_driver': 'تغيير السائق',
     'orders.awaiting_driver_approval': 'في انتظار موافقة السائق',
     'orders.action_confirm_handoff': 'تسليم للمندوب',

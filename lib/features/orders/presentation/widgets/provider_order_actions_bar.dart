@@ -19,6 +19,7 @@ class ProviderOrderActionsBar extends StatelessWidget {
     this.onRequestDelivery,
     this.onReadyForPickup,
     this.onDeliver,
+    this.onOutForDelivery,
     this.onShowPickupQr,
     this.onFinish,
     this.onSeeDetails,
@@ -34,6 +35,7 @@ class ProviderOrderActionsBar extends StatelessWidget {
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onReadyForPickup;
   final VoidCallback? onDeliver;
+  final VoidCallback? onOutForDelivery;
   final VoidCallback? onShowPickupQr;
   final VoidCallback? onFinish;
   final VoidCallback? onSeeDetails;
@@ -80,6 +82,7 @@ class ProviderOrderActionsBar extends StatelessWidget {
         onRequestDelivery: onRequestDelivery,
         onReadyForPickup: onReadyForPickup,
         onDeliver: onDeliver,
+        onOutForDelivery: onOutForDelivery,
         onShowPickupQr: onShowPickupQr,
       );
     }
@@ -130,6 +133,7 @@ class _InProgressActions extends StatefulWidget {
     this.onRequestDelivery,
     this.onReadyForPickup,
     this.onDeliver,
+    this.onOutForDelivery,
     this.onShowPickupQr,
   });
 
@@ -139,6 +143,7 @@ class _InProgressActions extends StatefulWidget {
   final VoidCallback? onRequestDelivery;
   final VoidCallback? onReadyForPickup;
   final VoidCallback? onDeliver;
+  final VoidCallback? onOutForDelivery;
   final VoidCallback? onShowPickupQr;
 
   @override
@@ -261,6 +266,20 @@ class _InProgressActionsState extends State<_InProgressActions> {
           status:
               widget.busy ? AppButtonStatus.loading : AppButtonStatus.enabled,
           onTap: widget.busy ? null : widget.onRequestDelivery,
+        ),
+      );
+    }
+
+    if (widget.row.canMarkSelfOutForDelivery &&
+        widget.onOutForDelivery != null) {
+      buttons.add(
+        AppFilledButton(
+          text: AppStrings.Orders.actionOutForDelivery.tr,
+          height: widget.buttonHeight,
+          size: AppButtonSize.small,
+          status:
+              widget.busy ? AppButtonStatus.loading : AppButtonStatus.enabled,
+          onTap: widget.busy ? null : widget.onOutForDelivery,
         ),
       );
     }

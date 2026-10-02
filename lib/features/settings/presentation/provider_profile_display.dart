@@ -102,10 +102,16 @@ String? deliverySummaryFromDraft(RegistrationDraft draft) {
   if (draft.kind == ServiceType.homeService) return null;
   final config = draft.deliveryConfig;
   if (config == null) return AppStrings.Registration.reviewDeliveryNotSet.tr;
+  final self = config.manageFromAccount
+      ? AppStrings.Registration.deliveryManageFromAccount.tr
+      : null;
   if (!config.offersDelivery) {
-    return AppStrings.Registration.reviewDeliveryNone.tr;
+    return self ?? AppStrings.Registration.reviewDeliveryNone.tr;
   }
-  if (config.isFree) return AppStrings.Registration.reviewDeliveryFree.tr;
+  if (config.isFree) {
+    final free = AppStrings.Registration.reviewDeliveryFree.tr;
+    return self == null ? free : '$self · $free';
+  }
   final price = config.priceEgp;
   final mode = config.pricingMode == DeliveryPricingMode.perKm
       ? AppStrings.Registration.deliveryModePerKm.tr
@@ -115,9 +121,10 @@ String? deliverySummaryFromDraft(RegistrationDraft draft) {
             ? price.toInt().toString()
             : price.toStringAsFixed(2))
       : '—';
-  return AppStrings.Registration.reviewDeliveryPaid.tr
+  final paid = AppStrings.Registration.reviewDeliveryPaid.tr
       .replaceAll('@price', priceStr)
       .replaceAll('@mode', mode);
+  return self == null ? paid : '$self · $paid';
 }
 
 String formatProviderPhone(String phone) {

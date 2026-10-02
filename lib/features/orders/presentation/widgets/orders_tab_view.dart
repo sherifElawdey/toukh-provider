@@ -97,6 +97,7 @@ class OrdersTabView extends StatelessWidget {
                       providerId: providerId,
                       orderId: row.id,
                     ),
+                    onOutForDelivery: () => cubit.markStoreOutForDelivery(row.id),
                     onShowPickupQr: () => showPickupQrSheet(
                       context,
                       masterOrderId: row.id,
@@ -134,8 +135,9 @@ class OrdersTabView extends StatelessWidget {
     ProviderMasterOrderRow row,
   ) async {
     final auth = context.read<AuthCubit>().state;
-    final storeDelivers = auth is Authenticated &&
-        (auth.profile.deliveryConfig?.offersDelivery ?? false);
+    final config = auth is Authenticated ? auth.profile.deliveryConfig : null;
+    final storeDelivers = (config?.offersDelivery ?? false) ||
+        (config?.manageFromAccount ?? false);
     final openRequestSheet = !storeDelivers &&
         row.master.wouldBeFirstAccepter(row.providerId) &&
         row.slice.fulfillmentMode != FulfillmentMode.pickup &&

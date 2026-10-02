@@ -19,6 +19,7 @@ class DeliveryConfig extends Equatable {
   const DeliveryConfig({
     required this.offersDelivery,
     required this.isFree,
+    this.manageFromAccount = false,
     this.pricingMode,
     this.priceEgp,
     this.avgPrepMinutes,
@@ -26,6 +27,9 @@ class DeliveryConfig extends Equatable {
 
   final bool offersDelivery;
   final bool isFree;
+
+  /// Provider delivers the order from this account. No driver is requested.
+  final bool manageFromAccount;
   final DeliveryPricingMode? pricingMode;
   final double? priceEgp;
   final int? avgPrepMinutes;
@@ -33,6 +37,7 @@ class DeliveryConfig extends Equatable {
   Map<String, dynamic> toFirestore() => {
         'offersDelivery': offersDelivery,
         'isFree': isFree,
+        'manageFromAccount': manageFromAccount,
         if (pricingMode != null) 'pricingMode': pricingMode!.wireValue,
         if (priceEgp != null) 'priceEgp': priceEgp,
         if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
@@ -41,16 +46,19 @@ class DeliveryConfig extends Equatable {
   static DeliveryConfig? fromFirestore(Map<String, dynamic>? m) {
     if (m == null) return null;
     final offers = m['offersDelivery'] as bool? ?? false;
+    final manageFromAccount = m['manageFromAccount'] as bool? ?? false;
     if (!offers) {
       return DeliveryConfig(
         offersDelivery: false,
         isFree: m['isFree'] as bool? ?? false,
+        manageFromAccount: manageFromAccount,
         avgPrepMinutes: m['avgPrepMinutes'] as int?,
       );
     }
     return DeliveryConfig(
       offersDelivery: true,
       isFree: m['isFree'] as bool? ?? true,
+      manageFromAccount: manageFromAccount,
       pricingMode: DeliveryPricingMode.tryParse(m['pricingMode'] as String?),
       priceEgp: (m['priceEgp'] as num?)?.toDouble(),
       avgPrepMinutes: m['avgPrepMinutes'] as int?,
@@ -58,6 +66,12 @@ class DeliveryConfig extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [offersDelivery, isFree, pricingMode, priceEgp, avgPrepMinutes];
+  List<Object?> get props => [
+        offersDelivery,
+        isFree,
+        manageFromAccount,
+        pricingMode,
+        priceEgp,
+        avgPrepMinutes,
+      ];
 }

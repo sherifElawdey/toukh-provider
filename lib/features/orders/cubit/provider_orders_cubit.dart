@@ -90,11 +90,14 @@ class ProviderOrdersCubit extends Cubit<ProviderOrdersState> {
     if (auth is! Authenticated) return;
     if (_findRow(orderId) == null) return;
 
-    final storeDelivers = auth.profile.deliveryConfig?.offersDelivery ?? false;
+    final config = auth.profile.deliveryConfig;
+    final selfManaged = config?.manageFromAccount ?? false;
+    final storeDelivers = selfManaged || (config?.offersDelivery ?? false);
     await _runAction(orderId, () => _ordersRepository.approveOrder(
           providerId: auth.user.uid,
           orderId: orderId,
           storeDelivers: storeDelivers,
+          selfManagedDelivery: selfManaged,
         ));
   }
 

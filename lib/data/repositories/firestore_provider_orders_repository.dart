@@ -304,6 +304,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     required String providerId,
     required String orderId,
     required bool storeDelivers,
+    required bool selfManagedDelivery,
   }) async {
     final masterSnap = await _masterRef(orderId).get();
     final existingMode = masterSnap.data()?['providerSlices']?[providerId]
@@ -317,6 +318,9 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
       patch['fulfillmentMode'] = storeDelivers
           ? FulfillmentMode.store.wireValue
           : FulfillmentMode.courier.wireValue;
+      patch['selfManagedDelivery'] = selfManagedDelivery;
+    } else {
+      patch['selfManagedDelivery'] = false;
     }
     await _patchSlice(
       providerId: providerId,

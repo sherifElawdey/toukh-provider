@@ -12,6 +12,7 @@ abstract class ProviderOrdersRepository {
     required String providerId,
     required String orderId,
     required bool storeDelivers,
+    required bool selfManagedDelivery,
   });
 
   Future<void> cancelOrder({
