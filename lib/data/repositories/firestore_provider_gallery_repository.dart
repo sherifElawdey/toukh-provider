@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -41,7 +40,7 @@ class FirestoreProviderGalleryRepository implements ProviderGalleryRepository {
   }
 
   @override
-  Future<void> addImages(String providerId, List<File> files) async {
+  Future<void> addImages(String providerId, List<PickedMedia> files) async {
     if (files.isEmpty) return;
     final uploaded = <UploadedMedia>[];
     try {

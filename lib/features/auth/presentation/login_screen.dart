@@ -7,6 +7,8 @@ import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/auth/presentation/widgets/auth_brand_header.dart';
+import 'package:toukh_provider/features/auth/presentation/widgets/auth_web_frame.dart';
+import 'package:toukh_provider/features/shell/provider_web_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -72,106 +74,113 @@ class _LoginScreenState extends State<LoginScreen> {
             (p is AuthLoading) != (c is AuthLoading) || c is AuthLoading,
         builder: (context, authState) {
           final loading = authState is AuthLoading;
-          return Scaffold(
-            extendBodyBehindAppBar: true,
-            body: Stack(
-              children: [
-                DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        AppColors.thirdColor.withValues(alpha: 0.55),
-                        AppColors.surface,
-                        AppColors.surface,
-                      ],
-                      stops: const [0.0, 0.38, 1.0],
-                    ),
-                  ),
-                  child: SafeArea(
-                    child: SingleChildScrollView(
-                      padding: AppSizes.screenPadding.copyWith(
-                        top: AppSizes.space2xl,
-                        bottom: AppSizes.space3xl,
+          final wide = ProviderWebLayout.isWide(context);
+          final form = SafeArea(
+            child: SingleChildScrollView(
+              padding: AppSizes.screenPadding.copyWith(
+                top: wide ? AppSizes.space4xl : AppSizes.space2xl,
+                bottom: AppSizes.space3xl,
+              ),
+              child: AuthWebCentered(
+                maxWidth: 440,
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      AuthBrandHeader(
+                        title: AppStrings.Auth.welcomeBack,
+                        subtitle: AppStrings.Auth.welcomeBackSubtitle,
+                        logoSize: wide ? 72 : null,
                       ),
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            AuthBrandHeader(
-                              title: AppStrings.Auth.welcomeBack,
-                              subtitle: AppStrings.Auth.welcomeBackSubtitle,
-                            ),
-                            SizedBox(height: AppSizes.space3xl),
-                            AppPhoneField(
-                              controller: _phone,
-                              label: AppStrings.Auth.phoneNumber,
-                              hint: AppStrings.Auth.phoneHint,
-                              invalidTenDigitsMessage:
-                                  AppStrings.Auth.invalidPhone,
-                              textInputAction: TextInputAction.next,
-                            ),
-                            SizedBox(height: AppSizes.spaceBase),
-                            AppPasswordField(
-                              controller: _password,
-                              label: AppStrings.Auth.password,
-                              textInputAction: TextInputAction.done,
-                              validator: (v) => (v == null || v.length < 6)
-                                  ? AppStrings.Auth.minPasswordLength
-                                  : null,
-                            ),
-                            Align(
-                              alignment: AlignmentDirectional.centerEnd,
-                              child: AppTextButton(
-                                text: AppStrings.Auth.forgotPassword,
-                                size: AppButtonSize.small,
-                                alignment: MainAxisAlignment.end,
-                                underlineLabel: true,
-                                status: loading
-                                    ? AppButtonStatus.disabled
-                                    : AppButtonStatus.enabled,
+                      SizedBox(height: AppSizes.space3xl),
+                      AppPhoneField(
+                        controller: _phone,
+                        label: AppStrings.Auth.phoneNumber,
+                        hint: AppStrings.Auth.phoneHint,
+                        invalidTenDigitsMessage: AppStrings.Auth.invalidPhone,
+                        textInputAction: TextInputAction.next,
+                      ),
+                      SizedBox(height: AppSizes.spaceBase),
+                      AppPasswordField(
+                        controller: _password,
+                        label: AppStrings.Auth.password,
+                        textInputAction: TextInputAction.done,
+                        validator: (v) => (v == null || v.length < 6)
+                            ? AppStrings.Auth.minPasswordLength
+                            : null,
+                      ),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: AppTextButton(
+                          text: AppStrings.Auth.forgotPassword,
+                          size: AppButtonSize.small,
+                          alignment: MainAxisAlignment.end,
+                          underlineLabel: true,
+                          status: loading
+                              ? AppButtonStatus.disabled
+                              : AppButtonStatus.enabled,
 
-                                onTap: () => context.push(
-                                  AppRoutes.forgotPassword,
-                                ),
-                              ),
-                            ),
-                            SizedBox(height: AppSizes.spaceMd),
-                            AppFilledButton(
-                              text: AppStrings.Auth.signIn,
-                              status: loading
-                                  ? AppButtonStatus.loading
-                                  : AppButtonStatus.enabled,
-                              onTap: () {
-                                if (!_formKey.currentState!.validate()) {
-                                  return;
-                                }
-                                final national =
-                                    _phone.text.replaceAll(RegExp(r'\D'), '');
-                                context.read<AuthCubit>().signIn(
-                                      phone: egyptMobileE164(national),
-                                      password: _password.text,
-                                    );
-                              },
-                            ),
-                            SizedBox(height: AppSizes.spaceMd),
-                            Center(
-                              child: AppTextButton(
-                                text: AppStrings.Auth.createAccount,
-                                status: loading
-                                    ? AppButtonStatus.disabled
-                                    : AppButtonStatus.enabled,
-                                onTap: () => context.push(AppRoutes.registerKind),
-                              ),
-                            ),
-                          ],
+                          onTap: () => context.push(AppRoutes.forgotPassword),
                         ),
                       ),
-                    ),
+                      SizedBox(height: AppSizes.spaceMd),
+                      AppFilledButton(
+                        text: AppStrings.Auth.signIn,
+                        status: loading
+                            ? AppButtonStatus.loading
+                            : AppButtonStatus.enabled,
+                        onTap: () {
+                          if (!_formKey.currentState!.validate()) {
+                            return;
+                          }
+                          final national = _phone.text.replaceAll(
+                            RegExp(r'\D'),
+                            '',
+                          );
+                          context.read<AuthCubit>().signIn(
+                            phone: egyptMobileE164(national),
+                            password: _password.text,
+                          );
+                        },
+                      ),
+                      SizedBox(height: AppSizes.spaceMd),
+                      Center(
+                        child: AppTextButton(
+                          text: AppStrings.Auth.createAccount,
+                          status: loading
+                              ? AppButtonStatus.disabled
+                              : AppButtonStatus.enabled,
+                          onTap: () => context.push(AppRoutes.registerKind),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+              ),
+            ),
+          );
+          return Scaffold(
+            body: Stack(
+              children: [
+                if (wide)
+                  form
+                else
+                  DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          AppColors.thirdColor.withValues(alpha: 0.55),
+                          AppColors.surface,
+                          AppColors.surface,
+                        ],
+                        stops: const [0.0, 0.38, 1.0],
+                      ),
+                    ),
+                    child: form,
+                  ),
                 if (loading) const AppLoadingOverlay(),
               ],
             ),

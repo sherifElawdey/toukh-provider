@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
@@ -27,7 +26,7 @@ class EditableProviderAvatar extends StatefulWidget {
 
 class _EditableProviderAvatarState extends State<EditableProviderAvatar> {
   bool _uploading = false;
-  File? _localPreview;
+  PickedMedia? _localPreview;
 
   @override
   void didUpdateWidget(EditableProviderAvatar oldWidget) {
@@ -72,9 +71,9 @@ class _EditableProviderAvatarState extends State<EditableProviderAvatar> {
 
   Widget _avatarImage(ColorScheme scheme) {
     if (_localPreview != null) {
-      return Image.file(
-        _localPreview!,
-        key: ValueKey(_localPreview!.path),
+      return Image(
+        image: _localPreview!.imageProvider,
+        key: ValueKey('${_localPreview!.name}-${_localPreview!.bytes.length}'),
         fit: BoxFit.cover,
       );
     }

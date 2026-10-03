@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -12,11 +11,11 @@ class SquareBrandImageBlock extends StatelessWidget {
     required this.onTapPick,
   });
 
-  final File? file;
-  final ValueChanged<File> onPicked;
+  final PickedMedia? file;
+  final ValueChanged<PickedMedia> onPicked;
   final Future<void> Function(
     BuildContext context,
-    void Function(File) onPicked,
+    void Function(PickedMedia) onPicked,
   ) onTapPick;
 
   static const double _side = 128;
@@ -77,8 +76,8 @@ class SquareBrandImageBlock extends StatelessWidget {
                     : Stack(
                         fit: StackFit.expand,
                         children: [
-                          Image.file(
-                            file!,
+                          Image(
+                            image: file!.imageProvider,
                             fit: BoxFit.cover,
                             filterQuality: FilterQuality.medium,
                             errorBuilder: (context, error, stackTrace) => Center(

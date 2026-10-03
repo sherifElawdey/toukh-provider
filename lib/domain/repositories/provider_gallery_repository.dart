@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'package:toukh_provider/core/media/picked_media.dart';
 
 /// Firestore-backed gallery image for a provider.
 class ProviderGalleryItem {
@@ -21,7 +21,7 @@ abstract class ProviderGalleryRepository {
   Stream<List<ProviderGalleryItem>> watchGallery(String providerId);
 
   /// Uploads [files] and creates gallery documents for [providerId].
-  Future<void> addImages(String providerId, List<File> files);
+  Future<void> addImages(String providerId, List<PickedMedia> files);
 
   /// Deletes a gallery image doc and best-effort B2 object removal.
   Future<void> deleteImage({

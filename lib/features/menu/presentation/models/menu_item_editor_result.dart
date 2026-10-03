@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 
 class MenuItemEditorResult {
@@ -10,6 +9,6 @@ class MenuItemEditorResult {
   });
 
   final MenuItemEntity entity;
-  final File? newImageFile;
+  final PickedMedia? newImageFile;
   final bool clearImage;
 }

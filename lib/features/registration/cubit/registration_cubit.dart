@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:bloc/bloc.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/pre_service_question.dart';
@@ -63,9 +62,9 @@ class RegistrationDraft extends Equatable {
   final String phoneNational;
   final String password;
 
-  final File? idFront;
-  final File? idBack;
-  final File? brandImage;
+  final PickedMedia? idFront;
+  final PickedMedia? idBack;
+  final PickedMedia? brandImage;
 
   final String name;
   final String description;
@@ -91,9 +90,9 @@ class RegistrationDraft extends Equatable {
     bool clearServiceCategoryId = false,
     String? phoneNational,
     String? password,
-    File? idFront,
-    File? idBack,
-    File? brandImage,
+    PickedMedia? idFront,
+    PickedMedia? idBack,
+    PickedMedia? brandImage,
     String? name,
     String? description,
     double? lat,
@@ -294,9 +293,9 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
   void setCredentials({
     required String phoneNational,
     required String password,
-    required File idFront,
-    required File idBack,
-    required File brandImage,
+    required PickedMedia idFront,
+    required PickedMedia idBack,
+    required PickedMedia brandImage,
   }) {
     emit(state.copyWith(
       phoneNational: phoneNational,

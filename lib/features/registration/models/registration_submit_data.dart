@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
@@ -39,9 +38,9 @@ class RegistrationSubmitData {
   final String? serviceCategoryId;
   final String? serviceCategoryTitle;
 
-  final File idFront;
-  final File idBack;
-  final File brandImage;
+  final PickedMedia idFront;
+  final PickedMedia idBack;
+  final PickedMedia brandImage;
 
   final String name;
   final String description;

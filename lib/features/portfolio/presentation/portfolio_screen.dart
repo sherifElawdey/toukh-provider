@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,7 +22,7 @@ class PortfolioScreen extends StatefulWidget {
 }
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
-  final _files = <File>[];
+  final _files = <PickedMedia>[];
 
   Future<void> _add() async {
     if (_files.length >= PortfolioScreen.kMaxPhotos) return;

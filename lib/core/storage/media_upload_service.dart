@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_provider/core/storage/backblaze_b2_client.dart';
 
 /// Metadata returned after a successful image upload to Backblaze B2.
@@ -31,7 +32,7 @@ class MediaUploadService {
   /// Compresses [source] (JPEG, max long-edge 1600 px, quality 75) and uploads
   /// it to the configured B2 bucket as [objectPath] (forward-slash separated).
   Future<UploadedMedia> uploadImage({
-    required File source,
+    required PickedMedia source,
     required String objectPath,
   }) async {
     final bytes = await _compressToJpegBytes(source);
@@ -60,25 +61,40 @@ class MediaUploadService {
     }
   }
 
-  Future<Uint8List> _compressToJpegBytes(File source) async {
+  Future<Uint8List> _compressToJpegBytes(PickedMedia source) async {
+    final nativePath = source.filePath;
+    if (!kIsWeb && nativePath != null) {
+      try {
+        final tmpDir = await getTemporaryDirectory();
+        final target =
+            '${tmpDir.path}/media_${DateTime.now().microsecondsSinceEpoch}.jpg';
+        final result = await FlutterImageCompress.compressAndGetFile(
+          nativePath,
+          target,
+          quality: 75,
+          minWidth: 1600,
+          minHeight: 1600,
+          format: CompressFormat.jpeg,
+        );
+        if (result != null) {
+          return File(result.path).readAsBytes();
+        }
+      } catch (e, st) {
+        debugPrint('MediaUploadService compress fallback: $e\n$st');
+      }
+    }
     try {
-      final tmpDir = await getTemporaryDirectory();
-      final target =
-          '${tmpDir.path}/media_${DateTime.now().microsecondsSinceEpoch}.jpg';
-      final result = await FlutterImageCompress.compressAndGetFile(
-        source.absolute.path,
-        target,
+      final compressed = await FlutterImageCompress.compressWithList(
+        source.bytes,
         quality: 75,
         minWidth: 1600,
         minHeight: 1600,
         format: CompressFormat.jpeg,
       );
-      if (result != null) {
-        return File(result.path).readAsBytes();
-      }
+      if (compressed.isNotEmpty) return Uint8List.fromList(compressed);
     } catch (e, st) {
-      debugPrint('MediaUploadService compress fallback: $e\n$st');
+      debugPrint('MediaUploadService compressWithList fallback: $e\n$st');
     }
-    return source.readAsBytes();
+    return source.bytes;
   }
 }

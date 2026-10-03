@@ -12,6 +12,8 @@ import 'package:toukh_provider/domain/repositories/provider_profile_repository.d
 import 'package:toukh_provider/features/auth/presentation/otp_delivery_snack.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.dart';
 import 'package:toukh_provider/features/auth/presentation/widgets/auth_brand_header.dart';
+import 'package:toukh_provider/features/auth/presentation/widgets/auth_web_frame.dart';
+import 'package:toukh_provider/features/shell/provider_web_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -86,6 +88,41 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final wide = ProviderWebLayout.isWide(context);
+    final form = SafeArea(
+      child: SingleChildScrollView(
+        padding: AppSizes.screenPadding.copyWith(
+          top: wide ? AppSizes.space4xl : AppSizes.space2xl,
+          bottom: AppSizes.space3xl,
+        ),
+        child: AuthWebCentered(
+          maxWidth: 440,
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                AuthBrandHeader(
+                  title: AppStrings.Auth.forgotPasswordTitle,
+                  subtitle: AppStrings.Auth.forgotPasswordSubtitle,
+                ),
+                SizedBox(height: AppSizes.space3xl),
+                AppPhoneField(
+                  controller: _phone,
+                  label: AppStrings.Auth.phoneNumber,
+                  hint: AppStrings.Auth.phoneHint,
+                  invalidTenDigitsMessage: AppStrings.Auth.invalidPhone,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _sendOtp(),
+                ),
+                SizedBox(height: AppSizes.space2xl),
+                AppFilledButton(text: AppStrings.Auth.sendOtp, onTap: _sendOtp),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -94,54 +131,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           onPressed: () => context.pop(),
         ),
       ),
-      body: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              AppColors.thirdColor.withValues(alpha: 0.55),
-              AppColors.surface,
-              AppColors.surface,
-            ],
-            stops: const [0.0, 0.38, 1.0],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: AppSizes.screenPadding.copyWith(
-              top: AppSizes.space2xl,
-              bottom: AppSizes.space3xl,
-            ),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  AuthBrandHeader(
-                    title: AppStrings.Auth.forgotPasswordTitle,
-                    subtitle: AppStrings.Auth.forgotPasswordSubtitle,
-                  ),
-                  SizedBox(height: AppSizes.space3xl),
-                  AppPhoneField(
-                    controller: _phone,
-                    label: AppStrings.Auth.phoneNumber,
-                    hint: AppStrings.Auth.phoneHint,
-                    invalidTenDigitsMessage: AppStrings.Auth.invalidPhone,
-                    textInputAction: TextInputAction.done,
-                    onFieldSubmitted: (_) => _sendOtp(),
-                  ),
-                  SizedBox(height: AppSizes.space2xl),
-                  AppFilledButton(
-                    text: AppStrings.Auth.sendOtp,
-                    onTap: _sendOtp,
-                  ),
-                ],
+      body: wide
+          ? form
+          : DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    AppColors.thirdColor.withValues(alpha: 0.55),
+                    AppColors.surface,
+                    AppColors.surface,
+                  ],
+                  stops: const [0.0, 0.38, 1.0],
+                ),
               ),
+              child: form,
             ),
-          ),
-        ),
-      ),
     );
   }
 }

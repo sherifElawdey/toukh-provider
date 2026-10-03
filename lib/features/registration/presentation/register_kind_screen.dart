@@ -6,6 +6,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/register_kind_card.dart';
+import 'package:toukh_provider/features/shell/provider_web_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -84,10 +85,7 @@ class RegisterKindScreen extends StatelessWidget {
         titleSpacing: AppSizes.spaceSm,
         title: Row(
           children: [
-            ToukhServiceLogo(
-              size: 36,
-              borderRadius: BorderRadius.circular(10),
-            ),
+            ToukhServiceLogo(size: 36, borderRadius: BorderRadius.circular(10)),
             SizedBox(width: AppSizes.spaceSm),
             Expanded(
               child: CustomText(
@@ -117,21 +115,33 @@ class RegisterKindScreen extends StatelessWidget {
             ),
             SizedBox(height: AppSizes.spaceLg),
             Expanded(
-              child: GridView.builder(
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: AppSizes.spaceMd,
-                  crossAxisSpacing: AppSizes.spaceMd,
-                  childAspectRatio: 0.95,
-                ),
-                itemCount: _kRegistrationKindOrder.length,
-                itemBuilder: (context, index) {
-                  final kind = _kRegistrationKindOrder[index];
-                  return RegisterKindCard(
-                    selected: draft.kind == kind,
-                    title: _kindLabelKey(kind),
-                    icon: _kindIcon(kind),
-                    onTap: () => _onSelectKind(context, kind),
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  final wide = ProviderWebLayout.isWide(context);
+                  final columns = !wide
+                      ? 2
+                      : constraints.maxWidth >= 980
+                      ? 4
+                      : constraints.maxWidth >= 680
+                      ? 3
+                      : 2;
+                  return GridView.builder(
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: columns,
+                      mainAxisSpacing: AppSizes.spaceMd,
+                      crossAxisSpacing: AppSizes.spaceMd,
+                      childAspectRatio: columns >= 3 ? 1.15 : 0.95,
+                    ),
+                    itemCount: _kRegistrationKindOrder.length,
+                    itemBuilder: (context, index) {
+                      final kind = _kRegistrationKindOrder[index];
+                      return RegisterKindCard(
+                        selected: draft.kind == kind,
+                        title: _kindLabelKey(kind),
+                        icon: _kindIcon(kind),
+                        onTap: () => _onSelectKind(context, kind),
+                      );
+                    },
                   );
                 },
               ),
@@ -142,4 +152,3 @@ class RegisterKindScreen extends StatelessWidget {
     );
   }
 }
-

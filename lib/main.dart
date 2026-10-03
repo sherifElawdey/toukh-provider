@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
-import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker_android/image_picker_android.dart';
 import 'package:image_picker_platform_interface/image_picker_platform_interface.dart';
@@ -15,7 +15,7 @@ import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:get/get.dart';
 
 void _initAndroidPhotoPicker() {
-  if (!Platform.isAndroid) return;
+  if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) return;
   final platform = ImagePickerPlatform.instance;
   if (platform is ImagePickerAndroid) {
     platform.useAndroidPhotoPicker = true;
@@ -39,7 +39,9 @@ Future<void> main() async {
     rethrow;
   }
 
-  FirebaseMessaging.onBackgroundMessage(providerBackgroundMessageHandler);
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(providerBackgroundMessageHandler);
+  }
 
   try {
     await configureDependencies();

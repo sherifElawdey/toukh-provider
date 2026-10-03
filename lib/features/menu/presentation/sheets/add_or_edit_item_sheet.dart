@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:toukh_provider/core/media/safe_image_pick.dart';
@@ -47,7 +46,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
 
   late String? _selectedCategory;
   final _rows = <_SizeRow>[];
-  File? _pickedImage;
+  PickedMedia? _pickedImage;
   bool _removedImage = false;
   bool _isAvailable = true;
   MenuItemOfferType _offerType = MenuItemOfferType.none;
@@ -322,7 +321,10 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                           borderRadius: BorderRadius.circular(
                             AppSizes.radiusMd,
                           ),
-                          child: Image.file(_pickedImage!, fit: BoxFit.cover),
+                          child: Image(
+                            image: _pickedImage!.imageProvider,
+                            fit: BoxFit.cover,
+                          ),
                         )
                       : hasRemote
                       ? ClipRRect(

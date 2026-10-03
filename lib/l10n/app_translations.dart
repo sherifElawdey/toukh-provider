@@ -939,7 +939,7 @@ class AppTranslations extends Translations {
   };
 
   static const Map<String, String> _ar = {
-    'app.title': 'حافيت بارتنر',
+    'app.title': 'هافيت',
     'app.logout_confirm_title': 'تسجيل الخروج؟',
     'app.logout_confirm_body':
         'ستحتاج إلى تسجيل الدخول مرة أخرى لاستلام الرحلات.',
@@ -949,17 +949,17 @@ class AppTranslations extends Translations {
 
     'app_update.title': 'يلزم التحديث',
     'app_update.description':
-        'يتوفر إصدار أحدث من تطبيق Havit Partner. يُرجى التحديث من المتجر للمتابعة.',
+        'يتوفر إصدار أحدث من تطبيق هافيت. يُرجى التحديث من المتجر للمتابعة.',
     'app_update.open_store': 'فتح المتجر',
 
     'common.continue': 'متابعة',
     'common.cancel': 'إلغاء',
     'common.media_gallery_rationale_title': 'اختر صورة',
     'common.media_gallery_rationale_body':
-        'ستختار صورة من معرض الصور للرفع. يصل حافيت فقط إلى الصورة التي تختارها.',
+        'ستختار صورة من معرض الصور للرفع. يصل هافيت فقط إلى الصورة التي تختارها.',
     'common.media_camera_rationale_title': 'التقاط صورة',
     'common.media_camera_rationale_body':
-        'يحتاج حافيت إلى الوصول للكاميرا لالتقاط صورة للرفع.',
+        'يحتاج هافيت إلى الوصول للكاميرا لالتقاط صورة للرفع.',
     'common.delete': 'حذف',
     'common.confirm': 'تأكيد',
     'common.retry': 'إعادة المحاولة',
@@ -1056,9 +1056,9 @@ class AppTranslations extends Translations {
     'auth.profile_pending_subtitle':
         'نحمّل ملف مقدّم الخدمة. إذا استغرق ذلك وقتًا طويلًا، تحقق من الاتصال أو سجّل الخروج وأعد المحاولة.',
     'auth.phone_not_registered':
-        'لا يوجد حساب في حافيت بارتنر مسجّل بهذا الرقم.',
+        'لا يوجد حساب في هافيت مسجّل بهذا الرقم.',
 
-    'welcome.title': 'مرحبًا بك في حافيت بارتنر',
+    'welcome.title': 'مرحبًا بك في هافيت',
     'welcome.subtitle': 'اختر لغتك وسمة العرض للبدء.',
     'welcome.choose_language': 'اللغة',
     'welcome.choose_theme': 'المظهر',
@@ -1738,7 +1738,7 @@ class AppTranslations extends Translations {
     'settings.profile_driver_fallback': 'سائق',
     'settings.black_points': 'النقاط السوداء',
     'settings.black_points_hint':
-        'النقاط السوداء علامات تأديبية يضيفها مشرف حافيت عند مخالفة القواعد.',
+        'النقاط السوداء علامات تأديبية يضيفها مشرف هافيت عند مخالفة القواعد.',
     'settings.commitment_percent': 'نسبة الالتزام',
     'settings.avg_accept_time': 'متوسط وقت القبول',
     'settings.account_details': 'تفاصيل الحساب',
@@ -1757,9 +1757,9 @@ class AppTranslations extends Translations {
     'settings.status_blocked': 'محظور',
     'settings.status_deleted': 'محذوف',
     'settings.about_tagline':
-        'أدِر نشاطك وطلباتك وتوصيلاتك مع حافيت بارتنر.',
+        'أدِر نشاطك وطلباتك وتوصيلاتك مع هافيت.',
     'settings.support': 'الدعم',
-    'settings.copyright': '© حافيت. جميع الحقوق محفوظة.',
+    'settings.copyright': '© هافيت. جميع الحقوق محفوظة.',
     'settings.copied': 'تم النسخ',
     'settings.field_locked':
         'لا يمكن تغيير هذا الحقل من هنا. تواصل مع الدعم إذا احتجت مساعدة.',
@@ -1812,7 +1812,7 @@ class AppTranslations extends Translations {
     'revenues.fees_breakdown': 'الإيرادات مقابل الرسوم',
     'revenues.net_after_fees': 'الصافي بعد الرسوم',
     'revenues.no_data': 'لا بيانات لهذا الشهر',
-    'wallet.toukh_service_wallet': 'محفظة حافيت بارتنر',
+    'wallet.toukh_service_wallet': 'محفظة هافيت',
     'wallet.available_balance': 'الرصيد المتاح',
     'wallet.pending_balance': 'قيد الانتظار',
     'wallet.card_mask': '···· ···· ···· 0428',

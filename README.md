@@ -84,3 +84,19 @@ OTP send/verify/resend is real with Twilio. **Setting a new Firebase password** 
 ```bash
 dart analyze lib
 ```
+
+## Translations
+
+English and Arabic copy is in [`lib/l10n/app_translations.dart`](lib/l10n/app_translations.dart). Add a matching getter in [`lib/l10n/app_strings.dart`](lib/l10n/app_strings.dart) when you add a key, then hot restart.
+
+The customer and admin apps generate their catalogs from JSON. Run this after editing `assets/l10n/en.json` or `assets/l10n/ar.json`:
+
+```bash
+cd toukh
+dart run tool/generate_l10n.dart
+```
+
+```bash
+cd toukh_admin
+dart run tool/generate_l10n.dart
+```

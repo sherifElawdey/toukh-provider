@@ -15,6 +15,7 @@ import 'package:toukh_provider/features/account_status/presentation/blocked_scre
 import 'package:toukh_provider/features/account_status/presentation/unverified_screen.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/auth/presentation/forgot_password_screen.dart';
+import 'package:toukh_provider/features/auth/presentation/widgets/auth_web_frame.dart';
 import 'package:toukh_provider/features/auth/presentation/post_login_status_screen.dart';
 import 'package:toukh_provider/features/auth/presentation/profile_pending_screen.dart';
 import 'package:toukh_provider/features/auth/presentation/request_submitted_screen.dart';
@@ -93,18 +94,15 @@ GoRouter createAppRouter({
     debugLogDiagnostics: true,
     refreshListenable: Listenable.merge([
       GoRouterAuthRefresh(authCubit),
-      GoRouterRefreshStream([
-        onboardingCubit.stream,
-        settingsCubit.stream,
-      ]),
+      GoRouterRefreshStream([onboardingCubit.stream, settingsCubit.stream]),
       getIt<AppVersionGateService>(),
     ]),
     redirect: (context, state) => resolveProviderRedirect(
-          matchedLocation: state.matchedLocation,
-          auth: authCubit.state,
-          onboardingGate: onboardingCubit.state.gate,
-          settings: settingsCubit.state,
-        ),
+      matchedLocation: state.matchedLocation,
+      auth: authCubit.state,
+      onboardingGate: onboardingCubit.state.gate,
+      settings: settingsCubit.state,
+    ),
     routes: [
       GoRoute(
         path: AppRoutes.welcome,
@@ -132,7 +130,8 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.login,
-        builder: (context, state) => const LoginWithDeletedSheet(),
+        builder: (context, state) =>
+            const AuthWebFrame(child: LoginWithDeletedSheet()),
       ),
       GoRoute(
         path: AppRoutes.postLoginStatus,
@@ -144,7 +143,8 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.forgotPassword,
-        builder: (context, state) => const ForgotPasswordScreen(),
+        builder: (context, state) =>
+            const AuthWebFrame(child: ForgotPasswordScreen()),
       ),
       GoRoute(
         path: AppRoutes.verifyOtp,
@@ -167,7 +167,8 @@ GoRouter createAppRouter({
               if (!context.mounted) return;
               final authState = context.read<AuthCubit>().state;
               final router = GoRouter.of(context);
-              if (authState is Authenticated && !authState.profile.phoneVerified) {
+              if (authState is Authenticated &&
+                  !authState.profile.phoneVerified) {
                 router.go(AppRoutes.accountVerifyPhone);
               } else {
                 router.go(AppRoutes.login);
@@ -216,15 +217,13 @@ GoRouter createAppRouter({
       ),
       GoRoute(
         path: AppRoutes.registrationMenu,
-        builder: (context, state) => const RequirePhoneVerified(
-          child: MenuBuilderScreen(),
-        ),
+        builder: (context, state) =>
+            const RequirePhoneVerified(child: MenuBuilderScreen()),
       ),
       GoRoute(
         path: AppRoutes.registrationPortfolio,
-        builder: (context, state) => const RequirePhoneVerified(
-          child: PortfolioScreen(),
-        ),
+        builder: (context, state) =>
+            const RequirePhoneVerified(child: PortfolioScreen()),
       ),
       GoRoute(
         path: AppRoutes.pendingApproval,
@@ -261,7 +260,9 @@ GoRouter createAppRouter({
           final auth = context.read<AuthCubit>().state;
           if (auth is! Authenticated) {
             return Scaffold(
-              appBar: AppBar(title: CustomText(AppStrings.Settings.accountDetails)),
+              appBar: AppBar(
+                title: CustomText(AppStrings.Settings.accountDetails),
+              ),
               body: const Center(child: CustomText('Sign in required')),
             );
           }
@@ -313,10 +314,8 @@ GoRouter createAppRouter({
             );
           }
           return BlocProvider(
-            create: (_) => WalletCubit(
-              getIt<ProviderWalletRepository>(),
-              auth.user.uid,
-            ),
+            create: (_) =>
+                WalletCubit(getIt<ProviderWalletRepository>(), auth.user.uid),
             child: const WalletScreen(),
           );
         },
@@ -428,7 +427,7 @@ GoRouter createAppRouter({
       ShellRoute(
         builder: (context, state, child) => BlocProvider(
           create: (_) => RegistrationCubit(),
-          child: child,
+          child: AuthWebFrame(child: child),
         ),
         routes: [
           GoRoute(
@@ -492,7 +491,8 @@ GoRouter createAppRouter({
                       BlocProvider(
                         create: (_) => HomeDashboardCubit(
                           authCubit: getIt<AuthCubit>(),
-                          dashboardRepository: getIt<ProviderDashboardRepository>(),
+                          dashboardRepository:
+                              getIt<ProviderDashboardRepository>(),
                           menuRepository: getIt<ProviderMenuRepository>(),
                         )..start(),
                       ),
@@ -515,9 +515,7 @@ GoRouter createAppRouter({
                   key: state.pageKey,
                   child: MultiBlocProvider(
                     providers: [
-                      BlocProvider.value(
-                        value: getIt<ProviderOrdersCubit>(),
-                      ),
+                      BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
                       BlocProvider.value(
                         value: getIt<ProviderHomeServiceRequestsCubit>(),
                       ),

@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class PortfolioImageTile extends StatelessWidget {
@@ -11,14 +10,14 @@ class PortfolioImageTile extends StatelessWidget {
     required this.onRemove,
   });
 
-  final File? file;
+  final PickedMedia? file;
   final String? url;
   final VoidCallback onRemove;
 
   @override
   Widget build(BuildContext context) {
     final imageWidget = file != null
-        ? Image.file(file!, fit: BoxFit.cover)
+        ? Image(image: file!.imageProvider, fit: BoxFit.cover)
         : (url != null && url!.isNotEmpty
             ? HavitNetworkImage(imageUrl: url!, fit: BoxFit.cover)
             : const SizedBox.shrink());

@@ -8,6 +8,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -67,7 +68,7 @@ Future<bool> _ensureCameraAccess(
   BuildContext context, {
   bool showRationale = true,
 }) async {
-  if (!Platform.isIOS && !Platform.isAndroid) return true;
+  if (kIsWeb || (!Platform.isIOS && !Platform.isAndroid)) return true;
 
   var status = await Permission.camera.status;
   if (status.isGranted) return true;
@@ -90,7 +91,7 @@ Future<bool> _ensureCameraAccess(
 }
 
 /// Picks an image from [source] with logging. No Flutter modal underneath.
-Future<File?> pickImageFromSource(
+Future<PickedMedia?> pickImageFromSource(
   BuildContext context,
   ImageSource source, {
   bool showAccessRationale = true,
@@ -103,6 +104,7 @@ Future<File?> pickImageFromSource(
 
   if (showAccessRationale &&
       source == ImageSource.gallery &&
+      !kIsWeb &&
       Platform.isAndroid &&
       !await _showAccessRationale(
         context,
@@ -138,12 +140,10 @@ Future<File?> pickImageFromSource(
       _log('user cancelled or null result');
       return null;
     }
-    final file = File(res.path);
-    final exists = await file.exists();
-    final length = exists ? await file.length() : -1;
-    _log('file exists=$exists bytes=$length');
-    if (!exists) {
-      _log('picked path does not exist on disk');
+    final bytes = await res.readAsBytes();
+    _log('picked bytes=${bytes.length}');
+    if (bytes.isEmpty) {
+      _log('picked image has no bytes');
       if (context.mounted) {
         AppSnack.show(
           context,
@@ -154,7 +154,11 @@ Future<File?> pickImageFromSource(
       }
       return null;
     }
-    return file;
+    return PickedMedia(
+      bytes: bytes,
+      name: res.name,
+      filePath: kIsWeb ? null : res.path,
+    );
   } on PlatformException catch (e, st) {
     _log(
       'PlatformException code=${e.code} message=${e.message} details=${e.details}',
@@ -190,7 +194,7 @@ Future<File?> pickImageFromSource(
 ///
 /// Modal bottom sheets map to UIKit presentations; opening PHPicker while that
 /// sheet is dismissing races and can kill the app on modern iOS (UIScene).
-Future<File?> pickImageWithSourceSheet(BuildContext context) async {
+Future<PickedMedia?> pickImageWithSourceSheet(BuildContext context) async {
   _log('pickImageWithSourceSheet start');
   if (!context.mounted) {
     _log('aborted: context not mounted');
@@ -267,12 +271,12 @@ Future<File?> pickImageWithSourceSheet(BuildContext context) async {
 /// Convenience for registration cards that pass an [onPicked] callback.
 Future<void> pickImageInto(
   BuildContext context,
-  void Function(File) onPicked,
+  void Function(PickedMedia) onPicked,
 ) async {
   _log('pickImageInto');
   final file = await pickImageWithSourceSheet(context);
   if (file != null) {
-    _log('invoking onPicked path=${file.path}');
+    _log('invoking onPicked bytes=${file.bytes.length}');
     onPicked(file);
   } else {
     _log('onPicked skipped (null file)');

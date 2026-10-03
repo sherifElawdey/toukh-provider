@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:bloc/bloc.dart';
+import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
@@ -301,7 +300,7 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> submitRegistrationPortfolio(List<File> files) async {
+  Future<void> submitRegistrationPortfolio(List<PickedMedia> files) async {
     emit(const AuthLoading());
     try {
       final user = _authRepository.currentUser;
@@ -337,7 +336,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   /// Uploads a new brand/profile image, persists it, then deletes the previous
   /// B2 file when [b2FileIds]['brand'] is known.
-  Future<void> updateBrandImage(File image) async {
+  Future<void> updateBrandImage(PickedMedia image) async {
     final current = state;
     if (current is! Authenticated) {
       throw StateError('Not signed in.');
