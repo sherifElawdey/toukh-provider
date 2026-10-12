@@ -11,6 +11,7 @@ import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home/cubit/home_dashboard_state.dart';
 import 'package:toukh_provider/features/home/cubit/provider_business_day.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class HomeDashboardCubit extends Cubit<HomeDashboardState> {
   HomeDashboardCubit({
@@ -33,6 +34,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
   DashboardFirestorePayload? _lastPayload;
   String? _boundDashboardUid;
   bool _hasMenuItems = false;
+  Timer? _shiftTimer;
 
   void start() {
     _authSub?.cancel();
@@ -49,6 +51,8 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _menuSub = null;
       _lastPayload = null;
       _hasMenuItems = false;
+      _shiftTimer?.cancel();
+      _shiftTimer = null;
       emit(
         HomeDashboardState.initial().copyWith(
           loading: false,
@@ -68,6 +72,8 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _menuSub = null;
       _lastPayload = null;
       _hasMenuItems = false;
+      _shiftTimer?.cancel();
+      _shiftTimer = null;
 
       _bindMenuStream(uid, auth.profile.isRestaurantShop);
 
@@ -90,7 +96,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
               _lastPayload = payload;
               final current = _authCubit.state;
               if (current is! Authenticated) return;
-              emit(_compute(current.profile, payload, state.chartPeriod));
+              _publish(current.profile, payload, state.chartPeriod);
             },
             onError: (Object e, StackTrace st) {
               emit(
@@ -103,7 +109,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
           );
     } else {
       if (_lastPayload != null) {
-        emit(_compute(auth.profile, _lastPayload!, state.chartPeriod));
+        _publish(auth.profile, _lastPayload!, state.chartPeriod);
       } else {
         emit(
           state.copyWith(
@@ -124,7 +130,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     final auth = _authCubit.state;
     final payload = _lastPayload;
     if (auth is! Authenticated || payload == null) return;
-    emit(_compute(auth.profile, payload, period));
+    _publish(auth.profile, payload, period);
   }
 
   /// Re-subscribes to Firestore after a stream error.
@@ -136,6 +142,39 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     _lastPayload = null;
     _boundDashboardUid = null;
     _onAuth(auth);
+  }
+
+  void _publish(
+    ProviderProfile profile,
+    DashboardFirestorePayload payload,
+    DashboardChartPeriod chartPeriod,
+  ) {
+    emit(_compute(profile, payload, chartPeriod));
+    _scheduleShiftRefresh(profile.workingHours);
+  }
+
+  void _scheduleShiftRefresh(Map<Weekday, DaySchedule> workingHours) {
+    _shiftTimer?.cancel();
+    final cairo = toukhCairoNow();
+    final week = toukhWeekFromSchedules(workingHours);
+    final active = toukhActiveShift(cairo, week);
+    final nextMidnight = DateTime(cairo.year, cairo.month, cairo.day)
+        .add(const Duration(days: 1));
+    var boundary = nextMidnight;
+    if (active != null &&
+        active.end.isAfter(cairo) &&
+        active.end.isBefore(nextMidnight)) {
+      boundary = active.end;
+    }
+    final delay = boundary.difference(cairo);
+    if (delay <= Duration.zero) return;
+    _shiftTimer = Timer(delay, () {
+      if (isClosed) return;
+      final payload = _lastPayload;
+      final auth = _authCubit.state;
+      if (payload == null || auth is! Authenticated) return;
+      _publish(auth.profile, payload, state.chartPeriod);
+    });
   }
 
   HomeDashboardState _compute(
@@ -218,14 +257,12 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     List<ProviderOrderDashboard> all,
     Map<Weekday, DaySchedule> workingHours,
   ) {
-    final window = providerBusinessDayWindow(
-      now: DateTime.now(),
-      workingHours: workingHours,
-    );
+    final window = providerBusinessDayWindow(workingHours: workingHours);
     return all.where((o) {
-      final c = o.createdAt;
-      if (c == null) return false;
-      return !c.isBefore(window.start) && c.isBefore(window.end);
+      final instant = o.isDelivered ? (o.deliveredAt ?? o.createdAt) : o.createdAt;
+      if (instant == null) return false;
+      final cairo = toukhCairoNow(instant);
+      return !cairo.isBefore(window.start) && cairo.isBefore(window.end);
     }).toList();
   }
 
@@ -336,7 +373,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       final payload = _lastPayload;
       final auth = _authCubit.state;
       if (payload != null && auth is Authenticated) {
-        emit(_compute(auth.profile, payload, state.chartPeriod));
+        _publish(auth.profile, payload, state.chartPeriod);
       } else if (auth is Authenticated) {
         emit(
           state.copyWith(
@@ -349,6 +386,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
 
   @override
   Future<void> close() {
+    _shiftTimer?.cancel();
     _authSub?.cancel();
     _dashSub?.cancel();
     _menuSub?.cancel();

@@ -41,6 +41,7 @@ class ProviderHomeServiceRequest extends Equatable {
     this.onMyWayAt,
     this.completedAt,
     this.cancelledAt,
+    this.cancelledBy,
     this.completionCode,
   });
 
@@ -82,6 +83,7 @@ class ProviderHomeServiceRequest extends Equatable {
   final DateTime? onMyWayAt;
   final DateTime? completedAt;
   final DateTime? cancelledAt;
+  final String? cancelledBy;
   final String? completionCode;
 
   static const _terminalStatuses = {
@@ -180,6 +182,7 @@ class ProviderHomeServiceRequest extends Equatable {
         onMyWayAt,
         completedAt,
         cancelledAt,
+        cancelledBy,
         completionCode,
       ];
 }

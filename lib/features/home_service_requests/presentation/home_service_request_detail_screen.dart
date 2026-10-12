@@ -14,6 +14,7 @@ import 'package:toukh_provider/features/home_service_requests/cubit/home_service
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_contact_customer.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_date_change_sheet.dart';
+import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_request_actions_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_trip_route_map_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_visit_badge.dart';
@@ -158,7 +159,9 @@ class _HomeServiceRequestDetailBodyState
 
         if (request.isCancelled) {
           _goHomeForTerminal(
-            message: AppStrings.Orders.detailCancelledByCustomer.tr,
+            message: request.cancelledBy == widget.providerId
+                ? AppStrings.HomeServiceRequests.cancelSent.tr
+                : AppStrings.Orders.detailCancelledByCustomer.tr,
           );
           return Scaffold(
             backgroundColor: _pageBg,
@@ -173,7 +176,9 @@ class _HomeServiceRequestDetailBodyState
             ),
             body: Center(
               child: CustomText(
-                AppStrings.Orders.detailCancelledByCustomer.tr,
+                request.cancelledBy == widget.providerId
+                    ? AppStrings.HomeServiceRequests.cancelSent.tr
+                    : AppStrings.Orders.detailCancelledByCustomer.tr,
               ),
             ),
           );
@@ -210,6 +215,71 @@ class _HomeServiceRequestDetailBodyState
               icon: const Icon(Icons.arrow_back),
               onPressed: _leaveDetail,
             ),
+            actions: request.isTerminal
+                ? null
+                : [
+                    PopupMenuButton<String>(
+                      icon: const Icon(Icons.more_vert),
+                      onSelected: (value) async {
+                        if (value == 'cancel') {
+                          final sent = await showHomeServiceCancelRequestSheet(
+                            context,
+                            requestId: request.id,
+                          );
+                          if (sent == true && context.mounted) {
+                            _leftForTerminal = true;
+                            AppSnack.show(
+                              context,
+                              message:
+                                  AppStrings.HomeServiceRequests.cancelSent.tr,
+                              state: AppSnackState.success,
+                              icon: ToukhIcons.success,
+                            );
+                            _leaveDetail();
+                          }
+                        } else if (value == 'report') {
+                          final sent = await showToukhReportProblemSheet(
+                            context,
+                            reporterRole: ToukhReportRole.provider,
+                            serviceType: ToukhReportServiceType.homeServices,
+                            serviceId: request.id,
+                            targets: [
+                              ToukhReportTarget(
+                                userId: request.userId,
+                                role: ToukhReportRole.customer,
+                                name: request.customerName,
+                              ),
+                            ],
+                          );
+                          if (sent == true && context.mounted) {
+                            AppSnack.show(
+                              context,
+                              message:
+                                  AppStrings.HomeServiceRequests.reportSent.tr,
+                              state: AppSnackState.success,
+                              icon: ToukhIcons.success,
+                            );
+                          }
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: 'cancel',
+                          child: CustomText(
+                            AppStrings
+                                .HomeServiceRequests.actionsCancelRequest.tr,
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'report',
+                          child: CustomText(
+                            AppStrings
+                                .HomeServiceRequests.actionsReportProblem.tr,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
           ),
           bottomNavigationBar: showBottomBar
               ? Material(

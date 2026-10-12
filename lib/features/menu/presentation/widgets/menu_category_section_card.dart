@@ -12,6 +12,7 @@ class MenuCategorySectionCard extends StatelessWidget {
     required this.itemCount,
     required this.items,
     required this.onAddItem,
+    required this.onBulkAdd,
     required this.onEditItem,
     required this.onDeleteItem,
     required this.onRenameCategory,
@@ -22,6 +23,7 @@ class MenuCategorySectionCard extends StatelessWidget {
   final int itemCount;
   final List<MenuItemEntity> items;
   final VoidCallback onAddItem;
+  final VoidCallback onBulkAdd;
   final void Function(MenuItemEntity) onEditItem;
   final void Function(MenuItemEntity) onDeleteItem;
   final VoidCallback onRenameCategory;
@@ -65,6 +67,14 @@ class MenuCategorySectionCard extends StatelessWidget {
                       ),
                     ],
                   ),
+                ),
+                IconButton(
+                  tooltip: AppStrings.Registration.bulkAddItems.tr,
+                  icon: Icon(
+                    PhosphorIconsRegular.rows,
+                    color: AppColors.secondColor,
+                  ),
+                  onPressed: onBulkAdd,
                 ),
                 IconButton(
                   tooltip: AppStrings.Registration.addItem.tr,

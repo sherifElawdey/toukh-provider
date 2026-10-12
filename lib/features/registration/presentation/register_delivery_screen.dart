@@ -76,6 +76,15 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
       }
     }
     final prep = int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), ''));
+    if (_isRestaurant(draft) && (prep == null || prep <= 0)) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Registration.prepTimeRequired.tr,
+        state: AppSnackState.warning,
+        icon: PhosphorIconsRegular.timer,
+      );
+      return;
+    }
     cubit.setDelivery(
       deliveryConfig: _buildConfig(),
       avgPrepMinutes: _isRestaurant(draft) ? prep : null,

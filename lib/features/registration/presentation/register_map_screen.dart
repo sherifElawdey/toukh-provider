@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart';
@@ -37,6 +38,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   double _zoom = 14;
   bool _mapReady = false;
   LatLng? _lastHandledCenter;
+  int _lookupGen = 0;
 
   static const _locationTimeout = Duration(seconds: 12);
   static const _minMoveDegrees = 0.00008;
@@ -44,7 +46,27 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   @override
   void initState() {
     super.initState();
-    _initLocation(request: false);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _startAtLocation());
+  }
+
+  /// A saved pin stays put. Otherwise the map opens on the device location.
+  Future<void> _startAtLocation() async {
+    if (!mounted) return;
+    final draft = context.read<RegistrationCubit>().state;
+    final lat = draft.lat;
+    final lng = draft.lng;
+    if (lat != null && lng != null) {
+      setState(() {
+        _target = LatLng(lat, lng);
+        _locating = false;
+      });
+      _zoom = 15;
+      await _map?.animateCamera(CameraUpdate.newLatLngZoom(_target, _zoom));
+      if (!mounted) return;
+      await _handleCenterChanged(_target);
+      return;
+    }
+    await _initLocation(request: true);
   }
 
   @override
@@ -58,7 +80,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       await _promptLocationPermission();
       return;
     }
-    await _initLocation(request: true);
+    await _initLocation(request: true, openSettings: true);
   }
 
   Future<void> _promptLocationPermission() async {
@@ -88,18 +110,21 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
         });
         if (granted) await _initLocation(request: false);
       } else {
-        await _initLocation(request: true);
+        await _initLocation(request: true, openSettings: true);
       }
     } finally {
       if (mounted) setState(() => _locationBusy = false);
     }
   }
 
-  Future<void> _initLocation({bool request = false}) async {
+  Future<void> _initLocation({
+    bool request = false,
+    bool openSettings = false,
+  }) async {
     try {
       final serviceOn = await Geolocator.isLocationServiceEnabled();
       if (!serviceOn) {
-        if (request) {
+        if (openSettings) {
           await Geolocator.openLocationSettings();
         }
         if (!mounted) return;
@@ -131,7 +156,20 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
         await _handleCenterChanged(_target);
         return;
       }
-      setState(() => _locating = true);
+      if (!mounted) return;
+      setState(() {
+        _locating = true;
+        _hasLocationPermission = true;
+        _locationPermanentlyDenied = false;
+      });
+      if (!kIsWeb) {
+        final last = await Geolocator.getLastKnownPosition();
+        if (last != null && mounted) {
+          setState(() => _target = LatLng(last.latitude, last.longitude));
+          await _map?.animateCamera(CameraUpdate.newLatLngZoom(_target, 15));
+          _zoom = 15;
+        }
+      }
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(timeLimit: _locationTimeout),
       );
@@ -139,27 +177,24 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       setState(() {
         _target = LatLng(pos.latitude, pos.longitude);
         _locating = false;
-        _hasLocationPermission = true;
-        _locationPermanentlyDenied = false;
       });
       await _handleCenterChanged(_target);
       await _map?.animateCamera(CameraUpdate.newLatLngZoom(_target, 15));
       _zoom = 15;
     } catch (_) {
       if (mounted) {
-        setState(() {
-          _locating = false;
-          _hasLocationPermission = false;
-        });
+        setState(() => _locating = false);
       }
       await _handleCenterChanged(_target);
     }
   }
 
-  Future<void> _reverseGeocode(LatLng ll) async {
+  bool _lookupCurrent(int gen) => mounted && gen == _lookupGen;
+
+  Future<void> _reverseGeocode(LatLng ll, int gen) async {
     try {
       final marks = await placemarkFromCoordinates(ll.latitude, ll.longitude);
-      if (marks.isEmpty) return;
+      if (marks.isEmpty || !_lookupCurrent(gen)) return;
       final p = marks.first;
       final raw = [
         p.street,
@@ -173,21 +208,36 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .join(', ');
-      if (mounted && parts.isNotEmpty) setState(() => _address = parts);
+      if (_lookupCurrent(gen) && parts.isNotEmpty) {
+        setState(() => _address = parts);
+      }
     } catch (_) {}
   }
 
-  Future<void> _checkServiceArea(LatLng ll) async {
+  Future<void> _checkServiceArea(LatLng ll, int gen) async {
+    String? areaId;
     try {
       final area = await getIt<GeofenceService>().findContaining(
         lat: ll.latitude,
         lng: ll.longitude,
       );
-      if (!mounted) return;
-      setState(() => _inServiceArea = area != null);
+      areaId = area?.id;
     } catch (_) {
-      if (mounted) setState(() => _inServiceArea = false);
+      areaId = null;
     }
+    if (!mounted || gen != _lookupGen) return;
+    setState(() => _inServiceArea = areaId != null);
+    final draft = context.read<RegistrationCubit>().state;
+    final address = _address.trim().isNotEmpty
+        ? _address.trim()
+        : draft.formattedAddress;
+    context.read<RegistrationCubit>().setLocation(
+      lat: ll.latitude,
+      lng: ll.longitude,
+      formattedAddress: address,
+      city: draft.city,
+      serviceAreaId: areaId,
+    );
   }
 
   bool _movedEnough(LatLng a, LatLng b) {
@@ -196,9 +246,11 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   }
 
   Future<void> _handleCenterChanged(LatLng center) async {
+    final gen = ++_lookupGen;
     _lastHandledCenter = center;
-    await _reverseGeocode(center);
-    await _checkServiceArea(center);
+    await _reverseGeocode(center, gen);
+    if (!_lookupCurrent(gen)) return;
+    await _checkServiceArea(center, gen);
   }
 
   Future<LatLng> _resolvePin() async {
@@ -248,6 +300,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   }
 
   Future<void> _continue() async {
+    ++_lookupGen;
     final point = await _resolvePin();
     if (!mounted) return;
     final formattedAddress = _address.isEmpty
@@ -322,6 +375,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
                 await Future<void>.delayed(const Duration(milliseconds: 350));
                 if (!mounted) return;
                 setState(() => _mapReady = true);
+                await _onCameraIdle();
               },
               onCameraMove: (pos) {
                 _target = pos.target;

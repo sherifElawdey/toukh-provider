@@ -335,6 +335,7 @@ GoRouter createAppRouter({
               dashboardRepository: getIt<ProviderDashboardRepository>(),
               walletRepository: getIt<ProviderWalletRepository>(),
               providerId: auth.user.uid,
+              workingHours: auth.profile.workingHours,
             ),
             child: const RevenuesScreen(),
           );

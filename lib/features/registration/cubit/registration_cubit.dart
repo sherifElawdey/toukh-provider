@@ -166,6 +166,10 @@ class RegistrationDraft extends Equatable {
     final isRestaurant = k == ServiceType.restaurant &&
         shopCategoryForSubmit(k, shopCategory) == ShopCategory.restaurant;
     if (isRestaurant && cuisineTags.isEmpty) return null;
+    final prepMinutes = avgPrepMinutes;
+    if (isRestaurant && (prepMinutes == null || prepMinutes <= 0)) {
+      return null;
+    }
 
     return RegistrationSubmitData(
       phone: phone,

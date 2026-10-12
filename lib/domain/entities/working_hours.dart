@@ -29,6 +29,7 @@ class DaySchedule extends Equatable {
     required this.twentyFourHours,
     this.openFromMinutes,
     this.openToMinutes,
+    this.overnight = false,
   });
 
   final bool enabled;
@@ -36,17 +37,22 @@ class DaySchedule extends Equatable {
   final int? openFromMinutes;
   final int? openToMinutes;
 
+  /// When true, [openToMinutes] is on the next calendar day.
+  final bool overnight;
+
   DaySchedule copyWith({
     bool? enabled,
     bool? twentyFourHours,
     int? openFromMinutes,
     int? openToMinutes,
+    bool? overnight,
   }) {
     return DaySchedule(
       enabled: enabled ?? this.enabled,
       twentyFourHours: twentyFourHours ?? this.twentyFourHours,
       openFromMinutes: openFromMinutes ?? this.openFromMinutes,
       openToMinutes: openToMinutes ?? this.openToMinutes,
+      overnight: overnight ?? this.overnight,
     );
   }
 
@@ -56,19 +62,33 @@ class DaySchedule extends Equatable {
         if (!twentyFourHours) ...{
           'openFromMinutes': openFromMinutes,
           'openToMinutes': openToMinutes,
+          'overnight': overnight,
         },
       };
 
   static DaySchedule fromMap(Map<String, dynamic> m) {
+    final from = _minutes(m['openFromMinutes']);
+    final to = _minutes(m['openToMinutes']);
+    final overnightRaw = m['overnight'];
+    final overnight = overnightRaw is bool
+        ? overnightRaw
+        : (from != null && to != null && from > to);
     return DaySchedule(
       enabled: m['enabled'] as bool? ?? false,
       twentyFourHours: m['twentyFourHours'] as bool? ?? false,
-      openFromMinutes: m['openFromMinutes'] as int?,
-      openToMinutes: m['openToMinutes'] as int?,
+      openFromMinutes: from,
+      openToMinutes: to,
+      overnight: overnight,
     );
   }
 
   @override
   List<Object?> get props =>
-      [enabled, twentyFourHours, openFromMinutes, openToMinutes];
+      [enabled, twentyFourHours, openFromMinutes, openToMinutes, overnight];
+}
+
+int? _minutes(dynamic value) {
+  if (value is int) return value;
+  if (value is num) return value.toInt();
+  return null;
 }

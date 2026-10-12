@@ -46,6 +46,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   double _zoom = 14;
   bool _mapReady = false;
   LatLng? _lastHandledCenter;
+  int _lookupGen = 0;
 
   static const _locationTimeout = Duration(seconds: 12);
   static const _minMoveDegrees = 0.00008; // ~9 m
@@ -61,7 +62,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
       _lastHandledCenter = _target;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _checkServiceArea(_target);
+        _checkServiceArea(_target, ++_lookupGen);
         _refreshPermissionState();
       });
     } else {
@@ -187,6 +188,12 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
         await _handleCenterChanged(_target, reverseGeocode: true);
         return;
       }
+      if (!mounted) return;
+      setState(() {
+        _locating = true;
+        _hasLocationPermission = true;
+        _locationPermanentlyDenied = false;
+      });
       final pos = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(timeLimit: _locationTimeout),
       );
@@ -195,27 +202,24 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
       setState(() {
         _target = next;
         _locating = false;
-        _hasLocationPermission = true;
-        _locationPermanentlyDenied = false;
       });
       await _map?.animateCamera(CameraUpdate.newLatLngZoom(next, 15));
       _zoom = 15;
       await _handleCenterChanged(next, reverseGeocode: true);
     } catch (_) {
       if (mounted) {
-        setState(() {
-          _locating = false;
-          _hasLocationPermission = false;
-        });
+        setState(() => _locating = false);
       }
       await _handleCenterChanged(_target, reverseGeocode: true);
     }
   }
 
-  Future<void> _reverseGeocode(LatLng ll) async {
+  bool _lookupCurrent(int gen) => mounted && gen == _lookupGen;
+
+  Future<void> _reverseGeocode(LatLng ll, int gen) async {
     try {
       final marks = await placemarkFromCoordinates(ll.latitude, ll.longitude);
-      if (marks.isEmpty) return;
+      if (marks.isEmpty || !_lookupCurrent(gen)) return;
       final p = marks.first;
       final raw = [
         p.street,
@@ -229,35 +233,49 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
           .map((e) => e.trim())
           .where((e) => e.isNotEmpty)
           .join(', ');
-      if (!mounted || parts.isEmpty) return;
+      if (!_lookupCurrent(gen) || parts.isEmpty) return;
       setState(() => _setAddress(parts));
     } catch (_) {}
   }
 
-  Future<void> _checkServiceArea(LatLng ll) async {
-    if (!mounted) return;
+  Future<void> _checkServiceArea(LatLng ll, int gen) async {
+    if (!_lookupCurrent(gen)) return;
+    String? areaId;
     try {
       final area = await getIt<GeofenceService>().findContaining(
         lat: ll.latitude,
         lng: ll.longitude,
       );
-      if (!mounted) return;
-      _setInServiceArea(area != null);
+      areaId = area?.id;
     } catch (_) {
-      if (!mounted) return;
-      _setInServiceArea(false);
+      areaId = null;
     }
+    if (!mounted || gen != _lookupGen) return;
+    _setInServiceArea(areaId != null);
+    final draft = context.read<RegistrationCubit>().state;
+    final address = _address.trim().isNotEmpty
+        ? _address.trim()
+        : draft.formattedAddress;
+    context.read<RegistrationCubit>().setLocation(
+      lat: ll.latitude,
+      lng: ll.longitude,
+      formattedAddress: address,
+      city: draft.city,
+      serviceAreaId: areaId,
+    );
   }
 
   Future<void> _handleCenterChanged(
     LatLng center, {
     required bool reverseGeocode,
   }) async {
+    final gen = ++_lookupGen;
     _lastHandledCenter = center;
     if (reverseGeocode) {
-      await _reverseGeocode(center);
+      await _reverseGeocode(center, gen);
     }
-    await _checkServiceArea(center);
+    if (!_lookupCurrent(gen)) return;
+    await _checkServiceArea(center, gen);
   }
 
   Future<LatLng> _resolvePin() async {
@@ -294,6 +312,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   }
 
   Future<bool> save(RegistrationCubit cubit) async {
+    ++_lookupGen;
     final point = await _resolvePin();
     if (!mounted) return false;
     final formattedAddress = _address.isEmpty
@@ -348,7 +367,8 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        ToukhGoogleMap(
+        Positioned.fill(
+          child: ToukhGoogleMap(
           key: _mapKey,
           debugScreenName: 'review_edit_location',
           initialCameraPosition: CameraPosition(target: _target, zoom: _zoom),
@@ -372,12 +392,18 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
             await Future<void>.delayed(const Duration(milliseconds: 350));
             if (!mounted) return;
             setState(() => _mapReady = true);
+            final center = await _resolvePin();
+            if (!mounted) return;
+            final last = _lastHandledCenter;
+            if (last != null && !_movedEnough(last, center)) return;
+            await _handleCenterChanged(center, reverseGeocode: false);
           },
           onCameraMove: (pos) {
             _target = pos.target;
             _zoom = pos.zoom;
           },
           onCameraIdle: _onCameraIdle,
+          ),
         ),
         IgnorePointer(
           child: Center(child: _ReviewMapPin(pinKey: _pinKey)),

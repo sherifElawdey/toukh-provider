@@ -1,5 +1,6 @@
-import 'dart:io';
+import 'dart:convert';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
@@ -36,6 +37,9 @@ class MediaUploadService {
     required String objectPath,
   }) async {
     final bytes = await _compressToJpegBytes(source);
+    if (kIsWeb) {
+      return _uploadViaCallable(bytes: bytes, objectPath: objectPath);
+    }
     final result = await _b2.uploadBytes(
       fileName: objectPath,
       bytes: bytes,
@@ -52,6 +56,15 @@ class MediaUploadService {
   /// upload failure. Logs for visibility.
   Future<void> deleteImage(UploadedMedia media) async {
     try {
+      if (kIsWeb) {
+        await FirebaseFunctions.instanceFor(region: 'us-central1')
+            .httpsCallable('deleteRegistrationMedia')
+            .call({
+          'fileName': media.fileName,
+          'fileId': media.fileId,
+        });
+        return;
+      }
       await _b2.deleteFileVersion(
         fileName: media.fileName,
         fileId: media.fileId,
@@ -77,7 +90,7 @@ class MediaUploadService {
           format: CompressFormat.jpeg,
         );
         if (result != null) {
-          return File(result.path).readAsBytes();
+          return result.readAsBytes();
         }
       } catch (e, st) {
         debugPrint('MediaUploadService compress fallback: $e\n$st');
@@ -96,5 +109,26 @@ class MediaUploadService {
       debugPrint('MediaUploadService compressWithList fallback: $e\n$st');
     }
     return source.bytes;
+  }
+
+  /// Web cannot call Backblaze directly. The signed-in provider sends the
+  /// photo to Cloud Functions, which writes it to B2.
+  Future<UploadedMedia> _uploadViaCallable({
+    required Uint8List bytes,
+    required String objectPath,
+  }) async {
+    final result = await FirebaseFunctions.instanceFor(
+      region: 'us-central1',
+    ).httpsCallable('uploadRegistrationMedia').call({
+      'objectPath': objectPath,
+      'contentType': 'image/jpeg',
+      'bytesBase64': base64Encode(bytes),
+    });
+    final data = Map<String, dynamic>.from(result.data as Map);
+    return UploadedMedia(
+      url: data['url'] as String? ?? '',
+      fileName: data['fileName'] as String? ?? objectPath,
+      fileId: data['fileId'] as String? ?? '',
+    );
   }
 }

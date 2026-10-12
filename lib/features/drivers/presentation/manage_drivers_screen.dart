@@ -350,18 +350,28 @@ class _PendingRequestCard extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  backgroundImage: request.profilePhotoUrl != null
-                      ? NetworkImage(request.profilePhotoUrl!)
-                      : null,
-                  backgroundColor: scheme.primary.withValues(alpha: 0.15),
-                  foregroundColor: scheme.primary,
-                  child: request.profilePhotoUrl == null
-                      ? CustomText(
-                          initial,
-                          style: const TextStyle(fontWeight: FontWeight.w800),
-                        )
-                      : null,
+                ClipOval(
+                  child: SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: request.profilePhotoUrl != null
+                        ? HavitNetworkImage(
+                            imageUrl: request.profilePhotoUrl!,
+                            fit: BoxFit.cover,
+                          )
+                        : ColoredBox(
+                            color: scheme.primary.withValues(alpha: 0.15),
+                            child: Center(
+                              child: CustomText(
+                                initial,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: scheme.primary,
+                                ),
+                              ),
+                            ),
+                          ),
+                  ),
                 ),
                 const SizedBox(width: AppSizes.spaceMd),
                 Expanded(
@@ -466,18 +476,28 @@ class _LinkedDriverCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            CircleAvatar(
-              backgroundImage: driver.profilePhotoUrl != null
-                  ? NetworkImage(driver.profilePhotoUrl!)
-                  : null,
-              backgroundColor: scheme.primary.withValues(alpha: 0.15),
-              foregroundColor: scheme.primary,
-              child: driver.profilePhotoUrl == null
-                  ? CustomText(
-                      initial,
-                      style: const TextStyle(fontWeight: FontWeight.w800),
-                    )
-                  : null,
+            ClipOval(
+              child: SizedBox(
+                width: 40,
+                height: 40,
+                child: driver.profilePhotoUrl != null
+                    ? HavitNetworkImage(
+                        imageUrl: driver.profilePhotoUrl!,
+                        fit: BoxFit.cover,
+                      )
+                    : ColoredBox(
+                        color: scheme.primary.withValues(alpha: 0.15),
+                        child: Center(
+                          child: CustomText(
+                            initial,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w800,
+                              color: scheme.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+              ),
             ),
             const SizedBox(width: AppSizes.spaceMd),
             Expanded(

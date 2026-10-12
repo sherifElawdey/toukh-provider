@@ -6,7 +6,10 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_cubit.dart';
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_state.dart';
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
+import 'package:toukh_provider/features/menu/presentation/menu_public_url.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_category_sheet.dart';
+import 'package:toukh_provider/features/menu/presentation/sheets/bulk_add_items_sheet.dart';
+import 'package:toukh_provider/features/menu/presentation/sheets/menu_qr_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_or_edit_item_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_category_filter_chips.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_category_section_card.dart';
@@ -115,6 +118,31 @@ class MenuBuilderView extends StatelessWidget {
         icon: ToukhIcons.error,
       );
     }
+  }
+
+  Future<void> _showBulkAddSheet(BuildContext context, String category) async {
+    final results = await showBulkAddItemsSheet(context, category: category);
+    if (results == null || results.isEmpty || !context.mounted) return;
+    final err = await context.withAppLoading(
+      () => context.read<MenuBuilderCubit>().addBulkEditorResults(results),
+    );
+    if (!context.mounted) return;
+    if (err != null) {
+      AppSnack.show(
+        context,
+        message: err,
+        state: AppSnackState.error,
+        icon: ToukhIcons.error,
+      );
+      return;
+    }
+    AppSnack.show(
+      context,
+      message: AppStrings.Registration.bulkAddSaved.trParams({
+        'count': '${results.length}',
+      }),
+      icon: ToukhIcons.success,
+    );
   }
 
   Future<void> _showAddCategorySheet(BuildContext context) async {
@@ -381,6 +409,19 @@ class MenuBuilderView extends StatelessWidget {
                   child: CustomScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
                     slivers: [
+                      if (authState is Authenticated)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                            child: _MenuQrTile(
+                              onTap: () => showMenuQrSheet(
+                                context,
+                                url: publicMenuUrl(authState.profile),
+                                name: authState.profile.name,
+                              ),
+                            ),
+                          ),
+                        ),
                       if (state.categories.isEmpty)
                         SliverFillRemaining(
                           hasScrollBody: false,
@@ -425,6 +466,8 @@ class MenuBuilderView extends StatelessWidget {
                                       context,
                                       initialCategory: cat,
                                     ),
+                                    onBulkAdd: () =>
+                                        _showBulkAddSheet(context, cat),
                                     onEditItem: (e) => _showItemSheet(
                                       context,
                                       initialCategory: cat,
@@ -458,5 +501,33 @@ class MenuBuilderView extends StatelessWidget {
   Future<void> _refresh(BuildContext context) async {
     await context.read<MenuBuilderCubit>().refresh();
     await Future<void>.delayed(const Duration(milliseconds: 450));
+  }
+}
+
+class _MenuQrTile extends StatelessWidget {
+  const _MenuQrTile({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        ),
+        leading: Icon(ToukhIcons.qrCode, color: scheme.primary),
+        title: CustomText(
+          AppStrings.Registration.menuQr,
+          fontWeight: FontWeight.w700,
+        ),
+        subtitle: CustomText(AppStrings.Registration.menuQrHint),
+        trailing: Icon(ToukhIcons.chevronRight),
+        onTap: onTap,
+      ),
+    );
   }
 }

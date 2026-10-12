@@ -158,6 +158,15 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     }
   }
 
+  Future<String?> addBulkEditorResults(List<MenuItemEditorResult> results) async {
+    if (results.isEmpty) return null;
+    for (final result in results) {
+      final err = await commitItemEditorResult(result);
+      if (err != null) return err;
+    }
+    return null;
+  }
+
   Future<String?> commitItemEditorResult(MenuItemEditorResult result) async {
     var entity = result.entity;
 

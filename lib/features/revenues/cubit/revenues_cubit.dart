@@ -6,8 +6,11 @@ import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/dashboard_firestore_payload.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
+import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
+import 'package:toukh_provider/features/home/cubit/provider_business_day.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 class RevenueMonthKey extends Equatable {
   const RevenueMonthKey(this.year, this.month);
@@ -15,7 +18,8 @@ class RevenueMonthKey extends Equatable {
   factory RevenueMonthKey.fromDate(DateTime d) =>
       RevenueMonthKey(d.year, d.month);
 
-  factory RevenueMonthKey.current() => RevenueMonthKey.fromDate(DateTime.now());
+  factory RevenueMonthKey.current() =>
+      RevenueMonthKey.fromDate(toukhCairoNow());
 
   final int year;
   final int month;
@@ -142,6 +146,7 @@ class RevenuesCubit extends Cubit<RevenuesState> {
     required ProviderDashboardRepository dashboardRepository,
     required ProviderWalletRepository walletRepository,
     required String providerId,
+    this.workingHours = const {},
   })  : _dashboardRepository = dashboardRepository,
         _walletRepository = walletRepository,
         _providerId = providerId,
@@ -155,6 +160,7 @@ class RevenuesCubit extends Cubit<RevenuesState> {
   final ProviderDashboardRepository _dashboardRepository;
   final ProviderWalletRepository _walletRepository;
   final String _providerId;
+  final Map<Weekday, DaySchedule> workingHours;
 
   StreamSubscription<DashboardFirestorePayload>? _dashSub;
   List<ProviderOrderDashboard> _jobs = const [];
@@ -190,15 +196,11 @@ class RevenuesCubit extends Cubit<RevenuesState> {
   }
 
   void _recompute({bool keepSelected = false}) {
-    final months = _buildAvailableMonths(_jobs, _fees);
+    final week = toukhWeekFromSchedules(workingHours);
+    final months = _buildAvailableMonths(_jobs, _fees, week);
     final selected = keepSelected && months.contains(state.selectedMonth)
         ? state.selectedMonth
         : (months.isNotEmpty ? months.first : RevenueMonthKey.current());
-
-    final monthJobs = _jobs.where((o) {
-      final at = o.deliveredAt ?? o.cancelledAt ?? o.createdAt;
-      return selected.contains(at);
-    }).toList();
 
     // Prefer createdAt for accept/reject volume; fall back to delivered/cancelled.
     final accepted = _jobs.where((o) {
@@ -213,7 +215,13 @@ class RevenuesCubit extends Cubit<RevenuesState> {
       return selected.contains(at);
     }).length;
 
-    final delivered = monthJobs.where((o) => o.isDelivered).toList();
+    final delivered = _jobs.where((o) {
+      if (!o.isDelivered) return false;
+      final instant = o.deliveredAt ?? o.createdAt;
+      if (instant == null) return false;
+      final day = toukhOperationalBusinessDate(toukhCairoNow(instant), week);
+      return selected.contains(day);
+    }).toList();
     final revenue =
         delivered.fold<double>(0, (a, o) => a + o.revenueEgp);
 
@@ -225,7 +233,7 @@ class RevenuesCubit extends Cubit<RevenuesState> {
         .where((t) => t.isCustomerServiceFee)
         .fold<double>(0, (a, t) => a + t.amountEgp);
 
-    final daily = _dailyRevenue(selected, delivered);
+    final daily = _dailyRevenue(selected, delivered, week);
 
     emit(
       RevenuesState(
@@ -246,17 +254,28 @@ class RevenuesCubit extends Cubit<RevenuesState> {
   static List<RevenueMonthKey> _buildAvailableMonths(
     List<ProviderOrderDashboard> jobs,
     List<ProviderWalletTransaction> fees,
+    Map<String, ToukhDayHours> week,
   ) {
     final set = <RevenueMonthKey>{RevenueMonthKey.current()};
     for (final o in jobs) {
       final d = o.deliveredAt ?? o.createdAt;
-      if (d != null) set.add(RevenueMonthKey.fromDate(d));
+      if (d != null) {
+        set.add(RevenueMonthKey.fromDate(d));
+        set.add(
+          RevenueMonthKey.fromDate(
+            toukhOperationalBusinessDate(
+              toukhCairoNow(d),
+              week,
+            ),
+          ),
+        );
+      }
     }
     for (final t in fees) {
       final d = t.createdAt;
       if (d != null) set.add(RevenueMonthKey.fromDate(d));
     }
-    final now = DateTime.now();
+    final now = toukhCairoNow();
     for (var i = 0; i < 12; i++) {
       final d = DateTime(now.year, now.month - i, 1);
       set.add(RevenueMonthKey(d.year, d.month));
@@ -272,19 +291,21 @@ class RevenuesCubit extends Cubit<RevenuesState> {
   static ({List<RevenueChartPoint> points, double maxY}) _dailyRevenue(
     RevenueMonthKey month,
     List<ProviderOrderDashboard> delivered,
+    Map<String, ToukhDayHours> week,
   ) {
     final daysInMonth = DateTime(month.year, month.month + 1, 0).day;
-    final today = DateTime.now();
+    final today = toukhCairoNow();
     final lastDay = month.year == today.year && month.month == today.month
         ? today.day
         : daysInMonth;
 
     final sums = List<double>.filled(lastDay, 0);
     for (final o in delivered) {
-      final d = o.deliveredAt ?? o.createdAt;
-      if (d == null) continue;
-      if (d.year != month.year || d.month != month.month) continue;
-      final idx = d.day - 1;
+      final instant = o.deliveredAt ?? o.createdAt;
+      if (instant == null) continue;
+      final day = toukhOperationalBusinessDate(toukhCairoNow(instant), week);
+      if (day.year != month.year || day.month != month.month) continue;
+      final idx = day.day - 1;
       if (idx >= 0 && idx < lastDay) {
         sums[idx] += o.revenueEgp;
       }
@@ -310,8 +331,4 @@ class RevenuesCubit extends Cubit<RevenuesState> {
     _dashSub?.cancel();
     return super.close();
   }
-}
-
-extension on ProviderOrderDashboard {
-  DateTime? get cancelledAt => isCancelled ? deliveredAt : null;
 }

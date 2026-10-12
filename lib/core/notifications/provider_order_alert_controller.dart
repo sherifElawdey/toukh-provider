@@ -12,7 +12,7 @@ class ProviderOrderAlertController extends ChangeNotifier {
 
   ToukhNotification? get active => _active;
 
-  void show(ToukhNotification notification) {
+  void show(ToukhNotification notification, {bool playSound = true}) {
     final orderId = notification.orderId ??
         notification.payload['orderId']?.toString() ??
         '';
@@ -23,7 +23,7 @@ class ProviderOrderAlertController extends ChangeNotifier {
 
     _active = notification;
     notifyListeners();
-    if (ToukhPushConfig.isOrderAlertType(notification.type)) {
+    if (playSound && ToukhPushConfig.isOrderAlertType(notification.type)) {
       ToukhNotifySound.playOrderAlert();
     }
   }

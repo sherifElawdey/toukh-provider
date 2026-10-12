@@ -353,6 +353,15 @@ class _HomeServiceRequests {
   String get dateChangeSend => 'home_service_requests.date_change_send';
   String get dateChangeSent => 'home_service_requests.date_change_sent';
   String get dateChangePickDate => 'home_service_requests.date_change_pick_date';
+  String get actionsCancelRequest =>
+      'home_service_requests.actions_cancel_request';
+  String get actionsReportProblem =>
+      'home_service_requests.actions_report_problem';
+  String get cancelReasonLabel => 'home_service_requests.cancel_reason';
+  String get cancelPenaltyHint => 'home_service_requests.cancel_penalty_hint';
+  String get cancelSent => 'home_service_requests.cancel_sent';
+  String get reportReasonLabel => 'home_service_requests.report_reason';
+  String get reportSent => 'home_service_requests.report_sent';
   String get onMyWay => 'home_service_requests.on_my_way';
   String get finishVisit => 'home_service_requests.finish_visit';
   String get onMyWayBlocked => 'home_service_requests.on_my_way_blocked';
@@ -681,6 +690,9 @@ class _Registration {
   String get hoursOpen24h => 'registration.hours_open_24h';
   String get hoursSelectOneDay => 'registration.hours_select_one_day';
   String get hoursEndAfterStart => 'registration.hours_end_after_start';
+  String get hoursOvernight => 'registration.hours_overnight';
+  String get hoursClosesNextDay => 'registration.hours_closes_next_day';
+  String get hoursOvernightEarlier => 'registration.hours_overnight_earlier';
   String get deliveryTitle => 'registration.delivery_title';
   String get deliveryOffers => 'registration.delivery_offers';
   String get deliveryManageFromAccount =>
@@ -695,6 +707,7 @@ class _Registration {
   String get reviewDeliveryPaid => 'registration.review_delivery_paid';
   String get reviewDeliveryNotSet => 'registration.review_delivery_not_set';
   String get reviewPrepTime => 'registration.review_prep_time';
+  String get prepTimeRequired => 'registration.prep_time_required';
   String get deliveryModeFixed => 'registration.delivery_mode_fixed';
   String get deliveryModePerKm => 'registration.delivery_mode_per_km';
   String get reviewTitle => 'registration.review_title';
@@ -750,6 +763,11 @@ class _Registration {
   String get addFirstCategoryHint =>
       'registration.menu_add_first_category_hint';
   String get addItem => 'registration.menu_add_item';
+  String get bulkAddItems => 'registration.menu_bulk_add';
+  String get bulkAddHint => 'registration.menu_bulk_add_hint';
+  String get bulkAddRow => 'registration.menu_bulk_add_row';
+  String get bulkAddInvalid => 'registration.menu_bulk_invalid';
+  String get bulkAddSaved => 'registration.menu_bulk_saved';
   String get editItem => 'registration.menu_edit_item';
   String get itemTitle => 'registration.menu_item_title';
   String get itemDescription => 'registration.menu_item_description';
@@ -777,6 +795,9 @@ class _Registration {
   String get cuisineSubtitle => 'registration.cuisine_subtitle';
   String get cuisineRequired => 'registration.cuisine_required';
   String get menuEditCuisines => 'registration.menu_edit_cuisines';
+  String get menuQr => 'registration.menu_qr';
+  String get menuQrHint => 'registration.menu_qr_hint';
+  String get menuQrShare => 'registration.menu_qr_share';
   String get menuItemAvailable => 'registration.menu_item_available';
   String get menuItemUnavailable => 'registration.menu_item_unavailable';
   String get menuItemOffer => 'registration.menu_item_offer';

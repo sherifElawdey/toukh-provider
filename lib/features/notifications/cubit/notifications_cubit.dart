@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 import 'package:toukh_provider/core/firebase/app_firebase_errors.dart';
+import 'package:toukh_provider/core/notifications/provider_order_alert_controller.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -85,14 +87,32 @@ class NotificationsCubit extends Cubit<NotificationsState> {
 
   void _subscribe(String uid) {
     emit(state.copyWith(loading: true, clearError: true));
+    var seeded = false;
+    final seen = <String>{};
     _sub = _repository.watchInbox(uid).listen(
-      (items) => emit(
-        NotificationsState(
-          loading: false,
-          items: items,
-          showUnreadOnly: state.showUnreadOnly,
-        ),
-      ),
+      (items) {
+        emit(
+          NotificationsState(
+            loading: false,
+            items: items,
+            showUnreadOnly: state.showUnreadOnly,
+          ),
+        );
+        if (!kIsWeb) return;
+        if (!seeded) {
+          seeded = true;
+          seen.addAll(items.map((n) => n.id));
+          return;
+        }
+        for (final notification in items) {
+          if (notification.id.isEmpty || !seen.add(notification.id)) continue;
+          ProviderOrderAlertController.instance.show(
+            notification,
+            playSound: false,
+          );
+          ToukhWebAlert.present(notification);
+        }
+      },
       onError: (e) => emit(state.copyWith(loading: false, errorMessage: appFirebaseError(e))),
     );
   }

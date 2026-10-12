@@ -11,7 +11,7 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
-import 'package:toukh_provider/domain/entities/working_hours.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/working_hours_form.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/auth/presentation/otp_delivery_snack.dart';
@@ -80,29 +80,7 @@ String _shopCatLabel(ShopCategory c) {
 }
 
 String _hoursSummary(RegistrationDraft d) {
-  final wh = d.workingHours;
-  var openDays = 0;
-  DaySchedule? sample;
-  for (final day in Weekday.all) {
-    final s = wh[day]!;
-    if (s.enabled) {
-      openDays++;
-      sample ??= s;
-    }
-  }
-  if (openDays == 0) return '—';
-  final s = sample!;
-  if (s.twentyFourHours) {
-    return '${AppStrings.Registration.hoursOpen24h.tr} · $openDays';
-  }
-  final from = s.openFromMinutes ?? 0;
-  final to = s.openToMinutes ?? 0;
-  String fmt(int m) {
-    final hh = m ~/ 60;
-    final mm = m % 60;
-    return '${hh.toString().padLeft(2, '0')}:${mm.toString().padLeft(2, '0')}';
-  }
-  return '$openDays · ${fmt(from)}–${fmt(to)}';
+  return summarizeWorkingHours(d.workingHours);
 }
 
 String? _deliverySummary(RegistrationDraft d) {

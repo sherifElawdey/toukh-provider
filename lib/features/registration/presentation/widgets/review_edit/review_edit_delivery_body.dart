@@ -92,6 +92,15 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
       }
     }
     final prep = int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), ''));
+    if (_isRestaurant(draft) && (prep == null || prep <= 0)) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Registration.prepTimeRequired.tr,
+        state: AppSnackState.warning,
+        icon: PhosphorIconsRegular.timer,
+      );
+      return false;
+    }
     cubit.setDelivery(
       deliveryConfig: _buildConfig(draft),
       avgPrepMinutes: _isRestaurant(draft) ? prep : null,

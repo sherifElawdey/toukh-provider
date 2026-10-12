@@ -157,6 +157,10 @@ class AppTranslations extends Translations {
         'Select at least one working day to continue.',
     'registration.hours_end_after_start':
         'End time must be after start time.',
+    'registration.hours_overnight': 'Overnight shift',
+    'registration.hours_closes_next_day': 'Closes next day at @time',
+    'registration.hours_overnight_earlier':
+        'For an overnight shift, the closing time must be earlier than the opening time.',
     'registration.delivery_title': 'Delivery options',
     'registration.delivery_offers': 'Offers delivery',
     'registration.delivery_manage_from_account':
@@ -172,6 +176,8 @@ class AppTranslations extends Translations {
     'registration.review_delivery_paid': 'Paid delivery: @price EGP (@mode)',
     'registration.review_delivery_not_set': 'Not set',
     'registration.review_prep_time': 'Avg prep time (minutes)',
+    'registration.prep_time_required':
+        'Enter the average preparation time in minutes to continue.',
     'registration.delivery_mode_fixed': 'Fixed',
     'registration.delivery_mode_per_km': 'Per km',
     'registration.review_title': 'Review & submit',
@@ -204,6 +210,13 @@ class AppTranslations extends Translations {
     'registration.menu_add_first_category_hint':
         'Create a category first (e.g. Appetizers, Drinks), then add menu items to it.',
     'registration.menu_add_item': 'Add item',
+    'registration.menu_bulk_add': 'Bulk add',
+    'registration.menu_bulk_add_hint':
+        'Add several items to this section. Each item can include a photo, description, sizes, and an offer.',
+    'registration.menu_bulk_add_row': 'Add another item',
+    'registration.menu_bulk_invalid':
+        'Enter a name and a price greater than zero for each item.',
+    'registration.menu_bulk_saved': '@count items added',
     'registration.menu_edit_item': 'Edit item',
     'registration.menu_item_title': 'Item name',
     'registration.menu_item_description': 'Description / ingredients',
@@ -266,6 +279,9 @@ class AppTranslations extends Translations {
     'registration.cuisine_subtitle': 'Select the food styles you serve (at least one).',
     'registration.cuisine_required': 'Select at least one cuisine category.',
     'registration.menu_edit_cuisines': 'Edit cuisines',
+    'registration.menu_qr': 'Menu QR',
+    'registration.menu_qr_hint': 'Scan to open this menu on the Hav-it website.',
+    'registration.menu_qr_share': 'Share QR',
     'registration.menu_item_available': 'Available',
     'registration.menu_item_unavailable': 'Unavailable',
     'registration.menu_item_offer': 'Offer',
@@ -604,6 +620,14 @@ class AppTranslations extends Translations {
     'home_service_requests.date_change_send': 'Send to client',
     'home_service_requests.date_change_sent': 'Date change sent to the client.',
     'home_service_requests.date_change_pick_date': 'Choose the new date and time',
+    'home_service_requests.actions_cancel_request': 'Cancel request',
+    'home_service_requests.actions_report_problem': 'Report a problem',
+    'home_service_requests.cancel_reason': 'Reason for cancelling',
+    'home_service_requests.cancel_penalty_hint':
+        'If the client already approved this visit, a cancellation fee is deducted from your earnings.',
+    'home_service_requests.cancel_sent': 'Request cancelled.',
+    'home_service_requests.report_reason': 'Describe the problem',
+    'home_service_requests.report_sent': 'Problem report sent.',
     'home_service_requests.on_my_way': 'On My Way',
     'home_service_requests.finish_visit': 'Finish visit',
     'home_service_requests.on_my_way_blocked':
@@ -1085,6 +1109,10 @@ class AppTranslations extends Translations {
     'registration.hours_select_one_day': 'اختر يوم عمل واحدًا على الأقل للمتابعة.',
     'registration.hours_end_after_start':
         'وقت الإغلاق يجب أن يكون بعد وقت الفتح.',
+    'registration.hours_overnight': 'وردية لليوم التالي',
+    'registration.hours_closes_next_day': 'يغلق في اليوم التالي الساعة @time',
+    'registration.hours_overnight_earlier':
+        'في الوردية الليلية يجب أن يكون وقت الإغلاق أسبق من وقت الفتح.',
     'registration.delivery_title': 'خيارات التوصيل',
     'registration.delivery_offers': 'يوفّر توصيلًا',
     'registration.delivery_manage_from_account':
@@ -1100,6 +1128,8 @@ class AppTranslations extends Translations {
     'registration.review_delivery_paid': 'توصيل مدفوع: @price جنيه (@mode)',
     'registration.review_delivery_not_set': 'غير محدد',
     'registration.review_prep_time': 'متوسط وقت التجهيز (دقيقة)',
+    'registration.prep_time_required':
+        'أدخل متوسط وقت التجهيز بالدقائق للمتابعة.',
     'registration.delivery_mode_fixed': 'سعر ثابت',
     'registration.delivery_mode_per_km': 'لكل كم',
     'registration.review_title': 'مراجعة وإرسال',
@@ -1132,6 +1162,13 @@ class AppTranslations extends Translations {
     'registration.menu_add_first_category_hint':
         'ابدأ بإنشاء قسم (مثل المشروبات أو الأطباق الرئيسية)، ثم أضِف الأصناف ضمنه.',
     'registration.menu_add_item': 'إضافة صنف',
+    'registration.menu_bulk_add': 'إضافة عدة أصناف',
+    'registration.menu_bulk_add_hint':
+        'أضِف عدة أصناف إلى هذا القسم. يمكن لكل صنف أن يتضمن صورة ووصفًا ومقاسات وعرضًا.',
+    'registration.menu_bulk_add_row': 'إضافة صنف آخر',
+    'registration.menu_bulk_invalid':
+        'أدخل اسمًا وسعرًا أكبر من صفر لكل صنف.',
+    'registration.menu_bulk_saved': 'تمت إضافة @count أصناف',
     'registration.menu_edit_item': 'تعديل الصنف',
     'registration.menu_item_title': 'اسم الصنف',
     'registration.menu_item_description': 'الوصف / المكوّنات',
@@ -1193,6 +1230,9 @@ class AppTranslations extends Translations {
     'registration.cuisine_subtitle': 'اختر أنواع الطعام التي تقدمها (واحد على الأقل).',
     'registration.cuisine_required': 'اختر تصنيفًا واحدًا على الأقل.',
     'registration.menu_edit_cuisines': 'تعديل التصنيفات',
+    'registration.menu_qr': 'رمز القائمة',
+    'registration.menu_qr_hint': 'امسح الرمز لفتح هذه القائمة على موقع هافيت.',
+    'registration.menu_qr_share': 'مشاركة الرمز',
     'registration.menu_item_available': 'متاح',
     'registration.menu_item_unavailable': 'غير متاح',
     'registration.menu_item_offer': 'عرض',
@@ -1528,6 +1568,14 @@ class AppTranslations extends Translations {
     'home_service_requests.date_change_send': 'إرسال للعميل',
     'home_service_requests.date_change_sent': 'تم إرسال طلب تغيير الموعد للعميل.',
     'home_service_requests.date_change_pick_date': 'اختر التاريخ والوقت الجديدين',
+    'home_service_requests.actions_cancel_request': 'إلغاء الطلب',
+    'home_service_requests.actions_report_problem': 'الإبلاغ عن مشكلة',
+    'home_service_requests.cancel_reason': 'سبب الإلغاء',
+    'home_service_requests.cancel_penalty_hint':
+        'إذا وافق العميل على الزيارة، تُخصم غرامة إلغاء من أرباحك.',
+    'home_service_requests.cancel_sent': 'تم إلغاء الطلب.',
+    'home_service_requests.report_reason': 'صف المشكلة',
+    'home_service_requests.report_sent': 'تم إرسال البلاغ.',
     'home_service_requests.on_my_way': 'في الطريق',
     'home_service_requests.finish_visit': 'إنهاء الزيارة',
     'home_service_requests.on_my_way_blocked':

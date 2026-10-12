@@ -150,7 +150,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
       _isForegroundLocationGranted();
 
   Future<void> requestNotificationPermission() async {
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.iOS) {
       final settings =
           await FirebaseMessaging.instance.getNotificationSettings();
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
@@ -233,7 +233,7 @@ class OnboardingCubit extends Cubit<OnboardingState> {
   Future<void> openSystemSettings() => openAppSettings();
 
   Future<bool> _isNotificationGranted() async {
-    if (defaultTargetPlatform == TargetPlatform.iOS) {
+    if (kIsWeb || defaultTargetPlatform == TargetPlatform.iOS) {
       final settings =
           await FirebaseMessaging.instance.getNotificationSettings();
       return settings.authorizationStatus == AuthorizationStatus.authorized ||

@@ -20,7 +20,7 @@ class MenuBuilderScreen extends StatelessWidget {
         mediaUploadService: getIt<MediaUploadService>(),
         menuRepository: getIt<ProviderMenuRepository>(),
       ),
-      child: const MenuBuilderSeeder(),
+      child: SafeArea(top:true,child: const MenuBuilderSeeder()),
     );
   }
 }

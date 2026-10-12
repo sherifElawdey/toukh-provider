@@ -17,6 +17,11 @@ abstract class ProviderHomeServiceRequestsRepository {
     required String providerId,
   });
 
+  Future<String> cancelRequest({
+    required String requestId,
+    required String reason,
+  });
+
   Future<void> proposeDateChange({
     required String requestId,
     required String providerId,

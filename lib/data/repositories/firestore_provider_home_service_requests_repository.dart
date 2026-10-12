@@ -77,6 +77,7 @@ class FirestoreProviderHomeServiceRequestsRepository
       onMyWayAt: tsDate('onMyWayAt'),
       completedAt: tsDate('completedAt'),
       cancelledAt: tsDate('cancelledAt'),
+      cancelledBy: (data['cancelledBy'] as String?)?.trim(),
       completionCode: data['completionCode'] as String?,
     );
   }
@@ -172,6 +173,35 @@ class FirestoreProviderHomeServiceRequestsRepository
       'status': 'declined',
       'updatedAt': FieldValue.serverTimestamp(),
     });
+  }
+
+  @override
+  Future<String> cancelRequest({
+    required String requestId,
+    required String reason,
+  }) async {
+    final functions = _functions;
+    if (functions == null) {
+      throw StateError('Could not cancel request.');
+    }
+    try {
+      final result = await functions.httpsCallable('cancelHomeServiceRequest').call({
+        'requestId': requestId,
+        'reason': reason,
+      });
+      final data = result.data;
+      if (data is Map && data['status'] != null) {
+        return data['status'].toString();
+      }
+      return 'cancelled';
+    } on FirebaseFunctionsException catch (e) {
+      final message = e.message?.trim();
+      throw StateError(
+        (message != null && message.isNotEmpty)
+            ? message
+            : 'Could not cancel request.',
+      );
+    }
   }
 
   @override
