@@ -24,10 +24,11 @@ class HomeDashboardStatsRow extends StatelessWidget {
             label: AppStrings.Home.dashboardStatOrders.tr,
             value: '${metrics.ordersPlaced}',
             caption: todayLabel,
-            color: AppColors.appColor,
+            color: AppColors.secondColor,
             icon: PhosphorIconsRegular.shoppingBag,
           ),
         ),
+        const SizedBox(width: AppSizes.spaceMd),
         Expanded(
           child: HomeDashboardStatCell(
             label: AppStrings.Home.dashboardStatCompletion.tr,
@@ -37,6 +38,7 @@ class HomeDashboardStatsRow extends StatelessWidget {
             icon: ToukhIcons.success,
           ),
         ),
+        const SizedBox(width: AppSizes.spaceMd),
         Expanded(
           child: HomeDashboardStatCell(
             label: AppStrings.Home.dashboardCanceld.tr,

@@ -221,7 +221,7 @@ class _MetricCard extends StatelessWidget {
           CustomText(
             label,
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   fontWeight: FontWeight.w600,
                 ),
           ),
@@ -558,7 +558,7 @@ class _EmptyChart extends StatelessWidget {
       child: CustomText(
         message,
         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: AppColors.onSurface.withValues(alpha: 0.55),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
             ),
       ),
     );

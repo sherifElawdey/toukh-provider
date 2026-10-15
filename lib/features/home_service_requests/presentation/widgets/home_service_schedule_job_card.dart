@@ -162,7 +162,7 @@ class HomeServiceScheduleJobCard extends StatelessWidget {
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: AppSizes.fontBody,
-                    color: AppColors.appColor,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ],

@@ -158,7 +158,7 @@ class _PickupQrTileState extends State<PickupQrTile> {
           CustomText(
             AppStrings.Orders.detailPickupHandoffHint.tr,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.6),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                 ),
           ),
           if (hasOtp) ...[
@@ -184,7 +184,7 @@ class _PickupQrTileState extends State<PickupQrTile> {
             CustomText(
               AppStrings.Orders.detailPickupOtpHint.tr,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
               textAlign: TextAlign.center,
             ),
@@ -201,7 +201,7 @@ class _PickupQrTileState extends State<PickupQrTile> {
             CustomText(
               AppStrings.Orders.detailPickupQrDriverScanHint.tr,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.6),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                   ),
             ),
             const SizedBox(height: AppSizes.spaceMd),

@@ -72,7 +72,7 @@ class OrderDetailItemsCard extends StatelessWidget {
           CustomText(
             AppStrings.Orders.detailCourierFeeHint.tr,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.55),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                 ),
           ),
         ],

@@ -17,6 +17,8 @@ Future<void> showMenuQrSheet(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    // Full screen width (Material 3 caps sheets at 640 by default).
+    constraints: BoxConstraints(maxWidth: double.infinity,minWidth: MediaQuery.of(context).size.width),
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(
@@ -44,7 +46,12 @@ class _MenuQrSheetState extends State<MenuQrSheet> {
     if (_sharing) return;
     setState(() => _sharing = true);
     try {
-      final bytes = await _menuQrPng(widget.url);
+      final bytes = await _menuQrCardPng(
+        url: widget.url,
+        name: widget.name,
+        caption: AppStrings.Registration.menuQrHint.tr,
+        textDirection: Directionality.of(context),
+      );
       if (!mounted) return;
       if (bytes == null) {
         AppSnack.show(
@@ -151,30 +158,101 @@ class _MenuQrSheetState extends State<MenuQrSheet> {
   }
 }
 
-Future<Uint8List?> _menuQrPng(String url) async {
+/// Shareable card: store name, QR and caption on white, sized for chats and
+/// stories (4:5).
+Future<Uint8List?> _menuQrCardPng({
+  required String url,
+  required String name,
+  required String caption,
+  required TextDirection textDirection,
+}) async {
+  const ink = Color(0xFF1A2B3C);
+  const width = 1080.0;
+  const height = 1350.0;
+  const qrSize = 760.0;
+  const qrTop = 300.0;
+
+  final recorder = ui.PictureRecorder();
+  final canvas = Canvas(recorder);
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, width, height),
+    Paint()..color = const Color(0xFFFFFFFF),
+  );
+  canvas.drawRect(
+    const Rect.fromLTWH(0, 0, width, 16),
+    Paint()..color = AppColors.secondColor,
+  );
+
+  void drawText(
+    String text, {
+    required double top,
+    required double fontSize,
+    required FontWeight weight,
+    required Color color,
+    int maxLines = 2,
+  }) {
+    final painter = TextPainter(
+      text: TextSpan(
+        text: text,
+        style: TextStyle(
+          fontSize: fontSize,
+          fontWeight: weight,
+          color: color,
+          height: 1.25,
+        ),
+      ),
+      textAlign: TextAlign.center,
+      textDirection: textDirection,
+      maxLines: maxLines,
+      ellipsis: '…',
+    )..layout(maxWidth: width - 160);
+    painter.paint(canvas, Offset((width - painter.width) / 2, top));
+  }
+
+  drawText(
+    name.trim().isEmpty ? 'Hav-it' : name.trim(),
+    top: 110,
+    fontSize: 64,
+    weight: FontWeight.w800,
+    color: ink,
+  );
+
   final painter = QrPainter(
     data: url,
     version: QrVersions.auto,
     errorCorrectionLevel: QrErrorCorrectLevel.M,
     gapless: true,
-    eyeStyle: const QrEyeStyle(
-      eyeShape: QrEyeShape.square,
-      color: Color(0xFF1A2B3C),
-    ),
+    eyeStyle: const QrEyeStyle(eyeShape: QrEyeShape.square, color: ink),
     dataModuleStyle: const QrDataModuleStyle(
       dataModuleShape: QrDataModuleShape.square,
-      color: Color(0xFF1A2B3C),
+      color: ink,
     ),
   );
-  const size = 800.0;
-  final recorder = ui.PictureRecorder();
-  final canvas = Canvas(recorder);
-  canvas.drawRect(
-    const Rect.fromLTWH(0, 0, size, size),
-    Paint()..color = const Color(0xFFFFFFFF),
+  canvas.save();
+  canvas.translate((width - qrSize) / 2, qrTop);
+  painter.paint(canvas, const Size(qrSize, qrSize));
+  canvas.restore();
+
+  drawText(
+    caption,
+    top: qrTop + qrSize + 60,
+    fontSize: 40,
+    weight: FontWeight.w600,
+    color: ink.withValues(alpha: 0.75),
   );
-  painter.paint(canvas, const Size(size, size));
-  final image = await recorder.endRecording().toImage(size.toInt(), size.toInt());
+  drawText(
+    'Hav-it',
+    top: height - 110,
+    fontSize: 44,
+    weight: FontWeight.w800,
+    color: AppColors.secondColor,
+    maxLines: 1,
+  );
+
+  final image = await recorder.endRecording().toImage(
+    width.toInt(),
+    height.toInt(),
+  );
   final data = await image.toByteData(format: ui.ImageByteFormat.png);
   image.dispose();
   if (data == null) return null;

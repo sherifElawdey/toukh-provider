@@ -69,12 +69,12 @@ class MainShellScaffold extends StatelessWidget {
       isHomeService: isHomeService,
     );
     final scheme = Theme.of(context).colorScheme;
-    final unselectedIconColor = scheme.onSurface.withValues(alpha: 0.45);
+    final unselectedIconColor = scheme.onSurfaceVariant;
     final pageTitle = CustomText(
       navItems[selectedNavIndex.clamp(0, navItems.length - 1)].label,
       style: TextStyle(
         fontWeight: FontWeight.w800,
-        fontSize: 20,
+        fontSize: AppSizes.fontTitle,
         color: scheme.onSurface,
       ),
     );
@@ -82,7 +82,7 @@ class MainShellScaffold extends StatelessWidget {
     final wide = ProviderWebLayout.isWide(context);
 
     return AppSnackInsets(
-      bottomInset: wide ? AppSizes.spaceBase : 100,
+      bottomInset: wide ? AppSizes.spaceBase : 76,
       child: Scaffold(
         appBar: wide
             ? null
@@ -102,11 +102,7 @@ class MainShellScaffold extends StatelessWidget {
                         icon: Badge(
                           isLabelVisible: badge.notificationCount > 0,
                           label: CustomText('${badge.notificationCount}'),
-                          child: Icon(
-                            ToukhIcons.notifications,
-                            size: 26,
-                            color: AppColors.secondColor,
-                          ),
+                          child: Icon(ToukhIcons.notifications, size: 24),
                         ),
                       );
                     },
@@ -158,37 +154,43 @@ class MainShellScaffold extends StatelessWidget {
         ),
         bottomNavigationBar: wide
             ? null
-            : SafeArea(
-                top: false,
-                bottom: true,
-                child: SizedBox(
-                  height: 100,
-                  child: Material(
-                    elevation: 8,
-                    shadowColor: Colors.black.withValues(alpha: 0.12),
-                    surfaceTintColor: Colors.transparent,
-                    clipBehavior: Clip.antiAlias,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < navItems.length; i++)
-                            Expanded(
-                              flex: selectedNavIndex == i ? 3 : 2,
-                              child: ShellNavDestination(
-                                item: navItems[i],
-                                selected: selectedNavIndex == i,
-                                unselectedIconColor: unselectedIconColor,
-                                onTap: () => navigationShell.goBranch(
-                                  ProviderShellNav.branchIndexForNavTap(
-                                    navIndex: i,
-                                    isHomeService: isHomeService,
+            : ColoredBox(
+                color: Theme.of(context).cardColor,
+                child: SafeArea(
+                  top: false,
+                  bottom: true,
+                  child: Container(
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).cardColor,
+                      border: const Border(
+                        top: BorderSide(color: AppColors.borderSubtle),
+                      ),
+                    ),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(10, 8, 10, 8),
+                        child: Row(
+                          children: [
+                            for (var i = 0; i < navItems.length; i++)
+                              Expanded(
+                                flex: selectedNavIndex == i ? 3 : 2,
+                                child: ShellNavDestination(
+                                  item: navItems[i],
+                                  selected: selectedNavIndex == i,
+                                  unselectedIconColor: unselectedIconColor,
+                                  onTap: () => navigationShell.goBranch(
+                                    ProviderShellNav.branchIndexForNavTap(
+                                      navIndex: i,
+                                      isHomeService: isHomeService,
+                                    ),
+                                    initialLocation: selectedNavIndex == i,
                                   ),
-                                  initialLocation: selectedNavIndex == i,
                                 ),
                               ),
-                            ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
                   ),

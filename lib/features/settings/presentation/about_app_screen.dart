@@ -127,7 +127,7 @@ class _AboutAppScreenState extends State<AboutAppScreen> {
                 children: [
                   Icon(
                     ToukhIcons.info,
-                    color: AppColors.appColor,
+                    color: Theme.of(context).colorScheme.primary,
                     size: 28,
                   ),
                   SizedBox(width: AppSizes.spaceMd),

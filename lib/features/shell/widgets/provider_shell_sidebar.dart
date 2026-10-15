@@ -31,9 +31,9 @@ class ProviderShellSidebar extends StatelessWidget {
       child: Material(
         color: scheme.surface,
         child: DecoratedBox(
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             border: BorderDirectional(
-              end: BorderSide(color: scheme.onSurface.withValues(alpha: 0.08)),
+              end: BorderSide(color: AppColors.borderSubtle),
             ),
           ),
           child: SafeArea(
@@ -88,7 +88,11 @@ class _SidebarDestination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = selected ? Colors.white : unselectedIconColor;
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final pill = dark ? AppColors.appColor : AppColors.bottomNavPill;
+    final foreground = selected
+        ? (dark ? AppColors.onSurface : Colors.white)
+        : unselectedIconColor;
 
     return InkWell(
       onTap: onTap,
@@ -98,7 +102,7 @@ class _SidebarDestination extends StatelessWidget {
         curve: Curves.easeOutCubic,
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
         decoration: BoxDecoration(
-          color: selected ? AppColors.bottomNavPill : Colors.transparent,
+          color: selected ? pill : Colors.transparent,
           borderRadius: BorderRadius.circular(14),
         ),
         child: Row(
@@ -157,7 +161,7 @@ class _SidebarNotificationsButton extends StatelessWidget {
                   child: Icon(
                     ToukhIcons.notifications,
                     size: 22,
-                    color: AppColors.secondColor,
+                    color: unselectedIconColor,
                   ),
                 ),
                 const SizedBox(width: 12),

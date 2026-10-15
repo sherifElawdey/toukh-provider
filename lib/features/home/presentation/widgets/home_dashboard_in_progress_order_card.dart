@@ -19,7 +19,7 @@ class HomeDashboardInProgressOrderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final subtle = scheme.onSurface.withValues(alpha: 0.62);
+    final subtle = scheme.onSurfaceVariant;
     final timerAnchor = order.acceptedAt ?? order.createdAt;
 
     return Material(
@@ -27,7 +27,7 @@ class HomeDashboardInProgressOrderCard extends StatelessWidget {
       borderRadius: BorderRadius.circular(16),
       child: InkWell(
         onTap: () => context.go(AppRoutes.orders),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
         child: Ink(
           width: 172,
           decoration: dashboardSoftDecoration(context),
@@ -36,21 +36,11 @@ class HomeDashboardInProgressOrderCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.appColor.withValues(alpha: 0.14),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: CustomText(
-                  dashboardOrderStatusLabel(order),
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.appColor,
-                  ),
-                ),
+              ToukhStatusPill(
+                label: dashboardOrderStatusLabel(order),
+                color: scheme.primary,
+                dot: true,
+                dense: true,
               ),
               CustomText(
                 order.hideCustomerContact
@@ -147,7 +137,7 @@ class _HomeOrderElapsedTimerState extends State<_HomeOrderElapsedTimer> {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(ToukhIcons.clock, size: 13, color: AppColors.secondColor),
+        Icon(ToukhIcons.clock, size: 13, color: scheme.onSurfaceVariant),
         const SizedBox(width: 4),
         Text(
           label,

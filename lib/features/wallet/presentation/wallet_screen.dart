@@ -72,7 +72,7 @@ class WalletScreen extends StatelessWidget {
                 CustomText(
                   AppStrings.Wallet.noTransactionsYet.tr,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppColors.onSurface.withValues(alpha: 0.55),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                       ),
                 )
               else
@@ -100,7 +100,7 @@ class WalletScreen extends StatelessWidget {
           child: AppFilledButton(
             text: AppStrings.Wallet.requestPayout.tr,
             icon: PhosphorIconsRegular.bank,
-            color: AppColors.appColor,
+            color: Theme.of(context).colorScheme.primary,
             foregroundColor: AppColors.surface,
             padding: const EdgeInsets.symmetric(
               vertical: AppSizes.spaceMd,
@@ -140,7 +140,7 @@ class _BalanceCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.secondColor.withValues(alpha: 0.35),
+            color: const Color(0xFF0F1B2D).withValues(alpha: 0.08),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -247,7 +247,7 @@ class _LastEarningSection extends StatelessWidget {
             AppStrings.Wallet.lastEarning.tr,
             style: t.labelLarge?.copyWith(
               fontWeight: FontWeight.w700,
-              color: AppColors.onSurface.withValues(alpha: 0.55),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
             ),
           ),
           const SizedBox(height: AppSizes.spaceSm),
@@ -255,7 +255,7 @@ class _LastEarningSection extends StatelessWidget {
             CustomText(
               AppStrings.Wallet.noEarningsYet.tr,
               style: t.bodyMedium?.copyWith(
-                color: AppColors.onSurface.withValues(alpha: 0.65),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
               ),
             )
           else ...[
@@ -286,7 +286,7 @@ class _LastEarningSection extends StatelessWidget {
               CustomText(
                 transaction!.detail!,
                 style: t.bodySmall?.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.65),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                 ),
               ),
             ],
@@ -329,7 +329,7 @@ class _EarningTile extends StatelessWidget {
         subtitle: CustomText(
           walletEarningLabel(transaction),
           style: t.bodySmall?.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.55),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
           ),
         ),
         trailing: Row(

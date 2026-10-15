@@ -42,7 +42,7 @@ class HomeDashboardInProgressStrip extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.spaceSm),
         SizedBox(
-          height: 120,
+          height: 132,
           child: orders.isEmpty
               ? HomeDashboardEmptyPlaceholder(
                   message: AppStrings.Home.dashboardInProgressEmpty,
@@ -50,6 +50,8 @@ class HomeDashboardInProgressStrip extends StatelessWidget {
                 )
               : ListView.separated(
                   scrollDirection: Axis.horizontal,
+                  clipBehavior: Clip.none,
+                  padding: const EdgeInsets.only(bottom: 12),
                   itemCount: orders.length,
                   separatorBuilder: (context, _) => const SizedBox(width: 12),
                   itemBuilder: (context, index) {

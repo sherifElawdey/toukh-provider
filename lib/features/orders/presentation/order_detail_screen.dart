@@ -119,7 +119,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       Icon(
                         PhosphorIconsRegular.receipt,
                         size: 48,
-                        color: AppColors.onSurface.withValues(alpha: 0.35),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
                       ),
                     const SizedBox(height: AppSizes.spaceMd),
                     CustomText(

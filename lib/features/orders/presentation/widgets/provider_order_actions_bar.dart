@@ -467,7 +467,7 @@ class _DriverSearchStatusPanelState extends State<DriverSearchStatusPanel> {
                     'elapsed': display,
                   }),
                   style: t.bodySmall?.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.65),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                   ),
                 ),
               ],

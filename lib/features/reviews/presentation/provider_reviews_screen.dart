@@ -141,7 +141,7 @@ class _ReviewsSummaryHeader extends StatelessWidget {
                     rounded,
                     style: TextStyle(
                       fontSize: 28,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w800,
                       color: scheme.onSurface,
                     ),
                   ),

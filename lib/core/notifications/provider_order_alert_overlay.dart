@@ -263,7 +263,7 @@ class _OrderAlertBannerState extends State<_OrderAlertBanner> {
       ),
       child: Icon(
         isHomeService ? ToukhIcons.home : ToukhIcons.orders,
-        color: AppColors.appColor,
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }

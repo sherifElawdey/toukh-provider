@@ -32,7 +32,7 @@ class OrderDetailNotesCard extends StatelessWidget {
             child: CustomText(
               note,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.8),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.8),
                     height: 1.4,
                   ),
             ),

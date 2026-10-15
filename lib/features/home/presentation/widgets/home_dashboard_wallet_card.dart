@@ -22,119 +22,151 @@ class HomeDashboardRevenueCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Material(
-      color: AppColors.secondColor.withValues(alpha: 0.12),
-      borderRadius: BorderRadius.circular(16),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 22),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  PhosphorIconsRegular.currencyDollar,
-                  color: AppColors.secondColor,
-                  size: 28,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: CustomText(
-                    AppStrings.Home.dashboardStatRevenue.tr,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w700,
-                      color: scheme.onSurface.withValues(alpha: 0.72),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            CustomText(
-              'EGP ${formatWalletMoney(revenueEgp)}',
-              style: TextStyle(
-                fontSize: 34,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.8,
-                color: scheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 4),
-            CustomText(
-              AppStrings.Home.dashboardStatRevenueSub.tr,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: scheme.onSurface.withValues(alpha: 0.55),
-              ),
-            ),
-            const SizedBox(height: 14),
-            _WeekRevenueLine(
-              weekRevenueEgp: weekRevenueEgp,
-              weekRate: weekRate,
-            ),
+    final percent = (weekRate * 100).round().clamp(0, 100);
+    final faint = Colors.white.withValues(alpha: 0.8);
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: AlignmentDirectional.topStart,
+          end: AlignmentDirectional.bottomEnd,
+          colors: [
+            AppColors.brandDeep,
+            Color(0xFF1B4F8F),
+            AppColors.secondColor,
           ],
         ),
+        borderRadius: BorderRadius.circular(AppSizes.radiusXl),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.brandDeep.withValues(alpha: 0.28),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.all(AppSizes.spaceLg),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: CustomText(
+                  AppStrings.Home.dashboardStatRevenue.tr,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: faint,
+                  ),
+                ),
+              ),
+              _HeroChip(icon: PhosphorIconsBold.trendUp, label: '$percent%'),
+            ],
+          ),
+          const SizedBox(height: AppSizes.spaceSm),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            children: [
+              Flexible(
+                child: CustomText(
+                  formatWalletMoney(revenueEgp),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.w800,
+                    height: 1.15,
+                    color: Colors.white,
+                    fontFeatures: [FontFeature.tabularFigures()],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              CustomText(
+                'EGP',
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: faint,
+                ),
+              ),
+            ],
+          ),
+          CustomText(
+            AppStrings.Home.dashboardStatRevenueSub.tr,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: AppSizes.spaceBase),
+          Container(height: 1, color: Colors.white.withValues(alpha: 0.14)),
+          const SizedBox(height: AppSizes.spaceMd),
+          Row(
+            children: [
+              Icon(PhosphorIconsRegular.calendarBlank, size: 16, color: faint),
+              const SizedBox(width: 6),
+              Expanded(
+                child: CustomText(
+                  AppStrings.Home.dashboardPeriodWeek.tr,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: faint,
+                  ),
+                ),
+              ),
+              CustomText(
+                'EGP ${formatWalletMoney(weekRevenueEgp)}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  fontFeatures: [FontFeature.tabularFigures()],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
 
-class _WeekRevenueLine extends StatelessWidget {
-  const _WeekRevenueLine({
-    required this.weekRevenueEgp,
-    required this.weekRate,
-  });
+class _HeroChip extends StatelessWidget {
+  const _HeroChip({required this.icon, required this.label});
 
-  final double weekRevenueEgp;
-  final double weekRate;
+  final IconData icon;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
-    final percent = (weekRate * 100).round().clamp(0, 100);
-    final rateColor = percent >= 70
-        ? AppColors.success
-        : percent >= 40
-            ? AppColors.secondColor
-            : AppColors.error;
-    return Row(
-      children: [
-        Icon(
-          PhosphorIconsRegular.calendarBlank,
-          size: 14,
-          color: AppColors.secondColor,
-        ),
-        const SizedBox(width: 4),
-        Flexible(
-          child: CustomText(
-            '${AppStrings.Home.dashboardPeriodWeek.tr} · EGP ${formatWalletMoney(weekRevenueEgp)}',
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(AppSizes.radiusFull),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 4),
+          CustomText(
+            label,
+            style: const TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
-              color: AppColors.secondColor,
+              fontWeight: FontWeight.w800,
+              height: 1.2,
+              color: Colors.white,
             ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Icon(
-          PhosphorIconsRegular.trendUp,
-          size: 14,
-          color: rateColor,
-        ),
-        const SizedBox(width: 4),
-        CustomText(
-          '$percent%',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w800,
-            color: rateColor,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -155,82 +187,87 @@ class HomeDashboardWalletCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final accent = needsRecharge ? AppColors.error : scheme.primary;
-    final fill = needsRecharge
-        ? AppColors.error.withValues(alpha: 0.12)
-        : Theme.of(context).cardColor;
-    return Material(
-      color: fill,
-      borderRadius: BorderRadius.circular(12),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () => context.push(AppRoutes.wallet),
-        child: Container(
-          decoration: BoxDecoration(
-            border: needsRecharge
-                ? Border.all(color: AppColors.error.withValues(alpha: 0.7))
-                : null,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: accent.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding: const EdgeInsets.all(8),
-                child: Icon(ToukhIcons.wallet, color: accent, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CustomText(
-                      AppStrings.Home.dashboardWalletTitle.tr,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: needsRecharge
-                            ? AppColors.error
-                            : scheme.onSurface.withValues(alpha: 0.65),
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    CustomText(
-                      'EGP ${formatWalletMoney(balanceEgp)}',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.3,
-                        color: needsRecharge ? AppColors.error : scheme.onSurface,
-                      ),
-                    ),
-                    if (needsRecharge) ...[
-                      const SizedBox(height: 4),
+    final radius = BorderRadius.circular(AppSizes.radiusLg);
+    return DecoratedBox(
+      decoration: ToukhCard.decoration(
+        context,
+        color: needsRecharge ? scheme.errorContainer : null,
+        borderColor: needsRecharge
+            ? AppColors.error.withValues(alpha: 0.45)
+            : null,
+      ),
+      child: Material(
+        type: MaterialType.transparency,
+        borderRadius: radius,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () => context.push(AppRoutes.wallet),
+          child: Padding(
+            padding: const EdgeInsets.all(AppSizes.spaceBase),
+            child: Row(
+              children: [
+                ToukhIconWell(icon: ToukhIcons.wallet, color: accent, size: 44),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       CustomText(
-                        AppStrings.Home.dashboardWalletRecharge.tr,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.error,
-                        ),
-                      ),
-                    ] else if (pendingEgp != null && pendingEgp! > 0) ...[
-                      const SizedBox(height: 4),
-                      CustomText(
-                        '${AppStrings.Home.dashboardWalletPending.tr}: EGP ${formatWalletMoney(pendingEgp!)}',
+                        AppStrings.Home.dashboardWalletTitle.tr,
                         style: TextStyle(
                           fontSize: 12,
-                          color: scheme.onSurface.withValues(alpha: 0.55),
+                          fontWeight: FontWeight.w600,
+                          color: needsRecharge
+                              ? AppColors.error
+                              : scheme.onSurfaceVariant,
                         ),
                       ),
+                      const SizedBox(height: 2),
+                      CustomText(
+                        'EGP ${formatWalletMoney(balanceEgp)}',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.3,
+                          color: needsRecharge
+                              ? AppColors.error
+                              : scheme.onSurface,
+                        ),
+                      ),
+                      if (needsRecharge) ...[
+                        const SizedBox(height: 4),
+                        CustomText(
+                          AppStrings.Home.dashboardWalletRecharge.tr,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.error,
+                          ),
+                        ),
+                      ] else if (pendingEgp != null && pendingEgp! > 0) ...[
+                        const SizedBox(height: 4),
+                        CustomText(
+                          '${AppStrings.Home.dashboardWalletPending.tr}: EGP ${formatWalletMoney(pendingEgp!)}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: scheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ],
+                Icon(
+                  Directionality.of(context) == TextDirection.rtl
+                      ? PhosphorIconsRegular.caretLeft
+                      : PhosphorIconsRegular.caretRight,
+                  size: 18,
+                  color: needsRecharge
+                      ? AppColors.error
+                      : scheme.onSurfaceVariant,
+                ),
+              ],
+            ),
           ),
         ),
       ),

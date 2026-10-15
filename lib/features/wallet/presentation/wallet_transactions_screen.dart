@@ -72,7 +72,7 @@ class _WalletTransactionsScreenState extends State<WalletTransactionsScreen> {
                 child: CustomText(
                   AppStrings.Wallet.noTransactionsYet.tr,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: AppColors.onSurface.withValues(alpha: 0.55),
+                        color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                       ),
                 ),
               ),
@@ -171,7 +171,7 @@ class _TxListRow extends StatelessWidget {
         subtitle: CustomText(
           walletEarningLabel(transaction),
           style: t.bodySmall?.copyWith(
-            color: AppColors.onSurface.withValues(alpha: 0.55),
+            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
           ),
         ),
         trailing: CustomText(

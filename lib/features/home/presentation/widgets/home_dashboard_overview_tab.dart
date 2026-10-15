@@ -70,13 +70,13 @@ class HomeDashboardOverviewTab extends StatelessWidget {
       const HomePermissionsBanner(),
       const SizedBox(height: AppSizes.spaceMd),
       _pendingBanner(),
-      _inProgressStrip(),
-      const SizedBox(height: AppSizes.spaceXl),
       _revenueCard(),
+      const SizedBox(height: AppSizes.spaceMd),
+      HomeDashboardStatsRow(metrics: state.todayMetrics),
       const SizedBox(height: AppSizes.spaceMd),
       _walletCard(),
       const SizedBox(height: AppSizes.spaceXl),
-      HomeDashboardStatsRow(metrics: state.todayMetrics),
+      _inProgressStrip(),
       const SizedBox(height: AppSizes.spaceXl),
       _chartSection(context),
       if (state.showMenuInsights) ...[
@@ -149,18 +149,18 @@ class HomeDashboardOverviewTab extends StatelessWidget {
           '$greeting, ${state.providerDisplayName}',
           style: TextStyle(
             fontSize: AppSizes.fontHeadline,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
             color: scheme.onSurface,
-            letterSpacing: -0.3,
+            height: 1.3,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         CustomText(
           AppStrings.Home.dashboardSubtitle.tr,
           style: TextStyle(
-            fontSize: AppSizes.fontBody,
-            color: scheme.onSurface.withValues(alpha: 0.72),
-            height: 1.35,
+            fontSize: AppSizes.fontLabel,
+            color: scheme.onSurfaceVariant,
+            height: 1.45,
           ),
         ),
       ],
@@ -221,18 +221,7 @@ class HomeDashboardOverviewTab extends StatelessWidget {
                     ordersState.orders,
                     uid,
                   ).map((r) => r.toDashboard()).toList();
-            return Column(
-              children: [
-                if (uid != null &&
-                    ordersState.orders.any(
-                      (m) =>
-                          m.hasProviderSlice(uid) &&
-                          (m.sliceFor(uid)?.isIncoming ?? false),
-                    ))
-                  const SizedBox(height: AppSizes.spaceXl),
-                HomeDashboardInProgressStrip(orders: inProgress),
-              ],
-            );
+            return HomeDashboardInProgressStrip(orders: inProgress);
           },
         );
       },

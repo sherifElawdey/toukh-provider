@@ -85,7 +85,7 @@ class OrderHistoryListTile extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
-                        color: AppColors.appColor,
+                        color: Theme.of(context).colorScheme.primary,
                       ),
                     ),
                   ),

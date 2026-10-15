@@ -22,40 +22,34 @@ class HomeDashboardStatCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
-      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      padding: const EdgeInsets.all(AppSizes.spaceMd),
       decoration: dashboardSoftDecoration(context),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.all(6),
-            child: Icon(icon, color: color, size: 20),
-          ),
-          const SizedBox(height: 8),
-          CustomText(
-            label,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: scheme.onSurface.withValues(alpha: 0.58),
-            ),
-          ),
-          const SizedBox(height: 4),
+          ToukhIconWell(icon: icon, color: color, size: 34, iconSize: 18),
+          const SizedBox(height: AppSizes.spaceMd),
           CustomText(
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w900,
+              fontSize: 22,
+              fontWeight: FontWeight.w800,
+              height: 1.15,
               color: scheme.onSurface,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
+          ),
+          const SizedBox(height: 2),
+          CustomText(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
+              color: scheme.onSurfaceVariant,
             ),
           ),
         ],

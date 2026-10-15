@@ -152,7 +152,7 @@ class _PickupQrSheetBodyState extends State<_PickupQrSheetBody> {
                   CustomText(
                     AppStrings.Orders.detailPickupHandoffHint.tr,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.onSurface.withValues(alpha: 0.7),
+                          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
                         ),
                   ),
                   const SizedBox(height: AppSizes.spaceMd),

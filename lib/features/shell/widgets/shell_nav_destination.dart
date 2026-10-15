@@ -18,6 +18,9 @@ class ShellNavDestination extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final pill = dark ? AppColors.appColor : AppColors.bottomNavPill;
+    final onPill = dark ? AppColors.onSurface : Colors.white;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(28),
@@ -28,11 +31,11 @@ class ShellNavDestination extends StatelessWidget {
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeOutCubic,
             padding: selected
-                ? const EdgeInsets.symmetric(horizontal: 14, vertical: 10)
+                ? const EdgeInsets.symmetric(horizontal: 14, vertical: 11)
                 : const EdgeInsets.all(10),
             decoration: selected
                 ? BoxDecoration(
-                    color: AppColors.bottomNavPill,
+                    color: pill,
                     borderRadius: BorderRadius.circular(28),
                   )
                 : null,
@@ -41,24 +44,24 @@ class ShellNavDestination extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.max,
                     children: [
-                      Icon(item.selectedIcon, color: Colors.white, size: 22),
-                      const SizedBox(width: 8),
+                      Icon(item.selectedIcon, color: onPill, size: 20),
+                      const SizedBox(width: 6),
                       Flexible(
                         child: CustomText(
                           item.label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 15,
-                            letterSpacing: 0.2,
+                          style: TextStyle(
+                            color: onPill,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 13,
+                            height: 1.2,
                           ),
                         ),
                       ),
                     ],
                   )
-                : Icon(item.icon, color: unselectedIconColor, size: 26),
+                : Icon(item.icon, color: unselectedIconColor, size: 24),
           ),
         ),
       ),

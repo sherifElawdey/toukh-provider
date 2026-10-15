@@ -1,11 +1,18 @@
 import 'package:get/get.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 
-/// Public landing menu URL. Slug matches the website when no stored slug exists.
+/// Public landing menu URL, matching the website's routing: stored `slug`
+/// first, otherwise the generated name + short id slug; `restaurant` vs
+/// `store` follows the site's `isRestaurantProvider`.
 String publicMenuUrl(ProviderProfile profile) {
   final locale = Get.locale?.languageCode == 'ar' ? 'ar' : 'en';
-  final slug = generatedProfileSlug(profile.name, profile.uid);
-  return 'https://toukh.com/$locale/restaurant/$slug/menu';
+  final slug = profile.slug ?? generatedProfileSlug(profile.name, profile.uid);
+  final kind =
+      profile.serviceType == ServiceType.restaurant || profile.isRestaurantShop
+      ? 'restaurant'
+      : 'store';
+  return 'https://toukh.com/$locale/$kind/$slug/menu';
 }
 
 String generatedProfileSlug(String name, String docId) {

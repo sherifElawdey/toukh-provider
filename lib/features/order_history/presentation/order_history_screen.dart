@@ -123,7 +123,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     child: CustomText(
                       AppStrings.OrderHistory.empty.tr,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.onSurface.withValues(alpha: 0.55),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                           ),
                     ),
                   ),

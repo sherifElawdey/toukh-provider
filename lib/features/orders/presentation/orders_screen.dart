@@ -206,7 +206,7 @@ class _OrdersStatusTabPill extends StatelessWidget {
             boxShadow: selected
                 ? [
                     BoxShadow(
-                      color: AppColors.appColor.withValues(alpha: 0.22),
+                      color: const Color(0xFF0F1B2D).withValues(alpha: 0.08),
                       blurRadius: 10,
                       offset: const Offset(0, 3),
                     ),

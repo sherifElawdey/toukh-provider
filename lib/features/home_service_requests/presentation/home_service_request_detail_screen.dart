@@ -833,7 +833,7 @@ class _DetailRow extends StatelessWidget {
             child: CustomText(
               label,
               style: t.bodyMedium?.copyWith(
-                color: Colors.blueGrey.shade600,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontWeight: FontWeight.w600,
               ),
             ),

@@ -88,7 +88,7 @@ class _MiniCard extends StatelessWidget {
             style: TextStyle(
               fontFamily: AppFonts.family,
               fontSize: AppSizes.fontLabel - 1,
-              color: AppColors.onSurface.withValues(alpha: 0.6),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
             ),
           ),
           const SizedBox(height: 6),

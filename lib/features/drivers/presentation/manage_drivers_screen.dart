@@ -251,7 +251,7 @@ class _ProviderIdCard extends StatelessWidget {
                 onPressed: onCopy,
                 icon: Icon(
                   PhosphorIconsRegular.copy,
-                  color: AppColors.appColor,
+                  color: Theme.of(context).colorScheme.primary,
                 ),
               ),
             ],

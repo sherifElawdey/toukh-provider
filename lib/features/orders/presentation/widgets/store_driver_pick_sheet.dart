@@ -152,7 +152,7 @@ class _StoreDriverPickSheetState extends State<_StoreDriverPickSheet> {
                               AppColors.appColor.withValues(alpha: 0.15),
                           child: Icon(
                             ToukhIcons.delivery,
-                            color: AppColors.appColor,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
                         ),
                         title: CustomText(

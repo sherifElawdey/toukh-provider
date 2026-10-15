@@ -219,7 +219,7 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
               CustomText(
                 AppStrings.Orders.pharmacyQuoteCourierFeeHint.tr,
                 style: t.bodySmall?.copyWith(
-                  color: AppColors.onSurface.withValues(alpha: 0.65),
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                 ),
               ),
             const SizedBox(height: AppSizes.spaceLg),

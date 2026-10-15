@@ -75,7 +75,7 @@ class OrderDetailStatusHeader extends StatelessWidget {
                 CustomText(
                   '${AppStrings.Orders.detailOrderIdLabel.tr} · #${_shortRef()}',
                   style: t.labelMedium?.copyWith(
-                    color: AppColors.onSurface.withValues(alpha: 0.55),
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -84,7 +84,7 @@ class OrderDetailStatusHeader extends StatelessWidget {
                   CustomText(
                     placedAt,
                     style: t.labelSmall?.copyWith(
-                      color: AppColors.onSurface.withValues(alpha: 0.45),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.45),
                     ),
                   ),
                 ],

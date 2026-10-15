@@ -82,6 +82,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
           final businessRows = <_ProfileRow>[
             _ProfileRow(
+              icon: PhosphorIconsRegular.storefront,
               labelKey: AppStrings.Registration.reviewBusinessType,
               value: draft.kind == null
                   ? '—'
@@ -91,24 +92,28 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
             ),
             if (categoryEntryFromDraft(draft) case final cat?)
               _ProfileRow(
+                icon: PhosphorIconsRegular.squaresFour,
                 labelKey: cat.$1,
                 value: cat.$2,
                 locked: true,
                 onTap: () => _showLockedSnack(context),
               ),
             _ProfileRow(
+              icon: PhosphorIconsRegular.tag,
               labelKey: AppStrings.Registration.brandName,
               value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
               onTap: () => _openEdit(context, ReviewField.profile),
             ),
             if (draft.description.trim().isNotEmpty)
               _ProfileRow(
+                icon: PhosphorIconsRegular.textAlignLeft,
                 labelKey: AppStrings.Registration.description,
                 value: draft.description.trim(),
                 onTap: () => _openEdit(context, ReviewField.profile),
               ),
             if (draft.kind == ServiceType.homeService)
               _ProfileRow(
+                icon: PhosphorIconsRegular.listChecks,
                 labelKey: AppStrings.Registration.preServiceQuestionsTitle,
                 value: draft.preServiceQuestions.isEmpty
                     ? AppStrings.Registration.preServiceQuestionsNone.tr
@@ -122,12 +127,14 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
           final contactRows = <_ProfileRow>[
             _ProfileRow(
+              icon: PhosphorIconsRegular.phone,
               labelKey: AppStrings.Auth.phoneNumber,
               value: formatProviderPhone(profile.phone),
               locked: true,
               onTap: () => _showLockedSnack(context),
             ),
             _ProfileRow(
+              icon: PhosphorIconsRegular.addressBook,
               labelKey: AppStrings.Settings.brandInfo,
               value: brandInfoSummary(profile.brandInfo),
               onTap: () => context.push(AppRoutes.brandInfo),
@@ -143,18 +150,21 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
 
           final operationRows = <_ProfileRow>[
             _ProfileRow(
+              icon: PhosphorIconsRegular.clock,
               labelKey: AppStrings.Registration.hoursTitle,
               value: hoursSummaryFromDraft(draft),
               onTap: () => _openEdit(context, ReviewField.hours),
             ),
             if (deliverySummaryFromDraft(draft) case final delivery?)
               _ProfileRow(
+                icon: PhosphorIconsRegular.moped,
                 labelKey: AppStrings.Registration.deliveryTitle,
                 value: delivery,
                 onTap: () => _openEdit(context, ReviewField.delivery),
               ),
             if (draft.avgPrepMinutes != null && draft.avgPrepMinutes! > 0)
               _ProfileRow(
+                icon: PhosphorIconsRegular.timer,
                 labelKey: AppStrings.Registration.reviewPrepTime,
                 value: '${draft.avgPrepMinutes}',
                 onTap: () => _openEdit(context, ReviewField.delivery),
@@ -194,6 +204,7 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     titleKey: AppStrings.Settings.location,
                     rows: [
                       _ProfileRow(
+                        icon: PhosphorIconsRegular.mapPin,
                         labelKey: AppStrings.Registration.mapTitle,
                         value: locationValue,
                         onTap: () => _openEdit(context, ReviewField.location),
@@ -210,10 +221,12 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                     titleKey: AppStrings.Settings.accountInfo,
                     rows: [
                       _ProfileRow(
+                        icon: PhosphorIconsRegular.calendarBlank,
                         labelKey: AppStrings.Settings.memberSince,
                         value: formatMemberSince(profile.createdAt, locale),
                       ),
                       _ProfileRow(
+                        icon: PhosphorIconsRegular.sealCheck,
                         labelKey: AppStrings.Settings.phoneVerified,
                         value: profile.phoneVerified
                             ? AppStrings.Common.success.tr
@@ -326,7 +339,12 @@ class _ProfileSection extends StatelessWidget {
         SizedBox(height: AppSizes.spaceSm),
         for (var i = 0; i < rows.length; i++) ...[
           rows[i],
-          if (i < rows.length - 1) const Divider(height: 1, thickness: 0.5),
+          if (i < rows.length - 1)
+            const Divider(
+              height: 1,
+              thickness: 0.5,
+              indent: _ProfileRow.iconSize + AppSizes.spaceMd,
+            ),
         ],
       ],
     );
@@ -335,16 +353,20 @@ class _ProfileSection extends StatelessWidget {
 
 class _ProfileRow extends StatelessWidget {
   const _ProfileRow({
+    required this.icon,
     required this.labelKey,
     required this.value,
     this.onTap,
     this.locked = false,
   });
 
+  final IconData icon;
   final String labelKey;
   final String value;
   final VoidCallback? onTap;
   final bool locked;
+
+  static const double iconSize = 40;
 
   @override
   Widget build(BuildContext context) {
@@ -354,6 +376,8 @@ class _ProfileRow extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          ToukhIconWell(icon: icon, size: _ProfileRow.iconSize),
+          SizedBox(width: AppSizes.spaceMd),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

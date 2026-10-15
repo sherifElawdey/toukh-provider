@@ -47,7 +47,7 @@ class HomeDashboardBestsellersSection extends StatelessWidget {
                       child: CustomText(
                         '$rank',
                         style: TextStyle(
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w800,
                           color: scheme.onSurface.withValues(alpha: 0.35),
                         ),
                       ),

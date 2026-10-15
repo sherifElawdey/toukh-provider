@@ -190,7 +190,7 @@ class _ClientDetailsBody extends StatelessWidget {
                         Icon(
                           ToukhIcons.phone,
                           size: 16,
-                          color: AppColors.appColor,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                         const SizedBox(width: AppSizes.spaceSm),
                         Expanded(
@@ -223,7 +223,7 @@ class _ClientDetailsBody extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(ToukhIcons.location, color: AppColors.appColor, size: 22),
+              Icon(ToukhIcons.location, color: Theme.of(context).colorScheme.primary, size: 22),
               const SizedBox(width: AppSizes.spaceMd),
               Expanded(
                 child: Column(
@@ -243,7 +243,7 @@ class _ClientDetailsBody extends StatelessWidget {
                           ? addressLine
                           : AppStrings.Orders.noAddress.tr,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.onSurface.withValues(alpha: 0.65),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                           ),
                     ),
                     if (data.hasCoords) ...[
@@ -271,7 +271,7 @@ class _ClientDetailsBody extends StatelessWidget {
               icon: Icon(
                 ToukhIcons.location,
                 size: 18,
-                color: AppColors.appColor,
+                color: Theme.of(context).colorScheme.primary,
               ),
               label: CustomText(
                 AppStrings.Orders.viewOnMap.tr,

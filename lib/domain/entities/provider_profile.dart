@@ -22,6 +22,7 @@ class ProviderProfile extends Equatable {
     this.shopCategory,
     this.serviceCategoryId,
     this.serviceCategoryTitle,
+    this.slug,
     required this.name,
     this.description,
     this.brandImageUrl,
@@ -64,6 +65,9 @@ class ProviderProfile extends Equatable {
   final ShopCategory? shopCategory;
   final String? serviceCategoryId;
   final String? serviceCategoryTitle;
+
+  /// Public website slug (`/{locale}/{kind}/{slug}`); set by the landing site.
+  final String? slug;
 
   final String name;
   final String? description;
@@ -124,6 +128,7 @@ class ProviderProfile extends Equatable {
     ShopCategory? shopCategory,
     String? serviceCategoryId,
     String? serviceCategoryTitle,
+    String? slug,
     String? name,
     String? description,
     String? brandImageUrl,
@@ -165,6 +170,7 @@ class ProviderProfile extends Equatable {
       shopCategory: shopCategory ?? this.shopCategory,
       serviceCategoryId: serviceCategoryId ?? this.serviceCategoryId,
       serviceCategoryTitle: serviceCategoryTitle ?? this.serviceCategoryTitle,
+      slug: slug ?? this.slug,
       name: name ?? this.name,
       description: description ?? this.description,
       brandImageUrl: brandImageUrl ?? this.brandImageUrl,
@@ -287,6 +293,9 @@ class ProviderProfile extends Equatable {
       shopCategory: ShopCategory.tryParse(data['shopCategory'] as String?),
       serviceCategoryId: data['serviceCategoryId'] as String?,
       serviceCategoryTitle: data['serviceCategoryTitle'] as String?,
+      slug: (data['slug'] as String?)?.trim().isNotEmpty == true
+          ? (data['slug'] as String).trim()
+          : null,
       name: data['name'] as String? ?? '',
       description: data['description'] as String?,
       brandImageUrl: data['brandImageUrl'] as String?,
@@ -358,6 +367,7 @@ class ProviderProfile extends Equatable {
         shopCategory,
         serviceCategoryId,
         serviceCategoryTitle,
+        slug,
         name,
         description,
         brandImageUrl,

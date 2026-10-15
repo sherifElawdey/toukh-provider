@@ -82,7 +82,7 @@ class OrderDetailPharmacyRequestCard extends StatelessWidget {
               'EGP ${quote.quotedTotalEgp.toStringAsFixed(0)}',
               style: t.titleMedium?.copyWith(
                 fontWeight: FontWeight.w800,
-                color: AppColors.appColor,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ],

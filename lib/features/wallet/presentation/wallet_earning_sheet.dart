@@ -101,7 +101,7 @@ Widget _sheetRow(
           child: CustomText(
             label,
             style: t.bodySmall?.copyWith(
-              color: AppColors.onSurface.withValues(alpha: 0.55),
+              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
             ),
           ),
         ),

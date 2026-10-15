@@ -90,14 +90,14 @@ class ProviderOrderCard extends StatelessWidget {
       elevation: 0,
       color: decoration.background,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
         side: BorderSide(
           color: decoration.border,
           width: decoration.borderWidth,
         ),
       ),
       child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
         onTap: () => context.push(AppRoutes.orderDetailPath(row.id)),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -138,7 +138,7 @@ class ProviderOrderCard extends StatelessWidget {
                   formatDashboardEgp(context, _slice.totalEgp),
                   style: TextStyle(
                     color: scheme.onSurface.withValues(alpha: 0.62),
-                    fontSize: AppSizes.fontBody,
+                    fontSize: AppSizes.fontLabel,
                   ),
                 ),
               ],
@@ -263,7 +263,7 @@ class _IncomingMeta extends StatelessWidget {
                 '${AppStrings.Orders.placedAtLabel.tr}: $placedLabel',
                 style: TextStyle(
                   color: metaColor,
-                  fontSize: AppSizes.fontBody,
+                  fontSize: AppSizes.fontLabel,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -289,7 +289,7 @@ class _IncomingMeta extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: scheme.onSurface.withValues(alpha: 0.72),
-              fontSize: AppSizes.fontBody,
+              fontSize: AppSizes.fontLabel,
               height: 1.35,
             ),
           ),
@@ -337,7 +337,7 @@ class _MetaLine extends StatelessWidget {
             text,
             style: TextStyle(
               color: color,
-              fontSize: AppSizes.fontBody,
+              fontSize: AppSizes.fontLabel,
               fontWeight: FontWeight.w500,
             ),
           ),

@@ -90,6 +90,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
+            style: TextButton.styleFrom(foregroundColor: AppColors.error),
             child: CustomText(AppStrings.Notifications.inboxClearAll.tr),
           ),
         ],
@@ -122,7 +123,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           ),
         ),
-        body: const Center(child: CircularProgressIndicator()),
+        body: const ToukhShimmerList(itemCount: 6, itemHeight: 92),
       );
     }
 
@@ -142,21 +143,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         actions: [
           BlocBuilder<NotificationsCubit, NotificationsState>(
             buildWhen: (prev, next) =>
-                prev.showUnreadOnly != next.showUnreadOnly ||
                 prev.items.isNotEmpty != next.items.isNotEmpty,
             builder: (context, state) {
               if (state.items.isEmpty) return const SizedBox.shrink();
-              return ToukhNotificationInboxMenuButton(
-                showUnreadOnly: state.showUnreadOnly,
-                markAllReadLabel: AppStrings.Notifications.inboxMarkAllRead.tr,
-                clearAllLabel: AppStrings.Notifications.inboxClearAll.tr,
-                showUnreadOnlyLabel:
-                    AppStrings.Notifications.inboxShowUnreadOnly.tr,
-                onMarkAllRead: () =>
-                    context.read<NotificationsCubit>().markAllRead(),
-                onClearAll: () => _confirmClearAll(context),
-                onToggleUnreadOnly: () =>
-                    context.read<NotificationsCubit>().toggleUnreadOnly(),
+              return IconButton(
+                tooltip: AppStrings.Notifications.inboxClearAll.tr,
+                icon: Icon(ToukhIcons.delete),
+                onPressed: () => _confirmClearAll(context),
               );
             },
           ),
@@ -164,100 +157,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       body: BlocBuilder<NotificationsCubit, NotificationsState>(
         builder: (context, state) {
-          if (state.loading && state.items.isEmpty) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (state.items.isEmpty) {
-            return ToukhRefresh(
-              onRefresh: () => _refresh(context),
-              child: _EmptyInbox(
-                title: AppStrings.Notifications.inboxEmptyTitle.tr,
-                subtitle: AppStrings.Notifications.inboxEmptySubtitle.tr,
-              ),
-            );
-          }
-          final items = state.visibleItems;
-          if (items.isEmpty) {
-            return ToukhRefresh(
-              onRefresh: () => _refresh(context),
-              child: _EmptyInbox(
-                title: AppStrings.Notifications.inboxNoUnread.tr,
-                subtitle: AppStrings.Notifications.inboxEmptySubtitle.tr,
-              ),
-            );
-          }
-          return ToukhRefresh(
+          final cubit = context.read<NotificationsCubit>();
+          return ToukhNotificationInboxView(
+            items: state.newestFirst,
+            loading: state.loading,
+            showUnreadOnly: state.showUnreadOnly,
+            errorMessage: state.errorMessage,
+            emptyTitle: AppStrings.Notifications.inboxEmptyTitle.tr,
+            emptySubtitle: AppStrings.Notifications.inboxEmptySubtitle.tr,
             onRefresh: () => _refresh(context),
-            child: ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: AppSizes.screenPadding.copyWith(
-                top: AppSizes.spaceMd,
-                bottom: AppSizes.space2xl,
-              ),
-              itemCount: items.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final item = items[index];
-                final cubit = context.read<NotificationsCubit>();
-                return ToukhNotificationListTile(
-                  notification: item,
-                  statusChipLabel: NotificationLabels.statusChipLabel(item),
-                  categoryLabel: NotificationLabels.categoryLabel(item),
-                  onTap: () async {
-                    await cubit.markOpened(item);
-                    await handleProviderNotificationTap(item);
-                  },
-                  onDelete: () => cubit.deleteNotification(item),
-                );
-              },
-            ),
+            onToggleUnreadOnly: cubit.toggleUnreadOnly,
+            onMarkAllRead: cubit.markAllRead,
+            onOpen: (item) async {
+              await cubit.markOpened(item);
+              await handleProviderNotificationTap(item);
+            },
+            onDelete: cubit.deleteNotification,
+            statusChipLabel: NotificationLabels.statusChipLabel,
+            categoryLabel: NotificationLabels.categoryLabel,
           );
         },
       ),
-    );
-  }
-}
-
-class _EmptyInbox extends StatelessWidget {
-  const _EmptyInbox({required this.title, required this.subtitle});
-
-  final String title;
-  final String subtitle;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
-      slivers: [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Padding(
-            padding: AppSizes.screenPadding,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  ToukhIcons.notifications,
-                  size: 56,
-                  color: scheme.onSurface.withValues(alpha: 0.28),
-                ),
-                const SizedBox(height: AppSizes.spaceLg),
-                CustomText(
-                  title,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontWeight: FontWeight.w700),
-                ),
-                const SizedBox(height: AppSizes.spaceSm),
-                CustomText(
-                  subtitle,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

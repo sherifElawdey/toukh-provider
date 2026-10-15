@@ -23,7 +23,7 @@ class HomeDashboardChartSection extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Container(
       decoration: dashboardSoftDecoration(context),
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -68,18 +68,21 @@ class HomeDashboardChartSection extends StatelessWidget {
                     ),
                     shape: WidgetStateProperty.all(
                       RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppSizes.radiusSm),
                       ),
+                    ),
+                    side: WidgetStateProperty.all(
+                      const BorderSide(color: AppColors.borderStrong),
                     ),
                     foregroundColor: WidgetStateProperty.resolveWith((states) {
                       if (states.contains(WidgetState.selected)) {
-                        return Colors.white;
+                        return scheme.onPrimary;
                       }
-                      return scheme.onSurface.withValues(alpha: 0.65);
+                      return scheme.onSurfaceVariant;
                     }),
                     backgroundColor: WidgetStateProperty.resolveWith((states) {
                       if (states.contains(WidgetState.selected)) {
-                        return AppColors.appColor;
+                        return scheme.primary;
                       }
                       return Colors.transparent;
                     }),

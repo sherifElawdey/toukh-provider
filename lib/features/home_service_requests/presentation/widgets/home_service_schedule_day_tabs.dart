@@ -210,7 +210,7 @@ class _DayPill extends StatelessWidget {
             boxShadow: isToday && !selected
                 ? [
                     BoxShadow(
-                      color: AppColors.appColor.withValues(alpha: 0.18),
+                      color: const Color(0xFF0F1B2D).withValues(alpha: 0.08),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),

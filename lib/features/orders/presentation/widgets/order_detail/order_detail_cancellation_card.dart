@@ -66,7 +66,7 @@ class OrderDetailCancellationCard extends StatelessWidget {
                         'date': cancelledAt,
                       }),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.onSurface.withValues(alpha: 0.65),
+                            color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
                           ),
                     ),
                     if (attribution.cancelReason != null &&
@@ -77,7 +77,7 @@ class OrderDetailCancellationCard extends StatelessWidget {
                           'reason': attribution.cancelReason!.trim(),
                         }),
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppColors.onSurface.withValues(alpha: 0.75),
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.75),
                             ),
                       ),
                     ],
