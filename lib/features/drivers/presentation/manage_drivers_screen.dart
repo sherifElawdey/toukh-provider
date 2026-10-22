@@ -102,7 +102,10 @@ class ManageDriversScreen extends StatelessWidget {
           if (state.error == null) return;
           AppSnack.show(
             context,
-            message: AppStrings.Drivers.actionFailed.tr,
+            message: (state.error == ManageDriversCubit.removeBusyError
+                    ? AppStrings.Drivers.removeBusy
+                    : AppStrings.Drivers.actionFailed)
+                .tr,
             state: AppSnackState.error,
             icon: ToukhIcons.error,
           );
@@ -516,6 +519,18 @@ class _LinkedDriverCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
+                  if (driver.status != 'active') ...[
+                    // Store accepted; the account itself is still with admins.
+                    CustomText(
+                      AppStrings.Drivers.accountUnderReview.tr,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.warning,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                  ],
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSizes.spaceSm,
@@ -551,7 +566,7 @@ class _LinkedDriverCard extends StatelessWidget {
                 tooltip: AppStrings.Drivers.remove.tr,
                 onPressed: onRemove,
                 icon: Icon(
-                  Icons.delete_outline,
+                  Icons.link_off,
                   color: scheme.error,
                 ),
               ),

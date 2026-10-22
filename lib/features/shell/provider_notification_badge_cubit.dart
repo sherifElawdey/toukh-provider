@@ -10,8 +10,10 @@ class ProviderNotificationBadgeState extends Equatable {
   List<Object?> get props => [notificationCount];
 }
 
-class ProviderNotificationBadgeCubit extends Cubit<ProviderNotificationBadgeState> {
-  ProviderNotificationBadgeCubit() : super(const ProviderNotificationBadgeState());
+class ProviderNotificationBadgeCubit
+    extends Cubit<ProviderNotificationBadgeState> {
+  ProviderNotificationBadgeCubit()
+    : super(const ProviderNotificationBadgeState());
 
   void setNotificationCount(int value) =>
       emit(ProviderNotificationBadgeState(notificationCount: value));

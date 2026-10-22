@@ -21,10 +21,13 @@ class HomeServiceCategory extends Equatable {
     Map<String, dynamic> data,
   ) {
     final rawId = data['id'] as String?;
-    final id = (rawId != null && rawId.trim().isNotEmpty) ? rawId.trim() : docId;
+    final id = (rawId != null && rawId.trim().isNotEmpty)
+        ? rawId.trim()
+        : docId;
     final rawImage = data['imageUrl'] as String?;
-    final imageUrl =
-        rawImage != null && rawImage.trim().isNotEmpty ? rawImage.trim() : null;
+    final imageUrl = rawImage != null && rawImage.trim().isNotEmpty
+        ? rawImage.trim()
+        : null;
     return HomeServiceCategory(
       id: id,
       title: (data['title'] as String?)?.trim() ?? '',

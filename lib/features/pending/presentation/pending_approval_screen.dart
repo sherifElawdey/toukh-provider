@@ -8,8 +8,20 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
-class PendingApprovalScreen extends StatelessWidget {
+class PendingApprovalScreen extends StatefulWidget {
   const PendingApprovalScreen({super.key});
+
+  @override
+  State<PendingApprovalScreen> createState() => _PendingApprovalScreenState();
+}
+
+class _PendingApprovalScreenState extends State<PendingApprovalScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Activates right away if admin review has been turned off since sign-up.
+    context.read<AuthCubit>().completeVerification();
+  }
 
   @override
   Widget build(BuildContext context) {

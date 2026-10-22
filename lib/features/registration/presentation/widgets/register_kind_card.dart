@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class RegisterKindCard extends StatelessWidget {
@@ -20,41 +21,58 @@ class RegisterKindCard extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return Material(
       color: selected
-          ? AppColors.thirdColor.withValues(alpha: 0.35)
-          : scheme.surfaceContainerHighest.withValues(alpha: 0.45),
+          ? AppColors.tint(context, AppColors.secondColor)
+          : scheme.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppSizes.radiusLg),
         side: BorderSide(
-          color: selected ? AppColors.secondColor : Colors.transparent,
-          width: 2,
+          color: selected ? AppColors.secondColor : AppColors.borderSubtle,
+          width: selected ? 2.5 : 1.2,
         ),
       ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppSizes.spaceSm,
-            vertical: AppSizes.spaceMd,
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(icon, size: 36, color: AppColors.secondColor),
-              SizedBox(height: AppSizes.spaceSm),
-              CustomText(
-                title,
-                textAlign: TextAlign.center,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: AppSizes.fontBody,
-                  fontWeight: FontWeight.w700,
-                  height: 1.25,
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSizes.spaceSm,
+                vertical: AppSizes.spaceMd,
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  RegistrationIllustration(icon: icon, size: 68),
+                  SizedBox(height: AppSizes.spaceSm),
+                  CustomText(
+                    title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: AppSizes.fontBody,
+                      fontWeight: FontWeight.w800,
+                      height: 1.25,
+                      color: selected
+                          ? AppColors.secondColor
+                          : scheme.onSurface,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (selected)
+              PositionedDirectional(
+                top: 8,
+                end: 8,
+                child: Icon(
+                  PhosphorIconsFill.checkCircle,
+                  color: AppColors.success,
+                  size: 24,
                 ),
               ),
-            ],
-          ),
+          ],
         ),
       ),
     );

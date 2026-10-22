@@ -14,6 +14,7 @@ class TwilioVerifyOtpRepository implements OtpRepository {
   @override
   Future<OtpRequestResult> requestOtp({required String phone}) async {
     final to = TwilioVerifyClient.normalizeToE164(phone);
+    await PhoneRegistrationGuard.ensureAllowed(to);
     final send = await _client.sendVerification(to);
     final token =
         'otp-${DateTime.now().microsecondsSinceEpoch}-${_random.nextInt(1 << 30)}';

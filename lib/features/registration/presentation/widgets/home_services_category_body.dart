@@ -16,7 +16,11 @@ class HomeServicesCategoryBody extends StatelessWidget {
     required this.draft,
     required this.cubit,
     required this.scheme,
+    this.embedded = false,
   });
+
+  /// True inside an outer scroll view (the registration step layout).
+  final bool embedded;
 
   final RegistrationDraft draft;
   final RegistrationCubit cubit;
@@ -39,7 +43,10 @@ class HomeServicesCategoryBody extends StatelessWidget {
           );
         }
         if (!snapshot.hasData) {
-          return const Center(child: CircularProgressIndicator());
+          return const Padding(
+            padding: EdgeInsets.all(AppSizes.space2xl),
+            child: Center(child: CircularProgressIndicator()),
+          );
         }
         final categories = snapshot.data!;
         if (categories.isEmpty) {
@@ -54,8 +61,10 @@ class HomeServicesCategoryBody extends StatelessWidget {
           );
         }
         return Padding(
-          padding: AppSizes.screenPadding,
+          padding: embedded ? EdgeInsets.zero : AppSizes.screenPadding,
           child: GridView.builder(
+            shrinkWrap: embedded,
+            physics: embedded ? const NeverScrollableScrollPhysics() : null,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
               mainAxisSpacing: AppSizes.spaceMd,
@@ -71,7 +80,7 @@ class HomeServicesCategoryBody extends StatelessWidget {
                 selected: selected,
                 scheme: scheme,
                 onTap: () {
-                  cubit.setServiceCategoryId(s.id,s.title);
+                  cubit.setServiceCategoryId(s.id, s.title);
                   context.push(AppRoutes.registerPreServiceQuestions);
                 },
               );

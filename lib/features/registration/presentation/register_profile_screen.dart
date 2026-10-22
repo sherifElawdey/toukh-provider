@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
-import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -39,63 +38,59 @@ class _RegisterProfileScreenState extends State<RegisterProfileScreen> {
   void _next() {
     if (!_formKey.currentState!.validate()) return;
     context.read<RegistrationCubit>().setProfile(
-          name: _name.text.trim(),
-          description: _desc.text.trim(),
-        );
+      name: _name.text.trim(),
+      description: _desc.text.trim(),
+    );
     context.push(AppRoutes.registerMap);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(ToukhIcons.back),
-          onPressed: () => context.pop(),
-        ),
-        title: CustomText(AppStrings.Registration.profileTitle),
-      ),
-      body: SingleChildScrollView(
-        padding: AppSizes.screenPadding.copyWith(bottom: AppSizes.space3xl),
-        child: Form(
+    return RegistrationStepScaffold(
+      stage: RegistrationStage.account,
+      icon: PhosphorIconsDuotone.storefront,
+      title: AppStrings.Registration.profileTitle,
+      subtitle: AppStrings.Registration.profileSubtitle,
+      onNext: _next,
+      children: [
+        Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Center(
-                child: ToukhServiceLogo(
-                  size: 56,
-                  borderRadius: BorderRadius.circular(14),
+              RegistrationSectionCard(
+                icon: PhosphorIconsDuotone.storefront,
+                title: AppStrings.Registration.secBrandTitle,
+                hint: AppStrings.Registration.secBrandHint,
+                child: TextFormField(
+                  controller: _name,
+                  textInputAction: TextInputAction.next,
+                  decoration: InputDecoration(
+                    labelText: AppStrings.Registration.brandName.tr,
+                  ),
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? AppStrings.Registration.fieldRequired.tr
+                      : null,
                 ),
               ),
-              SizedBox(height: AppSizes.spaceMd),
-              TextFormField(
-                controller: _name,
-                decoration: InputDecoration(
-                  labelText: AppStrings.Registration.brandName.tr,
+              RegistrationSectionCard(
+                icon: PhosphorIconsDuotone.pencilSimple,
+                title: AppStrings.Registration.secDescriptionTitle,
+                hint: AppStrings.Registration.secDescriptionHint,
+                child: TextFormField(
+                  controller: _desc,
+                  maxLines: 4,
+                  decoration: InputDecoration(
+                    labelText: AppStrings.Registration.description.tr,
+                    hintText: AppStrings.Registration.descriptionExample.tr,
+                    alignLabelWithHint: true,
+                  ),
                 ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Required' : null,
-              ),
-              SizedBox(height: AppSizes.spaceMd),
-              TextFormField(
-                controller: _desc,
-                maxLines: 4,
-                decoration: InputDecoration(
-                  labelText: AppStrings.Registration.description.tr,
-                ),
-              ),
-              SizedBox(height: AppSizes.spaceXl),
-              RegistrationStepNavFooter(
-                useSafeArea: false,
-                padding: EdgeInsets.zero,
-                onBack: () => context.pop(),
-                onNext: _next,
               ),
             ],
           ),
         ),
-      ),
+      ],
     );
   }
 }

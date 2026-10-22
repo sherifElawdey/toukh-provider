@@ -15,6 +15,10 @@ abstract final class AppConstants {
   /// Driver registration applications (courier app).
   static const deliveryRequestsCollection = ToukhFirestoreCollections.deliveryRequestsOnboarding;
 
+  /// Courier fleet accounts. Never in [providersCollection], so the customer
+  /// app can't list them.
+  static const deliveryCompaniesCollection = 'deliveryCompanies';
+
   static const mockOtpPhone = '0123456789';
   static const mockOtpCode = '123456';
 

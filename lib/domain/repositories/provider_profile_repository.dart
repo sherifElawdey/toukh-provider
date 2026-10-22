@@ -11,4 +11,8 @@ abstract class ProviderProfileRepository {
   Future<bool> existsByPhone(String phoneDigits);
 
   Future<void> addFcmToken({required String uid, required String token});
+
+  /// Sign-up is finished (phone verified, menu or portfolio done). The server
+  /// activates the account right away when admin review is turned off.
+  Future<void> completeVerification();
 }

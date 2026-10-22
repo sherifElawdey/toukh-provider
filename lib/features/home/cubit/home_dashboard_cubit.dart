@@ -75,7 +75,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _shiftTimer?.cancel();
       _shiftTimer = null;
 
-      _bindMenuStream(uid, auth.profile.isRestaurantShop);
+      _bindMenuStream(uid, auth.profile.hasMenu);
 
       emit(
         HomeDashboardState.initial().copyWith(
@@ -83,7 +83,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
           providerDisplayName: _greetingName(auth.profile),
           walletBalanceEgp: auth.profile.walletBalanceEgp ?? 0,
           walletPendingEgp: auth.profile.walletPendingEgp,
-          showMenuInsights: auth.profile.isRestaurantShop && _hasMenuItems,
+          showMenuInsights: auth.profile.hasMenu && _hasMenuItems,
           loading: true,
           clearError: true,
         ),
@@ -118,7 +118,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
             providerDisplayName: _greetingName(auth.profile),
             walletBalanceEgp: auth.profile.walletBalanceEgp ?? 0,
             walletPendingEgp: auth.profile.walletPendingEgp,
-            showMenuInsights: auth.profile.isRestaurantShop && _hasMenuItems,
+            showMenuInsights: auth.profile.hasMenu && _hasMenuItems,
             clearError: true,
           ),
         );
@@ -207,7 +207,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       _ordersInRollingWindow(orders, periodDays),
     );
 
-    final bestsellers = profile.isRestaurantShop && _hasMenuItems
+    final bestsellers = profile.hasMenu && _hasMenuItems
         ? _bestsellers(orders, 30)
         : <BestsellerRow>[];
 
@@ -222,7 +222,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       chartPeriod: chartPeriod,
       walletBalanceEgp: profile.walletBalanceEgp ?? 0,
       walletPendingEgp: profile.walletPendingEgp,
-      showMenuInsights: profile.isRestaurantShop && _hasMenuItems,
+      showMenuInsights: profile.hasMenu && _hasMenuItems,
       inProgressOrders: inProgress,
       weekMetrics: weekMetrics,
       monthMetrics: monthMetrics,
@@ -361,10 +361,10 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
     return rows.take(10).toList();
   }
 
-  void _bindMenuStream(String uid, bool isRestaurantShop) {
+  void _bindMenuStream(String uid, bool hasMenu) {
     _menuSub?.cancel();
     _menuSub = null;
-    if (!isRestaurantShop) {
+    if (!hasMenu) {
       _hasMenuItems = false;
       return;
     }
@@ -377,7 +377,7 @@ class HomeDashboardCubit extends Cubit<HomeDashboardState> {
       } else if (auth is Authenticated) {
         emit(
           state.copyWith(
-            showMenuInsights: auth.profile.isRestaurantShop && _hasMenuItems,
+            showMenuInsights: auth.profile.hasMenu && _hasMenuItems,
           ),
         );
       }

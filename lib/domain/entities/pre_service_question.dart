@@ -3,10 +3,7 @@ import 'package:uuid/uuid.dart';
 
 /// Provider-defined question asked before a home-service request.
 class PreServiceQuestion extends Equatable {
-  const PreServiceQuestion({
-    required this.id,
-    required this.text,
-  });
+  const PreServiceQuestion({required this.id, required this.text});
 
   final String id;
   final String text;
@@ -14,16 +11,10 @@ class PreServiceQuestion extends Equatable {
   static const maxCount = 3;
 
   PreServiceQuestion copyWith({String? id, String? text}) {
-    return PreServiceQuestion(
-      id: id ?? this.id,
-      text: text ?? this.text,
-    );
+    return PreServiceQuestion(id: id ?? this.id, text: text ?? this.text);
   }
 
-  Map<String, dynamic> toMap() => {
-        'id': id,
-        'text': text,
-      };
+  Map<String, dynamic> toMap() => {'id': id, 'text': text};
 
   static PreServiceQuestion? fromMap(Map<String, dynamic> data) {
     final text = (data['text'] as String?)?.trim() ?? '';
@@ -86,10 +77,10 @@ class PreServiceAnswer extends Equatable {
   final String answer;
 
   Map<String, dynamic> toMap() => {
-        'questionId': questionId,
-        'question': question,
-        'answer': answer,
-      };
+    'questionId': questionId,
+    'question': question,
+    'answer': answer,
+  };
 
   static PreServiceAnswer? fromMap(Map<String, dynamic> data) {
     final question = (data['question'] as String?)?.trim() ?? '';

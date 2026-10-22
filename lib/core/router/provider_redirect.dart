@@ -2,6 +2,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/domain/entities/delivery_company.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_state.dart';
 import 'package:toukh_provider/features/onboarding/cubit/onboarding_cubit.dart';
@@ -19,6 +20,11 @@ String? resolveProviderRedirect({
     if (auth is Unauthenticated) return 'Unauthenticated';
     if (auth is AuthFailure) return 'AuthFailure';
     if (auth is AuthenticatedNoProfile) return 'AuthenticatedNoProfile';
+    if (auth is AuthenticatedCompany) {
+      final c = auth.company;
+      return 'AuthenticatedCompany(status=${c.status.name}, '
+          'phoneVerified=${c.phoneVerified})';
+    }
     if (auth is Authenticated) {
       final p = auth.profile;
       return 'Authenticated(status=${p.status.name}, '
@@ -63,12 +69,18 @@ String? resolveProviderRedirect({
     return null;
   }
 
-  if (!settings.firstLaunchCompleted &&
-      loc != AppRoutes.welcome &&
-      loc != AppRoutes.appUpdate &&
-      loc != AppRoutes.splash) {
-    logRedirect(AppRoutes.welcome, 'first launch not completed');
-    return AppRoutes.welcome;
+  if (!settings.firstLaunchCompleted) {
+    // Welcome must win over every auth rule below, otherwise e.g.
+    // AuthenticatedNoProfile sends /welcome -> /account/profile-pending and
+    // this rule sends it straight back (GoRouter redirect loop).
+    if (loc == AppRoutes.welcome) {
+      logRedirect(null, 'first launch not completed, on welcome');
+      return null;
+    }
+    if (loc != AppRoutes.appUpdate && loc != AppRoutes.splash) {
+      logRedirect(AppRoutes.welcome, 'first launch not completed');
+      return AppRoutes.welcome;
+    }
   }
 
   final inAuthFlow = AppRoutes.authFlowPaths.contains(loc);
@@ -109,8 +121,16 @@ String? resolveProviderRedirect({
   }
 
   if (auth is AuthenticatedNoProfile) {
-    final next = loc == AppRoutes.profilePending ? null : AppRoutes.profilePending;
+    final next = loc == AppRoutes.profilePending
+        ? null
+        : AppRoutes.profilePending;
     logRedirect(next, 'authenticated without provider profile');
+    return next;
+  }
+
+  if (auth is AuthenticatedCompany) {
+    final next = resolveCompanyRedirect(loc, auth.company);
+    logRedirect(next, 'delivery company account');
     return next;
   }
 
@@ -154,7 +174,9 @@ String? resolveProviderRedirect({
         return next;
 
       case ProviderAccountStatus.blocked:
-        final next = loc == AppRoutes.accountBlocked ? null : AppRoutes.accountBlocked;
+        final next = loc == AppRoutes.accountBlocked
+            ? null
+            : AppRoutes.accountBlocked;
         logRedirect(next, 'blocked account');
         return next;
 
@@ -165,9 +187,15 @@ String? resolveProviderRedirect({
             AppRoutes.accountVerifyPhone,
             AppRoutes.verifyOtp,
             AppRoutes.postLoginStatus,
+            // Stays mounted while it sends the first code after sign-up;
+            // bouncing to verify-phone made the user request a second one.
+            AppRoutes.registerReview,
           };
           if (allowed.contains(loc)) {
-            logRedirect(null, 'pending/unverified phone not verified on allowed route');
+            logRedirect(
+              null,
+              'pending/unverified phone not verified on allowed route',
+            );
             return null;
           }
           logRedirect(
@@ -178,7 +206,7 @@ String? resolveProviderRedirect({
         }
 
         if (!profile.registrationExtrasComplete) {
-          final needsMenu = profile.isRestaurantShop;
+          final needsMenu = profile.hasMenu;
           final target = needsMenu
               ? AppRoutes.registrationMenu
               : AppRoutes.registrationPortfolio;
@@ -205,7 +233,10 @@ String? resolveProviderRedirect({
             if (loc == AppRoutes.splash ||
                 loc == AppRoutes.permissions ||
                 loc == AppRoutes.appUpdate) {
-              logRedirect(null, 'active + onboarding checking in allowed route');
+              logRedirect(
+                null,
+                'active + onboarding checking in allowed route',
+              );
               return null;
             }
             logRedirect(AppRoutes.splash, 'active + onboarding checking');
@@ -213,16 +244,16 @@ String? resolveProviderRedirect({
           case OnboardingGate.needsPermissions:
             // Never bounce /welcome ↔ /permissions while first launch is open.
             if (!settings.firstLaunchCompleted) {
-              final next =
-                  loc == AppRoutes.welcome ? null : AppRoutes.welcome;
+              final next = loc == AppRoutes.welcome ? null : AppRoutes.welcome;
               logRedirect(
                 next,
                 'active needs permissions but first launch incomplete',
               );
               return next;
             }
-            final next =
-                loc == AppRoutes.permissions ? null : AppRoutes.permissions;
+            final next = loc == AppRoutes.permissions
+                ? null
+                : AppRoutes.permissions;
             logRedirect(next, 'active needs permissions');
             return next;
           case OnboardingGate.ready:
@@ -238,4 +269,32 @@ String? resolveProviderRedirect({
 
   logRedirect(null, 'no redirect rule matched');
   return null;
+}
+
+/// Delivery companies never enter the shop shell or permission onboarding.
+String? resolveCompanyRedirect(String loc, DeliveryCompany company) {
+  String? stayOr(String target) => loc == target ? null : target;
+
+  switch (company.status) {
+    case ProviderAccountStatus.deleted:
+      return stayOr(AppRoutes.login);
+    case ProviderAccountStatus.blocked:
+      return stayOr(AppRoutes.companyStatus);
+    case ProviderAccountStatus.unverified:
+    case ProviderAccountStatus.pending:
+      if (!company.phoneVerified) {
+        const allowed = <String>{
+          AppRoutes.accountVerifyPhone,
+          AppRoutes.verifyOtp,
+          // Stays mounted while it sends the first code after sign-up.
+          AppRoutes.registerCompanyReview,
+        };
+        return allowed.contains(loc) ? null : AppRoutes.accountVerifyPhone;
+      }
+      // Verified; waiting for activateDeliveryCompany.
+      return stayOr(AppRoutes.companyStatus);
+    case ProviderAccountStatus.active:
+      if (AppRoutes.isCompanyPath(loc)) return null;
+      return AppRoutes.home;
+  }
 }

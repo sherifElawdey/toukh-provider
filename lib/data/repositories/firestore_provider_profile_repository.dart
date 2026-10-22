@@ -1,13 +1,15 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:toukh_provider/core/constants/app_constants.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/repositories/provider_profile_repository.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class FirestoreProviderProfileRepository implements ProviderProfileRepository {
-  FirestoreProviderProfileRepository(this._firestore);
+  FirestoreProviderProfileRepository(this._firestore, this._functions);
 
   final FirebaseFirestore _firestore;
+  final FirebaseFunctions _functions;
 
   CollectionReference<Map<String, dynamic>> get _providers =>
       _firestore.collection(AppConstants.providersCollection);
@@ -28,6 +30,13 @@ class FirestoreProviderProfileRepository implements ProviderProfileRepository {
       if (!snap.exists || data == null) return null;
       return ProviderProfile.fromFirestore(uid, data);
     });
+  }
+
+  @override
+  Future<void> completeVerification() async {
+    await _functions
+        .httpsCallable('completeAccountVerification')
+        .call<Object?>({'role': 'provider'});
   }
 
   @override

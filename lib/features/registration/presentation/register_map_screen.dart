@@ -13,12 +13,19 @@ import 'package:toukh_provider/features/onboarding/presentation/widgets/permissi
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/map_pin_lat_lng.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:get/get.dart';
 
 class RegisterMapScreen extends StatefulWidget {
-  const RegisterMapScreen({super.key});
+  const RegisterMapScreen({
+    super.key,
+    this.nextRoute = AppRoutes.registerHours,
+  });
+
+  /// Pushed once the pin is inside a service area.
+  final String nextRoute;
 
   @override
   State<RegisterMapScreen> createState() => _RegisterMapScreenState();
@@ -334,13 +341,13 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       city: city,
       serviceAreaId: area.id,
     );
-    context.push(AppRoutes.registerHours);
+    context.push(widget.nextRoute);
   }
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final bottomInset = MediaQuery.of(context).padding.bottom + 180;
+    final bottomInset = MediaQuery.of(context).padding.bottom + 270;
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -483,10 +490,37 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    const RegistrationStageProgress(
+                      stage: RegistrationStage.place,
+                    ),
+                    SizedBox(height: AppSizes.spaceMd),
+                    Row(
+                      children: [
+                        const RegistrationIllustration(
+                          icon: PhosphorIconsDuotone.mapPinLine,
+                          size: 44,
+                        ),
+                        SizedBox(width: AppSizes.spaceMd),
+                        Expanded(
+                          child: CustomText(
+                            AppStrings.Registration.mapHint,
+                            style: TextStyle(
+                              fontSize: AppSizes.fontCaption,
+                              height: 1.4,
+                              color: AppColors.muted(context),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: AppSizes.spaceMd),
                     CustomText(
                       _address.isEmpty ? '…' : _address,
                       maxLines: 3,
-                      style: const TextStyle(fontSize: AppSizes.fontBody),
+                      style: const TextStyle(
+                        fontSize: AppSizes.fontBody,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     if (!_inServiceArea) ...[
                       SizedBox(height: AppSizes.spaceSm),

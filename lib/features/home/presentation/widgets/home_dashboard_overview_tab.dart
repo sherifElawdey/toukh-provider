@@ -1,3 +1,4 @@
+import 'package:toukh_provider/core/banners/provider_banner_strip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -67,6 +68,10 @@ class HomeDashboardOverviewTab extends StatelessWidget {
     return [
       _greeting(context),
       const SizedBox(height: AppSizes.spaceLg),
+      const ProviderBannerStrip(
+        placement: ToukhBannerPlacements.home,
+        padding: EdgeInsets.only(bottom: AppSizes.spaceMd),
+      ),
       const HomePermissionsBanner(),
       const SizedBox(height: AppSizes.spaceMd),
       _pendingBanner(),
@@ -92,6 +97,10 @@ class HomeDashboardOverviewTab extends StatelessWidget {
     return [
       _greeting(context),
       const SizedBox(height: AppSizes.spaceLg),
+      const ProviderBannerStrip(
+        placement: ToukhBannerPlacements.home,
+        padding: EdgeInsets.only(bottom: AppSizes.spaceMd),
+      ),
       const HomePermissionsBanner(),
       const SizedBox(height: AppSizes.spaceXl),
       Row(

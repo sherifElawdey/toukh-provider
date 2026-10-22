@@ -29,33 +29,27 @@ class FirestoreProviderDriversRepository implements ProviderDriversRepository {
 
     void emit() {
       if (controller.isClosed) return;
-      final pendingIds = {for (final p in pending) p.uid};
-      // Awaiting approval: driver already has linkedProviderId + often status
-      // active, but should only show under pending until accept sets
-      // enabledByProvider true and clears the pending Delivery Request.
-      final approvedLinked = linked
-          .where(
-            (d) => d.enabledByProvider && !pendingIds.contains(d.uid),
-          )
-          .toList();
       controller.add(
         ProviderDriversSnapshot(
           pendingRequests: List.unmodifiable(pending),
-          linkedDrivers: List.unmodifiable(approvedLinked),
+          linkedDrivers: List.unmodifiable(linked),
         ),
       );
     }
 
     controller = StreamController<ProviderDriversSnapshot>(
       onListen: () {
+        // Couriers ask by setting `pendingProviderId` on their driver doc; the
+        // store's accept moves it to the server-owned `linkedProviderId`.
         pendingSub = _firestore
-            .collection(AppConstants.deliveryRequestsCollection)
-            .where('linkedProviderId', isEqualTo: providerId)
-            .where('status', isEqualTo: 'pending')
+            .collection(AppConstants.driversCollection)
+            .where('pendingProviderId', isEqualTo: providerId)
             .snapshots()
             .listen(
               (snap) {
                 pending = snap.docs
+                    // Registrants show up once their phone is verified.
+                    .where((d) => d.data()['status'] != 'unverified')
                     .map(
                       (d) => ProviderDriverMapper.linkRequestFromFirestore(
                         d.id,
@@ -76,7 +70,6 @@ class FirestoreProviderDriversRepository implements ProviderDriversRepository {
         linkedSub = _firestore
             .collection(AppConstants.driversCollection)
             .where('linkedProviderId', isEqualTo: providerId)
-            .where('status', isEqualTo: 'active')
             .snapshots()
             .listen(
               (snap) {
@@ -104,14 +97,14 @@ class FirestoreProviderDriversRepository implements ProviderDriversRepository {
   }
 
   @override
-  Future<void> respondToRequest({
+  Future<void> respond({
     required String driverId,
-    required bool accept,
+    required DriverLinkAction action,
   }) async {
     final callable = _functions.httpsCallable('respondToLinkedDriver');
     await callable.call<Map<String, dynamic>>({
       'driverId': driverId,
-      'action': accept ? 'accept' : 'reject',
+      'action': action.name,
     });
   }
 }

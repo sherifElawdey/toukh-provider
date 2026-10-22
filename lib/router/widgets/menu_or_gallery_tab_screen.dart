@@ -17,7 +17,7 @@ class MenuOrGalleryTabScreen extends StatelessWidget {
             state.profile.serviceType == ServiceType.homeService) {
           return const HomeServiceScheduleScreen();
         }
-        if (state is Authenticated && state.profile.isRestaurantShop) {
+        if (state is Authenticated && state.profile.hasMenu) {
           return const MenuBuilderScreen();
         }
         return const PortfolioScreen();

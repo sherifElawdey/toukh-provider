@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/register_kind_card.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
 import 'package:toukh_provider/features/shell/provider_web_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -43,19 +43,19 @@ String _kindLabelKey(ServiceType t) {
 IconData _kindIcon(ServiceType t) {
   switch (t) {
     case ServiceType.restaurant:
-      return ToukhIcons.restaurant;
+      return PhosphorIconsDuotone.forkKnife;
     case ServiceType.homeService:
-      return PhosphorIconsRegular.wrench;
+      return PhosphorIconsDuotone.wrench;
     case ServiceType.supermarket:
-      return ToukhIcons.store;
+      return PhosphorIconsDuotone.shoppingCart;
     case ServiceType.grocery:
-      return PhosphorIconsRegular.shoppingCart;
+      return PhosphorIconsDuotone.basket;
     case ServiceType.homeBrands:
-      return PhosphorIconsRegular.seal;
+      return PhosphorIconsDuotone.couch;
     case ServiceType.pharmacy:
-      return PhosphorIconsRegular.firstAid;
+      return PhosphorIconsDuotone.pill;
     case ServiceType.otherShops:
-      return PhosphorIconsRegular.storefront;
+      return PhosphorIconsDuotone.storefront;
   }
 }
 
@@ -75,78 +75,104 @@ class RegisterKindScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final draft = context.watch<RegistrationCubit>().state;
-    final scheme = Theme.of(context).colorScheme;
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(ToukhIcons.back),
-          onPressed: () => context.pop(),
+    return RegistrationStepScaffold(
+      stage: RegistrationStage.business,
+      icon: PhosphorIconsDuotone.storefront,
+      title: AppStrings.Registration.kindTitle,
+      subtitle: AppStrings.Registration.kindSubtitle,
+      children: [
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = ProviderWebLayout.isWide(context);
+            final columns = !wide
+                ? 2
+                : constraints.maxWidth >= 560
+                ? 3
+                : 2;
+            return GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: columns,
+                mainAxisSpacing: AppSizes.spaceMd,
+                crossAxisSpacing: AppSizes.spaceMd,
+                mainAxisExtent: 150,
+              ),
+              itemCount: _kRegistrationKindOrder.length,
+              itemBuilder: (context, index) {
+                final kind = _kRegistrationKindOrder[index];
+                return RegisterKindCard(
+                  selected: draft.kind == kind,
+                  title: _kindLabelKey(kind),
+                  icon: _kindIcon(kind),
+                  onTap: () => _onSelectKind(context, kind),
+                );
+              },
+            );
+          },
         ),
-        titleSpacing: AppSizes.spaceSm,
-        title: Row(
-          children: [
-            ToukhServiceLogo(size: 36, borderRadius: BorderRadius.circular(10)),
-            SizedBox(width: AppSizes.spaceSm),
-            Expanded(
-              child: CustomText(
-                AppStrings.Registration.kindTitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: AppSizes.fontTitle,
-                  fontWeight: FontWeight.w600,
+        SizedBox(height: AppSizes.spaceLg),
+        const _DeliveryCompanyCta(),
+      ],
+    );
+  }
+}
+
+/// Entry to the delivery company sign-up, kept apart from the shop kinds.
+class _DeliveryCompanyCta extends StatelessWidget {
+  const _DeliveryCompanyCta();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: AppColors.secondColor.withValues(alpha: 0.08),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        side: BorderSide(color: AppColors.secondColor.withValues(alpha: 0.35)),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        onTap: () => context.push(AppRoutes.registerCompany),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSizes.spaceMd),
+          child: Row(
+            children: [
+              const RegistrationIllustration(
+                icon: PhosphorIconsDuotone.truck,
+                size: 52,
+              ),
+              SizedBox(width: AppSizes.spaceMd),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CustomText(
+                      AppStrings.Company.registerCtaTitle,
+                      style: const TextStyle(
+                        fontSize: AppSizes.fontBody,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    SizedBox(height: AppSizes.spaceXs),
+                    CustomText(
+                      AppStrings.Company.registerCtaSubtitle,
+                      style: TextStyle(
+                        fontSize: AppSizes.fontCaption,
+                        color: scheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-      body: Padding(
-        padding: AppSizes.screenPadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CustomText(
-              AppStrings.Registration.kindSubtitle,
-              style: TextStyle(
-                fontSize: AppSizes.fontBody,
-                color: scheme.onSurface.withValues(alpha: 0.72),
+              Icon(
+                Directionality.of(context) == TextDirection.rtl
+                    ? ToukhIcons.back
+                    : ToukhIcons.forward,
+                color: AppColors.secondColor,
               ),
-            ),
-            SizedBox(height: AppSizes.spaceLg),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final wide = ProviderWebLayout.isWide(context);
-                  final columns = !wide
-                      ? 2
-                      : constraints.maxWidth >= 980
-                      ? 4
-                      : constraints.maxWidth >= 680
-                      ? 3
-                      : 2;
-                  return GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: columns,
-                      mainAxisSpacing: AppSizes.spaceMd,
-                      crossAxisSpacing: AppSizes.spaceMd,
-                      childAspectRatio: columns >= 3 ? 1.15 : 0.95,
-                    ),
-                    itemCount: _kRegistrationKindOrder.length,
-                    itemBuilder: (context, index) {
-                      final kind = _kRegistrationKindOrder[index];
-                      return RegisterKindCard(
-                        selected: draft.kind == kind,
-                        title: _kindLabelKey(kind),
-                        icon: _kindIcon(kind),
-                        onTap: () => _onSelectKind(context, kind),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

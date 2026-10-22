@@ -17,6 +17,11 @@ abstract final class AppRoutes {
   static const registerCuisine = '/register/cuisine';
   static const registerReview = '/register/review';
 
+  /// Delivery company sign-up (form → map → review).
+  static const registerCompany = '/register/company';
+  static const registerCompanyMap = '/register/company/map';
+  static const registerCompanyReview = '/register/company/review';
+
   static const requestSubmitted = '/request-submitted';
   static const forgotPassword = '/forgot-password';
   static const verifyOtp = '/verify-otp';
@@ -62,6 +67,26 @@ abstract final class AppRoutes {
   static const reviews = '/reviews';
   static const manageDrivers = '/manage-drivers';
 
+  /// Delivery companies use the same shell as shops: [home], [orders],
+  /// [menu] (couriers) and [settings] (profile), plus these pages.
+  static const companyStatus = '/company-status';
+  static const companyAccount = '/company/account';
+  static const companyEarnings = '/company/earnings';
+  static const companyCouriersRequests = '$menu?tab=requests';
+  static String companyCourierPath(String driverId) =>
+      '/company/courier/$driverId';
+
+  /// Routes an active delivery company may open.
+  static bool isCompanyPath(String matchedLocation) =>
+      matchedLocation == home ||
+      matchedLocation == orders ||
+      matchedLocation == menu ||
+      matchedLocation == settings ||
+      matchedLocation == aboutApp ||
+      matchedLocation == notifications ||
+      matchedLocation.startsWith('/legal/') ||
+      matchedLocation.startsWith('/company/');
+
   /// Registration wizard (before Firebase user exists).
   static const Set<String> registerWizardPaths = {
     registerKind,
@@ -74,6 +99,9 @@ abstract final class AppRoutes {
     registerDelivery,
     registerCuisine,
     registerReview,
+    registerCompany,
+    registerCompanyMap,
+    registerCompanyReview,
   };
 
   static bool isShellPathOrSubroute(String matchedLocation) {

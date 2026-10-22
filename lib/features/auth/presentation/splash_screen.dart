@@ -27,6 +27,8 @@ String _splashStatusLine(AuthState auth, OnboardingGate gate) {
       return AppStrings.Splash.checkingAccount;
     case AuthenticatedNoProfile():
       return AppStrings.Auth.profilePendingSubtitle;
+    case AuthenticatedCompany():
+      return AppStrings.Common.loading;
     case Authenticated():
       final status = auth.profile.status;
       if (status == ProviderAccountStatus.active &&

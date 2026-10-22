@@ -25,6 +25,22 @@ import 'package:toukh_provider/features/auth/presentation/splash_screen.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.dart';
 import 'package:toukh_provider/features/auth/presentation/verify_otp_screen.dart';
 import 'package:toukh_provider/features/auth/registration_otp_args_holder.dart';
+import 'package:toukh_provider/domain/repositories/delivery_company_repository.dart';
+import 'package:toukh_provider/features/delivery_company/cubit/company_fleet_cubit.dart';
+import 'package:toukh_provider/features/delivery_company/cubit/courier_profile_cubit.dart';
+import 'package:toukh_provider/features/delivery_company/cubit/company_earnings_cubit.dart';
+import 'package:toukh_provider/features/delivery_company/cubit/company_orders_cubit.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/company_account_screen.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/company_couriers_screen.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/company_earnings_screen.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/company_home_screen.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/company_orders_screen.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/company_settings_screen.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/company_status_screen.dart';
+import 'package:toukh_provider/features/delivery_company/presentation/courier_profile_screen.dart';
+import 'package:toukh_provider/features/delivery_company/registration/delivery_company_registration_cubit.dart';
+import 'package:toukh_provider/features/delivery_company/registration/register_company_review_screen.dart';
+import 'package:toukh_provider/features/delivery_company/registration/register_company_screen.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
@@ -77,6 +93,7 @@ import 'package:toukh_provider/features/welcome/welcome_screen.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_provider/router/widgets/login_with_deleted_sheet.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/router/widgets/company_account_switch.dart';
 import 'package:toukh_provider/router/widgets/menu_or_gallery_tab_screen.dart';
 import 'package:toukh_provider/router/widgets/verify_otp_missing_args_placeholder.dart';
 
@@ -167,8 +184,12 @@ GoRouter createAppRouter({
               if (!context.mounted) return;
               final authState = context.read<AuthCubit>().state;
               final router = GoRouter.of(context);
-              if (authState is Authenticated &&
-                  !authState.profile.phoneVerified) {
+              final unverified = switch (authState) {
+                Authenticated(:final profile) => !profile.phoneVerified,
+                AuthenticatedCompany(:final company) => !company.phoneVerified,
+                _ => false,
+              };
+              if (unverified) {
                 router.go(AppRoutes.accountVerifyPhone);
               } else {
                 router.go(AppRoutes.login);
@@ -218,7 +239,9 @@ GoRouter createAppRouter({
       GoRoute(
         path: AppRoutes.registrationMenu,
         builder: (context, state) =>
-            const RequirePhoneVerified(child: MenuBuilderScreen()),
+            const RequirePhoneVerified(
+              child: MenuBuilderScreen(registration: true),
+            ),
       ),
       GoRoute(
         path: AppRoutes.registrationPortfolio,
@@ -425,9 +448,49 @@ GoRouter createAppRouter({
           );
         },
       ),
+      GoRoute(
+        path: AppRoutes.companyStatus,
+        builder: (context, state) => const CompanyStatusScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.companyAccount,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) => const CompanyAccountScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.companyEarnings,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) => BlocProvider(
+          create: (_) =>
+              CompanyEarningsCubit(getIt<DeliveryCompanyRepository>()),
+          child: const CompanyEarningsScreen(),
+        ),
+      ),
+      GoRoute(
+        path: '/company/courier/:driverId',
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = authCubit.state;
+          final driverId = state.pathParameters['driverId'] ?? '';
+          if (auth is! AuthenticatedCompany || driverId.isEmpty) {
+            return const Scaffold(body: Center(child: AppLoadingMark()));
+          }
+          return BlocProvider(
+            create: (_) => CourierProfileCubit(
+              getIt<DeliveryCompanyRepository>(),
+              companyId: auth.company.uid,
+              driverId: driverId,
+            ),
+            child: const CourierProfileScreen(),
+          );
+        },
+      ),
       ShellRoute(
-        builder: (context, state, child) => BlocProvider(
-          create: (_) => RegistrationCubit(),
+        builder: (context, state, child) => MultiBlocProvider(
+          providers: [
+            BlocProvider(create: (_) => RegistrationCubit()),
+            BlocProvider(create: (_) => DeliveryCompanyRegistrationCubit()),
+          ],
           child: AuthWebFrame(child: child),
         ),
         routes: [
@@ -472,13 +535,38 @@ GoRouter createAppRouter({
             path: AppRoutes.registerReview,
             builder: (context, state) => const RegisterReviewScreen(),
           ),
+          GoRoute(
+            path: AppRoutes.registerCompany,
+            builder: (context, state) => const RegisterCompanyScreen(),
+          ),
+          GoRoute(
+            path: AppRoutes.registerCompanyMap,
+            builder: (context, state) => const RegisterMapScreen(
+              nextRoute: AppRoutes.registerCompanyReview,
+            ),
+          ),
+          GoRoute(
+            path: AppRoutes.registerCompanyReview,
+            builder: (context, state) => const RegisterCompanyReviewScreen(),
+          ),
         ],
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return ProviderOrderAlertOverlay(
-            child: MainShellScaffold(navigationShell: navigationShell),
-          );
+          final shell = MainShellScaffold(navigationShell: navigationShell);
+          final auth = authCubit.state;
+          if (auth is AuthenticatedCompany) {
+            // Shared by the home and couriers tabs.
+            return BlocProvider(
+              key: ValueKey(auth.company.uid),
+              create: (_) => CompanyFleetCubit(
+                getIt<DeliveryCompanyRepository>(),
+                auth.company.uid,
+              ),
+              child: shell,
+            );
+          }
+          return ProviderOrderAlertOverlay(child: shell);
         },
         branches: [
           StatefulShellBranch(
@@ -487,22 +575,26 @@ GoRouter createAppRouter({
                 path: AppRoutes.home,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: MultiBlocProvider(
-                    providers: [
-                      BlocProvider(
-                        create: (_) => HomeDashboardCubit(
-                          authCubit: getIt<AuthCubit>(),
-                          dashboardRepository:
-                              getIt<ProviderDashboardRepository>(),
-                          menuRepository: getIt<ProviderMenuRepository>(),
-                        )..start(),
-                      ),
-                      BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
-                      BlocProvider.value(
-                        value: getIt<ProviderHomeServiceRequestsCubit>(),
-                      ),
-                    ],
-                    child: const HomeScreen(),
+                  child: CompanyAccountSwitch(
+                    company: (_, company) =>
+                        CompanyHomeScreen(company: company),
+                    provider: (_) => MultiBlocProvider(
+                      providers: [
+                        BlocProvider(
+                          create: (_) => HomeDashboardCubit(
+                            authCubit: getIt<AuthCubit>(),
+                            dashboardRepository:
+                                getIt<ProviderDashboardRepository>(),
+                            menuRepository: getIt<ProviderMenuRepository>(),
+                          )..start(),
+                        ),
+                        BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
+                        BlocProvider.value(
+                          value: getIt<ProviderHomeServiceRequestsCubit>(),
+                        ),
+                      ],
+                      child: const HomeScreen(),
+                    ),
                   ),
                 ),
               ),
@@ -514,14 +606,23 @@ GoRouter createAppRouter({
                 path: AppRoutes.orders,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: MultiBlocProvider(
-                    providers: [
-                      BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
-                      BlocProvider.value(
-                        value: getIt<ProviderHomeServiceRequestsCubit>(),
+                  child: CompanyAccountSwitch(
+                    company: (_, company) => BlocProvider(
+                      key: ValueKey(company.uid),
+                      create: (_) => CompanyOrdersCubit(
+                        getIt<DeliveryCompanyRepository>(),
                       ),
-                    ],
-                    child: const OrdersScreen(),
+                      child: const CompanyOrdersScreen(),
+                    ),
+                    provider: (_) => MultiBlocProvider(
+                      providers: [
+                        BlocProvider.value(value: getIt<ProviderOrdersCubit>()),
+                        BlocProvider.value(
+                          value: getIt<ProviderHomeServiceRequestsCubit>(),
+                        ),
+                      ],
+                      child: const OrdersScreen(),
+                    ),
                   ),
                 ),
                 routes: [
@@ -546,9 +647,16 @@ GoRouter createAppRouter({
                 path: AppRoutes.menu,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: BlocProvider.value(
-                    value: getIt<ProviderHomeServiceRequestsCubit>(),
-                    child: const MenuOrGalleryTabScreen(),
+                  child: CompanyAccountSwitch(
+                    company: (_, company) => CompanyCouriersScreen(
+                      company: company,
+                      showRequests:
+                          state.uri.queryParameters['tab'] == 'requests',
+                    ),
+                    provider: (_) => BlocProvider.value(
+                      value: getIt<ProviderHomeServiceRequestsCubit>(),
+                      child: const MenuOrGalleryTabScreen(),
+                    ),
                   ),
                 ),
               ),
@@ -560,7 +668,11 @@ GoRouter createAppRouter({
                 path: AppRoutes.settings,
                 pageBuilder: (context, state) => NoTransitionPage(
                   key: state.pageKey,
-                  child: const SettingsScreen(),
+                  child: CompanyAccountSwitch(
+                    company: (_, company) =>
+                        CompanySettingsScreen(company: company),
+                    provider: (_) => const SettingsScreen(),
+                  ),
                 ),
               ),
             ],

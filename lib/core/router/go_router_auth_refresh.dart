@@ -24,10 +24,12 @@ class GoRouterAuthRefresh extends ChangeNotifier {
     if (prev.runtimeType != next.runtimeType) return true;
 
     return switch (next) {
-      Authenticated() => _authenticatedGateChanged(
-          prev as Authenticated,
-          next,
-        ),
+      Authenticated() => _authenticatedGateChanged(prev as Authenticated, next),
+      AuthenticatedCompany(:final user, :final company) =>
+        prev is AuthenticatedCompany &&
+            (prev.user.uid != user.uid ||
+                prev.company.status != company.status ||
+                prev.company.phoneVerified != company.phoneVerified),
       AuthenticatedNoProfile(:final user) =>
         prev is AuthenticatedNoProfile && prev.user.uid != user.uid,
       AuthFailure(:final message) =>

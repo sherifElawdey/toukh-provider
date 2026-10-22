@@ -10,6 +10,7 @@ class RegisterReviewTile extends StatelessWidget {
     required this.value,
     required this.scheme,
     this.onTap,
+    this.errorText,
   });
 
   final IconData icon;
@@ -18,10 +19,17 @@ class RegisterReviewTile extends StatelessWidget {
   final ColorScheme scheme;
   final VoidCallback? onTap;
 
+  /// Shown under the value with an error outline when this row needs fixing.
+  final String? errorText;
+
   @override
   Widget build(BuildContext context) {
-    final content = Padding(
-      padding: const EdgeInsets.only(bottom: AppSizes.spaceMd),
+    final error = errorText;
+    final hasError = error != null;
+    final row = Padding(
+      padding: hasError
+          ? const EdgeInsets.all(AppSizes.spaceSm)
+          : const EdgeInsets.only(bottom: AppSizes.spaceMd),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -54,6 +62,18 @@ class RegisterReviewTile extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
+                if (hasError) ...[
+                  SizedBox(height: AppSizes.spaceXs),
+                  Text(
+                    error,
+                    style: TextStyle(
+                      fontSize: AppSizes.fontLabel,
+                      height: 1.35,
+                      color: scheme.error,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -61,12 +81,28 @@ class RegisterReviewTile extends StatelessWidget {
             SizedBox(width: AppSizes.spaceSm),
             Icon(
               ToukhIcons.chevronRight,
-              color: scheme.onSurface.withValues(alpha: 0.45),
+              color: hasError
+                  ? scheme.error
+                  : scheme.onSurface.withValues(alpha: 0.45),
             ),
           ],
         ],
       ),
     );
+
+    final content = hasError
+        ? Padding(
+            padding: const EdgeInsets.only(bottom: AppSizes.spaceMd),
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: scheme.errorContainer.withValues(alpha: 0.35),
+                border: Border.all(color: scheme.error),
+                borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+              ),
+              child: row,
+            ),
+          )
+        : row;
 
     if (onTap == null) return content;
 

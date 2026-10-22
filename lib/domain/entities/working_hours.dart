@@ -57,14 +57,14 @@ class DaySchedule extends Equatable {
   }
 
   Map<String, dynamic> toMap() => {
-        'enabled': enabled,
-        'twentyFourHours': twentyFourHours,
-        if (!twentyFourHours) ...{
-          'openFromMinutes': openFromMinutes,
-          'openToMinutes': openToMinutes,
-          'overnight': overnight,
-        },
-      };
+    'enabled': enabled,
+    'twentyFourHours': twentyFourHours,
+    if (!twentyFourHours) ...{
+      'openFromMinutes': openFromMinutes,
+      'openToMinutes': openToMinutes,
+      'overnight': overnight,
+    },
+  };
 
   static DaySchedule fromMap(Map<String, dynamic> m) {
     final from = _minutes(m['openFromMinutes']);
@@ -83,8 +83,13 @@ class DaySchedule extends Equatable {
   }
 
   @override
-  List<Object?> get props =>
-      [enabled, twentyFourHours, openFromMinutes, openToMinutes, overnight];
+  List<Object?> get props => [
+    enabled,
+    twentyFourHours,
+    openFromMinutes,
+    openToMinutes,
+    overnight,
+  ];
 }
 
 int? _minutes(dynamic value) {

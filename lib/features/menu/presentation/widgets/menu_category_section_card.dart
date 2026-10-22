@@ -12,7 +12,7 @@ class MenuCategorySectionCard extends StatelessWidget {
     required this.itemCount,
     required this.items,
     required this.onAddItem,
-    required this.onBulkAdd,
+    this.onBulkAdd,
     required this.onEditItem,
     required this.onDeleteItem,
     required this.onRenameCategory,
@@ -23,7 +23,9 @@ class MenuCategorySectionCard extends StatelessWidget {
   final int itemCount;
   final List<MenuItemEntity> items;
   final VoidCallback onAddItem;
-  final VoidCallback onBulkAdd;
+
+  /// Null hides the bulk-add button (catalog shops add from the catalog).
+  final VoidCallback? onBulkAdd;
   final void Function(MenuItemEntity) onEditItem;
   final void Function(MenuItemEntity) onDeleteItem;
   final VoidCallback onRenameCategory;
@@ -68,20 +70,18 @@ class MenuCategorySectionCard extends StatelessWidget {
                     ],
                   ),
                 ),
-                IconButton(
-                  tooltip: AppStrings.Registration.bulkAddItems.tr,
-                  icon: Icon(
-                    PhosphorIconsRegular.rows,
-                    color: AppColors.secondColor,
+                if (onBulkAdd != null)
+                  IconButton(
+                    tooltip: AppStrings.Registration.bulkAddItems.tr,
+                    icon: Icon(
+                      PhosphorIconsRegular.rows,
+                      color: AppColors.secondColor,
+                    ),
+                    onPressed: onBulkAdd,
                   ),
-                  onPressed: onBulkAdd,
-                ),
                 IconButton(
                   tooltip: AppStrings.Registration.addItem.tr,
-                  icon: Icon(
-                    ToukhIcons.add,
-                    color: AppColors.secondColor,
-                  ),
+                  icon: Icon(ToukhIcons.add, color: AppColors.secondColor),
                   onPressed: onAddItem,
                 ),
                 PopupMenuButton<String>(
@@ -94,18 +94,16 @@ class MenuCategorySectionCard extends StatelessWidget {
                       value: 'rename',
                       child: ListTile(
                         leading: Icon(ToukhIcons.edit),
-                        title:
-                            CustomText(AppStrings.Registration.renameCategory),
+                        title: CustomText(
+                          AppStrings.Registration.renameCategory,
+                        ),
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
                     PopupMenuItem(
                       value: 'delete',
                       child: ListTile(
-                        leading: Icon(
-                          ToukhIcons.delete,
-                          color: scheme.error,
-                        ),
+                        leading: Icon(ToukhIcons.delete, color: scheme.error),
                         title: CustomText(AppStrings.Common.delete),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -126,16 +124,15 @@ class MenuCategorySectionCard extends StatelessWidget {
                   ),
                 ),
               )
-            else
-              ...[
-                for (var i = 0; i < items.length; i++)
-                  MenuItemTile(
-                    item: items[i],
-                    showDivider: i < items.length - 1,
-                    onTap: () => onEditItem(items[i]),
-                    onDelete: () => onDeleteItem(items[i]),
-                  ),
-              ],
+            else ...[
+              for (var i = 0; i < items.length; i++)
+                MenuItemTile(
+                  item: items[i],
+                  showDivider: i < items.length - 1,
+                  onTap: () => onEditItem(items[i]),
+                  onDelete: () => onDeleteItem(items[i]),
+                ),
+            ],
           ],
         ),
       ),

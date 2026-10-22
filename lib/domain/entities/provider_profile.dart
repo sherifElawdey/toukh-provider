@@ -35,6 +35,7 @@ class ProviderProfile extends Equatable {
     this.serviceAreaId,
     this.workingHours = const {},
     this.deliveryConfig,
+
     /// Prep time for restaurants (minutes), independent of delivery toggle.
     this.avgPrepMinutes,
     this.cuisineTags = const [],
@@ -213,12 +214,13 @@ class ProviderProfile extends Equatable {
     return {
       'phone': phone,
       'email': email,
-      'password': password,
+      // Passwords live only in Firebase Auth; never persist them.
       'phoneVerified': phoneVerified,
       'serviceType': serviceType.wireValue,
       if (shopCategory != null) 'shopCategory': shopCategory!.wireValue,
       if (serviceCategoryId != null) 'serviceCategoryId': serviceCategoryId,
-      if (serviceCategoryTitle != null) 'serviceCategoryTitle': serviceCategoryTitle,
+      if (serviceCategoryTitle != null)
+        'serviceCategoryTitle': serviceCategoryTitle,
       'name': name,
       if (description != null) 'description': description,
       if (brandImageUrl != null) 'brandImageUrl': brandImageUrl,
@@ -231,21 +233,19 @@ class ProviderProfile extends Equatable {
       if (serviceAreaId != null && serviceAreaId!.trim().isNotEmpty)
         'serviceAreaId': serviceAreaId,
       'workingHours': wh,
-      if (deliveryConfig != null) 'deliveryConfig': deliveryConfig!.toFirestore(),
+      if (deliveryConfig != null)
+        'deliveryConfig': deliveryConfig!.toFirestore(),
       if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
       'cuisineTags': cuisineTags,
       // Menu items live under providers/{id}/Menu/{category}/items/{itemId}.
       if (portfolioImageUrls != null) 'portfolioImageUrls': portfolioImageUrls,
-      'preServiceQuestions':
-          preServiceQuestions.map((q) => q.toMap()).toList(),
+      'preServiceQuestions': preServiceQuestions.map((q) => q.toMap()).toList(),
       'status': status.wireValue,
       if (blockInfo != null) 'blockInfo': blockInfo!.toFirestore(),
       if (b2FileIds.isNotEmpty) 'b2FileIds': b2FileIds,
       'registrationExtrasComplete': registrationExtrasComplete,
       'brandInfo': brandInfo.toFirestore(),
       if (fcmTokens.isNotEmpty) 'fcmTokens': fcmTokens,
-      if (walletBalanceEgp != null) 'walletBalanceEgp': walletBalanceEgp,
-      if (walletPendingEgp != null) 'walletPendingEgp': walletPendingEgp,
       // 'providerId': uid,
       'id': uid,
       'createdAt': Timestamp.fromDate(createdAt),
@@ -259,7 +259,9 @@ class ProviderProfile extends Equatable {
     for (final e in whRaw.entries) {
       final day = Weekday.tryParse(e.key);
       if (day != null) {
-        wh[day] = DaySchedule.fromMap(Map<String, dynamic>.from(e.value as Map));
+        wh[day] = DaySchedule.fromMap(
+          Map<String, dynamic>.from(e.value as Map),
+        );
       }
     }
 
@@ -267,14 +269,17 @@ class ProviderProfile extends Equatable {
     final mi = data['menuItems'] as List<dynamic>?;
     if (mi != null) {
       menuItems = mi
-          .map((e) => MenuItemEntity.fromFirestore(
-                Map<String, dynamic>.from(e as Map),
-              ))
+          .map(
+            (e) => MenuItemEntity.fromFirestore(
+              Map<String, dynamic>.from(e as Map),
+            ),
+          )
           .toList();
     }
 
     final createdAt =
-        ToukhFirestoreTimestamps.toDateTime(data['createdAt']) ?? DateTime.now();
+        ToukhFirestoreTimestamps.toDateTime(data['createdAt']) ??
+        DateTime.now();
     final updatedAt =
         ToukhFirestoreTimestamps.toDateTime(data['updatedAt']) ?? createdAt;
 
@@ -289,7 +294,11 @@ class ProviderProfile extends Equatable {
       email: data['email'] as String? ?? '',
       password: data['password'] as String? ?? '',
       phoneVerified: data['phoneVerified'] as bool? ?? false,
-      serviceType: ServiceType.tryParse((data['serviceType'] as String?) ??(data['kind'] as String?) ) ?? ServiceType.restaurant,
+      serviceType:
+          ServiceType.tryParse(
+            (data['serviceType'] as String?) ?? (data['kind'] as String?),
+          ) ??
+          ServiceType.restaurant,
       shopCategory: ShopCategory.tryParse(data['shopCategory'] as String?),
       serviceCategoryId: data['serviceCategoryId'] as String?,
       serviceCategoryTitle: data['serviceCategoryTitle'] as String?,
@@ -303,11 +312,13 @@ class ProviderProfile extends Equatable {
       idBackUrl: data['idBackUrl'] as String?,
       lat: (data['lat'] as num?)?.toDouble(),
       lng: (data['lng'] as num?)?.toDouble(),
-      address: data['formattedAddress'] as String? ?? data['address'] as String?,
+      address:
+          data['formattedAddress'] as String? ?? data['address'] as String?,
       city: (data['city'] as String?)?.trim().isNotEmpty == true
           ? (data['city'] as String).trim()
           : null,
-      serviceAreaId: (data['serviceAreaId'] as String?)?.trim().isNotEmpty == true
+      serviceAreaId:
+          (data['serviceAreaId'] as String?)?.trim().isNotEmpty == true
           ? (data['serviceAreaId'] as String).trim()
           : null,
       workingHours: wh,
@@ -318,9 +329,11 @@ class ProviderProfile extends Equatable {
       portfolioImageUrls: (data['portfolioImageUrls'] as List<dynamic>?)
           ?.map((e) => e as String)
           .toList(),
-      preServiceQuestions:
-          PreServiceQuestion.listFromFirestore(data['preServiceQuestions']),
-      status: ProviderAccountStatus.tryParse(data['status'] as String?) ??
+      preServiceQuestions: PreServiceQuestion.listFromFirestore(
+        data['preServiceQuestions'],
+      ),
+      status:
+          ProviderAccountStatus.tryParse(data['status'] as String?) ??
           ProviderAccountStatus.pending,
       blockInfo: BlockInfo.fromFirestore(
         data['blockInfo'] as Map<String, dynamic>?,
@@ -332,8 +345,10 @@ class ProviderProfile extends Equatable {
           data['registrationExtrasComplete'] as bool? ?? false,
       brandInfo: BrandInfo.fromFirestore(data['brandInfo']),
       fcmTokens:
-          (data['fcmTokens'] as List<dynamic>?)?.map((e) => e as String).toList() ??
-              const [],
+          (data['fcmTokens'] as List<dynamic>?)
+              ?.map((e) => e as String)
+              .toList() ??
+          const [],
       walletBalanceEgp: (data['walletBalanceEgp'] as num?)?.toDouble(),
       walletPendingEgp: (data['walletPendingEgp'] as num?)?.toDouble(),
       blackPointsTotal: (data['blackPointsTotal'] as num?)?.toInt() ?? 0,
@@ -347,7 +362,22 @@ class ProviderProfile extends Equatable {
   }
 
   bool get isRestaurantShop =>
-      serviceType == ServiceType.restaurant && shopCategory == ShopCategory.restaurant;
+      serviceType == ServiceType.restaurant &&
+      shopCategory == ShopCategory.restaurant;
+
+  /// Fruit & vegetable shops: build their menu from the admin grocery catalog.
+  bool get usesGroceryCatalog =>
+      serviceType == ServiceType.grocery ||
+      shopCategory == ShopCategory.fruitVeg ||
+      usesSupermarketCatalog;
+
+  /// Supermarkets: also pick from the admin supermarket (packaged) catalog.
+  bool get usesSupermarketCatalog =>
+      serviceType == ServiceType.supermarket ||
+      shopCategory == ShopCategory.supermarket;
+
+  /// Shops that sell from a menu instead of showing a gallery.
+  bool get hasMenu => isRestaurantShop || usesGroceryCatalog;
 
   bool get isPharmacy =>
       serviceType == ServiceType.pharmacy ||
@@ -358,40 +388,40 @@ class ProviderProfile extends Equatable {
 
   @override
   List<Object?> get props => [
-        uid,
-        phone,
-        email,
-        password,
-        phoneVerified,
+    uid,
+    phone,
+    email,
+    password,
+    phoneVerified,
     serviceType,
-        shopCategory,
-        serviceCategoryId,
-        serviceCategoryTitle,
-        slug,
-        name,
-        description,
-        brandImageUrl,
-        idFrontUrl,
-        idBackUrl,
-        lat,
-        lng,
-        address,
-        city,
-        serviceAreaId,
-        workingHours,
-        deliveryConfig,
-        avgPrepMinutes,
-        cuisineTags,
-        menuItems,
-        portfolioImageUrls,
-        preServiceQuestions,
-        status,
-        registrationExtrasComplete,
-        brandInfo,
-        walletBalanceEgp,
-        walletPendingEgp,
-        blackPointsTotal,
-        commitmentPercent,
-        avgAcceptSeconds,
-      ];
+    shopCategory,
+    serviceCategoryId,
+    serviceCategoryTitle,
+    slug,
+    name,
+    description,
+    brandImageUrl,
+    idFrontUrl,
+    idBackUrl,
+    lat,
+    lng,
+    address,
+    city,
+    serviceAreaId,
+    workingHours,
+    deliveryConfig,
+    avgPrepMinutes,
+    cuisineTags,
+    menuItems,
+    portfolioImageUrls,
+    preServiceQuestions,
+    status,
+    registrationExtrasComplete,
+    brandInfo,
+    walletBalanceEgp,
+    walletPendingEgp,
+    blackPointsTotal,
+    commitmentPercent,
+    avgAcceptSeconds,
+  ];
 }

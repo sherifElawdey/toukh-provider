@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc/bloc.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/provider_driver_link_request.dart';
 import 'package:toukh_provider/domain/entities/provider_linked_driver.dart';
@@ -87,24 +88,37 @@ class ManageDriversCubit extends Cubit<ManageDriversState> {
   StreamSubscription<ProviderDriversSnapshot>? _sub;
 
   Future<bool> acceptRequest(String driverId) =>
-      _respond(driverId: driverId, accept: true);
+      _respond(driverId: driverId, action: DriverLinkAction.accept);
 
   Future<bool> rejectRequest(String driverId) =>
-      _respond(driverId: driverId, accept: false);
+      _respond(driverId: driverId, action: DriverLinkAction.reject);
 
   Future<bool> removeLinkedDriver({required String driverId}) =>
-      _respond(driverId: driverId, accept: false);
+      _respond(driverId: driverId, action: DriverLinkAction.remove);
+
+  /// Error value for a courier who can't be removed mid-delivery.
+  static const removeBusyError = 'remove-busy';
 
   Future<bool> _respond({
     required String driverId,
-    required bool accept,
+    required DriverLinkAction action,
   }) async {
     if (state.actionInProgress != null) return false;
     emit(state.copyWith(actionInProgress: driverId, clearError: true));
     try {
-      await _repo.respondToRequest(driverId: driverId, accept: accept);
+      await _repo.respond(driverId: driverId, action: action);
       emit(state.copyWith(clearAction: true));
       return true;
+    } on FirebaseFunctionsException catch (e) {
+      final busy = action == DriverLinkAction.remove &&
+          e.code == 'failed-precondition';
+      emit(
+        state.copyWith(
+          clearAction: true,
+          error: busy ? removeBusyError : e.toString(),
+        ),
+      );
+      return false;
     } catch (e) {
       emit(
         state.copyWith(

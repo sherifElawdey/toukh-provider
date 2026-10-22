@@ -153,151 +153,24 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
     String? completionCode,
   }) async {
     final functions = _functions;
-    if (functions != null) {
-      try {
-        await functions.httpsCallable('updateProviderOrderSlice').call({
-          'masterOrderId': masterOrderId,
-          'providerId': providerId,
-          'patch': patch,
-          'completionCode': ?completionCode,
-        });
-        return;
-      } on FirebaseFunctionsException catch (e) {
-        if (e.code != 'not-found' && e.code != 'unavailable') {
-          if (kDebugMode) {
-            debugPrint('updateProviderOrderSlice failed: ${e.code} ${e.message}');
-          }
-          rethrow;
-        }
-      }
+    if (functions == null) {
+      throw StateError('Cloud Functions not configured');
     }
-    await _patchSliceFallback(
-      providerId: providerId,
-      masterOrderId: masterOrderId,
-      patch: patch,
-    );
-  }
-
-  Future<void> _patchSliceFallback({
-    required String providerId,
-    required String masterOrderId,
-    required Map<String, dynamic> patch,
-  }) async {
-    final masterRef = _masterRef(masterOrderId);
-    await _firestore.runTransaction((tx) async {
-      final snap = await tx.get(masterRef);
-      if (!snap.exists) throw StateError('Order not found');
-
-      final master = snap.data()!;
-      final slices = Map<String, dynamic>.from(
-        master['providerSlices'] as Map? ?? {},
-      );
-      final slice = Map<String, dynamic>.from(
-        slices[providerId] as Map? ?? {},
-      );
-      if (slice.isEmpty) throw StateError('Provider slice not found');
-
-      slice.addAll(patch);
-      slice['updatedAt'] = FieldValue.serverTimestamp();
-      final status = patch['status'] as String?;
-      if (status == 'cancelled') {
-        slice['cancelledAt'] = FieldValue.serverTimestamp();
-        slice['cancelledByRole'] =
-            patch['cancelledByRole'] as String? ??
-            slice['cancelledByRole'] as String? ??
-            'provider';
-        if (patch['cancelReason'] != null) {
-          slice['cancelReason'] = patch['cancelReason'];
-        }
+    try {
+      await functions.httpsCallable('updateProviderOrderSlice').call({
+        'masterOrderId': masterOrderId,
+        'providerId': providerId,
+        'patch': patch,
+        'completionCode': ?completionCode,
+      });
+    } on FirebaseFunctionsException catch (e) {
+      if (kDebugMode) {
+        debugPrint('updateProviderOrderSlice failed: ${e.code} ${e.message}');
       }
-      if (status == 'preparing' || status == 'accepted') {
-        slice['acceptedAt'] = FieldValue.serverTimestamp();
-      }
-      if (status == 'ready_for_pickup') {
-        slice['readyForPickupAt'] = FieldValue.serverTimestamp();
-      }
-      if (status == 'out_for_delivery') {
-        slice['dispatchedAt'] = FieldValue.serverTimestamp();
-        if (patch['handedToCourier'] == true) {
-          slice['handedToCourierAt'] = FieldValue.serverTimestamp();
-        }
-      }
-      if (status == 'delivered' || status == 'completed') {
-        slice['deliveredAt'] ??= FieldValue.serverTimestamp();
-      }
-      slice.remove('handedToCourier');
-      slices[providerId] = slice;
-
-      final statusMap = Map<String, dynamic>.from(
-        master['providerStatusMap'] as Map? ?? {},
-      );
-      if (patch['providerState'] != null) {
-        statusMap[providerId] = patch['providerState'];
-      } else if (patch['status'] != null) {
-        statusMap[providerId] = _mapWireToProviderState(patch['status'] as String);
-      }
-
-      final refsRaw = master['providerOrderRefs'] as List? ?? [];
-      final refs = refsRaw.map((e) {
-        final ref = Map<String, dynamic>.from(e as Map);
-        if (ref['providerId'] == providerId) {
-          ref['providerState'] = statusMap[providerId] ?? ref['providerState'];
-          if (status == 'cancelled') {
-            // FieldValue.serverTimestamp() is invalid inside array elements.
-            ref['cancelledAt'] = Timestamp.now();
-            if (slice['cancelReason'] != null) {
-              ref['cancelReason'] = slice['cancelReason'];
-            }
-            ref['cancelledByRole'] =
-                slice['cancelledByRole'] as String? ?? 'provider';
-          }
-        }
-        return ref;
-      }).toList();
-
-      final updates = <String, dynamic>{
-        'providerSlices': slices,
-        'providerStatusMap': statusMap,
-        'providerOrderRefs': refs,
-        'updatedAt': FieldValue.serverTimestamp(),
-      };
-
-      if (status == 'out_for_delivery') updates['globalStatus'] = 'on_the_way';
-      if (status == 'delivered' || status == 'completed') {
-        updates['globalStatus'] = 'delivered';
-      }
-      if (status == 'cancelled') {
-        final allCancelled = statusMap.values.isNotEmpty &&
-            statusMap.values.every((s) => s == 'rejected');
-        if (allCancelled) updates['globalStatus'] = 'cancelled';
-      }
-
-      tx.update(masterRef, updates);
-    });
-  }
-
-  String _mapWireToProviderState(String status) {
-    switch (status.toLowerCase()) {
-      case 'placed':
-      case 'pending':
-        return 'pending';
-      case 'accepted':
-      case 'preparing':
-        return 'preparing';
-      case 'ready_for_pickup':
-        return 'ready_for_pickup';
-      case 'picked_up':
-      case 'out_for_delivery':
-        return 'picked_up';
-      case 'delivered':
-      case 'completed':
-        return 'picked_up';
-      case 'cancelled':
-        return 'rejected';
-      default:
-        return 'pending';
+      rethrow;
     }
   }
+
 
   @override
   Future<void> approveOrder({

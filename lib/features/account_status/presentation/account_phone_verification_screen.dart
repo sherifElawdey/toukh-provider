@@ -14,13 +14,17 @@ import 'package:toukh_provider/features/auth/presentation/verify_otp_route_args.
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
-/// Phone OTP entry for signed-in providers with `unverified` status and
-/// `phoneVerified == false`.
+/// Phone OTP entry for signed-in providers (or delivery companies) with
+/// `unverified` status and `phoneVerified == false`.
 class AccountPhoneVerificationScreen extends StatelessWidget {
   const AccountPhoneVerificationScreen({super.key});
 
-  Future<void> _sendOtp(BuildContext context, Authenticated auth) async {
-    final phone = phoneE164FromProfileStored(auth.profile.phone);
+  Future<void> _sendOtp(
+    BuildContext context, {
+    required String storedPhone,
+    required VerifyOtpFlow flow,
+  }) async {
+    final phone = phoneE164FromProfileStored(storedPhone);
     if (phone == null) {
       AppSnack.show(
         context,
@@ -51,7 +55,7 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
         extra: VerifyOtpRouteArgs(
           phone: phone,
           requestToken: result.requestToken,
-          flow: VerifyOtpFlow.providerPhoneVerification,
+          flow: flow,
         ),
       );
     } catch (e) {
@@ -71,15 +75,25 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, authState) {
-        if (authState is! Authenticated) {
-          return const Scaffold(body: SizedBox.shrink());
+        final String displayName;
+        final String storedPhone;
+        final VerifyOtpFlow flow;
+        switch (authState) {
+          case Authenticated(:final profile):
+            displayName = profile.displayName;
+            storedPhone = profile.phone;
+            flow = VerifyOtpFlow.providerPhoneVerification;
+          case AuthenticatedCompany(:final company):
+            displayName = company.companyName;
+            storedPhone = company.phone;
+            flow = VerifyOtpFlow.companyPhoneVerification;
+          default:
+            return const Scaffold(body: SizedBox.shrink());
         }
-        final profile = authState.profile;
-        final nameLabel = profile.displayName.trim().isEmpty
+        final nameLabel = displayName.trim().isEmpty
             ? AppStrings.AccountStatus.verifyPhoneFallbackName.tr
-            : profile.displayName.trim();
-        final masked =
-            maskEgyptNationalPhoneLastThree(profile.phone);
+            : displayName.trim();
+        final masked = maskEgyptNationalPhoneLastThree(storedPhone);
 
         return Scaffold(
           extendBodyBehindAppBar: true,
@@ -144,7 +158,11 @@ class AccountPhoneVerificationScreen extends StatelessWidget {
                     SizedBox(height: AppSizes.space3xl),
                     AppFilledButton(
                       text: AppStrings.Auth.sendOtp,
-                      onTap: () => _sendOtp(context, authState),
+                      onTap: () => _sendOtp(
+                        context,
+                        storedPhone: storedPhone,
+                        flow: flow,
+                      ),
                     ),
                   ],
                 ),

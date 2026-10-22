@@ -9,6 +9,9 @@ import 'package:toukh_provider/features/menu/presentation/models/menu_item_edito
 import 'package:toukh_provider/features/menu/presentation/menu_public_url.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_category_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/bulk_add_items_sheet.dart';
+import 'package:toukh_provider/features/menu/presentation/catalog/catalog_menu_actions.dart';
+import 'package:toukh_provider/features/menu/presentation/catalog/catalog_picker_screen.dart';
+import 'package:toukh_provider/features/menu/presentation/catalog/supermarket_catalog_picker_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/menu_qr_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_or_edit_item_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/widgets/menu_category_filter_chips.dart';
@@ -279,13 +282,42 @@ class MenuBuilderView extends StatelessWidget {
     }
   }
 
+  /// Section for an item added outside a category card.
+  String _defaultSection(BuildContext context) {
+    final s = context.read<MenuBuilderCubit>().state;
+    return s.selectedCategory ??
+        (s.categories.isNotEmpty
+            ? s.categories.first
+            : AppStrings.Catalog.otherSection.tr);
+  }
+
+  /// Catalog shops add through the master catalog; its "not in the catalog"
+  /// link falls back to the manual item sheet.
+  void _openCatalog(
+    BuildContext context, {
+    required bool supermarket,
+    String? category,
+  }) {
+    void addCustom() => _showItemSheet(
+      context,
+      initialCategory: category ?? _defaultSection(context),
+      allowNewCategory: true,
+    );
+    if (supermarket) {
+      openSupermarketCatalogPicker(context, onAddCustom: addCustom);
+    } else {
+      openCatalogPicker(context, onAddCustom: addCustom);
+    }
+  }
+
   Future<void> _showItemSheet(
     BuildContext context, {
     required String initialCategory,
     MenuItemEntity? existing,
+    bool allowNewCategory = false,
   }) async {
     final cubit = context.read<MenuBuilderCubit>();
-    if (cubit.state.categories.isEmpty) {
+    if (cubit.state.categories.isEmpty && !allowNewCategory) {
       AppSnack.show(
         context,
         message: AppStrings.Registration.addFirstCategoryHint.tr,
@@ -295,6 +327,7 @@ class MenuBuilderView extends StatelessWidget {
       return;
     }
     final merged = List<String>.from(cubit.state.categories);
+    if (merged.isEmpty) merged.add(initialCategory);
     final extra = existing?.category;
     if (extra != null &&
         extra.isNotEmpty &&
@@ -384,6 +417,10 @@ class MenuBuilderView extends StatelessWidget {
     final authState = context.watch<AuthCubit>().state;
     final isRestaurant =
         authState is Authenticated && authState.profile.isRestaurantShop;
+    final isSupermarket =
+        authState is Authenticated && authState.profile.usesSupermarketCatalog;
+    final usesCatalog =
+        authState is Authenticated && authState.profile.usesGroceryCatalog;
 
     return BlocBuilder<MenuBuilderCubit, MenuBuilderState>(
       builder: (context, state) {
@@ -419,6 +456,30 @@ class MenuBuilderView extends StatelessWidget {
                                 url: publicMenuUrl(authState.profile),
                                 name: authState.profile.name,
                               ),
+                            ),
+                          ),
+                        ),
+                      if (isSupermarket)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                            child: _CatalogTile(
+                              titleKey: AppStrings.Catalog.addFromSupermarketCatalog,
+                              hintKey: AppStrings.Catalog.addFromSupermarketCatalogHint,
+                              onTap: () =>
+                                  _openCatalog(context, supermarket: true),
+                            ),
+                          ),
+                        ),
+                      if (usesCatalog)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                            child: _CatalogTile(
+                              titleKey: AppStrings.Catalog.addFromCatalog,
+                              hintKey: AppStrings.Catalog.addFromCatalogHint,
+                              onTap: () =>
+                                  _openCatalog(context, supermarket: false),
                             ),
                           ),
                         ),
@@ -462,17 +523,26 @@ class MenuBuilderView extends StatelessWidget {
                                     category: cat,
                                     itemCount: state.countForCategory(cat),
                                     items: state.itemsInCategory(cat),
-                                    onAddItem: () => _showItemSheet(
-                                      context,
-                                      initialCategory: cat,
-                                    ),
-                                    onBulkAdd: () =>
-                                        _showBulkAddSheet(context, cat),
-                                    onEditItem: (e) => _showItemSheet(
-                                      context,
-                                      initialCategory: cat,
-                                      existing: e,
-                                    ),
+                                    onAddItem: () => usesCatalog
+                                        ? _openCatalog(
+                                            context,
+                                            supermarket: isSupermarket,
+                                            category: cat,
+                                          )
+                                        : _showItemSheet(
+                                            context,
+                                            initialCategory: cat,
+                                          ),
+                                    onBulkAdd: usesCatalog
+                                        ? null
+                                        : () => _showBulkAddSheet(context, cat),
+                                    onEditItem: (e) => e.isFromCatalog
+                                        ? editCatalogMenuItem(context, e)
+                                        : _showItemSheet(
+                                            context,
+                                            initialCategory: cat,
+                                            existing: e,
+                                          ),
                                     onDeleteItem: (e) =>
                                         _confirmDeleteItem(context, e),
                                     onRenameCategory: () =>
@@ -525,6 +595,43 @@ class _MenuQrTile extends StatelessWidget {
           fontWeight: FontWeight.w700,
         ),
         subtitle: CustomText(AppStrings.Registration.menuQrHint),
+        trailing: Icon(ToukhIcons.chevronRight),
+        onTap: onTap,
+      ),
+    );
+  }
+}
+
+class _CatalogTile extends StatelessWidget {
+  const _CatalogTile({
+    required this.titleKey,
+    required this.hintKey,
+    required this.onTap,
+  });
+
+  final String titleKey;
+  final String hintKey;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Material(
+      color: AppColors.success.withValues(alpha: 0.1),
+      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+        ),
+        leading: Icon(ToukhIcons.store, color: AppColors.success),
+        title: CustomText(
+          titleKey,
+          fontWeight: FontWeight.w700,
+        ),
+        subtitle: CustomText(
+          hintKey,
+          style: TextStyle(color: scheme.onSurfaceVariant),
+        ),
         trailing: Icon(ToukhIcons.chevronRight),
         onTap: onTap,
       ),

@@ -20,7 +20,8 @@ extension ProviderMasterOrderRowDashboardX on ProviderMasterOrderRow {
           ? (s.customerName ?? master.customerName)
           : null,
       hideCustomerContact:
-          master.isPharmacyRequest && !providerCanViewCustomerContact(master, s),
+          master.isPharmacyRequest &&
+          !providerCanViewCustomerContact(master, s),
       items: [
         for (final item in s.items)
           ProviderOrderLineItem(

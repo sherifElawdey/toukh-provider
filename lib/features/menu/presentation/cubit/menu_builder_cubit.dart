@@ -171,18 +171,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     var entity = result.entity;
 
     if (result.clearImage && result.newImageFile == null) {
-      entity = MenuItemEntity(
-        id: entity.id,
-        name: entity.name,
-        description: entity.description,
-        imageUrl: null,
-        category: entity.category,
-        sizes: entity.sizes,
-        isAvailable: entity.isAvailable,
-        offerType: entity.offerType,
-        discountPercent: entity.discountPercent,
-        offerPriceEgp: entity.offerPriceEgp,
-      );
+      entity = entity.copyWith(clearImage: true);
     }
 
     if (result.newImageFile != null) {
@@ -193,18 +182,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
           source: result.newImageFile!,
           objectPath: 'providers/${user.uid}/menu/${entity.id}.jpg',
         );
-        entity = MenuItemEntity(
-          id: entity.id,
-          name: entity.name,
-          description: entity.description,
-          imageUrl: up.url,
-          category: entity.category,
-          sizes: entity.sizes,
-          isAvailable: entity.isAvailable,
-          offerType: entity.offerType,
-          discountPercent: entity.discountPercent,
-          offerPriceEgp: entity.offerPriceEgp,
-        );
+        entity = entity.copyWith(imageUrl: up.url);
       } catch (e) {
         return e.toString();
       }
@@ -214,20 +192,10 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     if (uid == null) return 'Not signed in.';
     try {
       await _menuRepository.upsertItem(uid, entity);
-      await _maybeCompleteRegistration();
       return null;
     } catch (e) {
       return e.toString();
     }
-  }
-
-  Future<void> _maybeCompleteRegistration() async {
-    final auth = _authCubit.state;
-    if (auth is! Authenticated) return;
-    if (auth.profile.registrationExtrasComplete) return;
-    final uid = auth.user.uid;
-    if (!await _menuRepository.hasAnyItems(uid)) return;
-    await _authCubit.markMenuRegistrationComplete();
   }
 
   Future<void> saveMenu({bool auto = false}) async {

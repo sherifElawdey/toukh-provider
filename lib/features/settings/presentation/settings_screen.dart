@@ -1,3 +1,4 @@
+import 'package:toukh_provider/core/banners/provider_banner_strip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -91,6 +92,10 @@ class SettingsScreen extends StatelessWidget {
                 bottom: AppSizes.space2xl,
               ),
               children: [
+                const ProviderBannerStrip(
+                  placement: ToukhBannerPlacements.settings,
+                  padding: EdgeInsets.only(bottom: AppSizes.spaceLg),
+                ),
                 // Center(
                 //   child: ToukhServiceLogo(
                 //     size: 64,

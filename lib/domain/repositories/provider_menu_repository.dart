@@ -1,10 +1,7 @@
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 
 class ProviderMenuSnapshot {
-  const ProviderMenuSnapshot({
-    required this.categories,
-    required this.items,
-  });
+  const ProviderMenuSnapshot({required this.categories, required this.items});
 
   final List<String> categories;
   final List<MenuItemEntity> items;

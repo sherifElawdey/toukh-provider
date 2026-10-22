@@ -35,7 +35,7 @@ abstract final class ProviderDriverMapper {
       vehicleType: _vehicleLabel(data['vehicleType']),
       profilePhotoUrl: _string(data['profilePhotoUrl']),
       status: _string(data['status']) ?? 'pending',
-      submittedAt: _date(data['submittedAt']),
+      submittedAt: _date(data['linkRequestedAt']) ?? _date(data['submittedAt']),
     );
   }
 

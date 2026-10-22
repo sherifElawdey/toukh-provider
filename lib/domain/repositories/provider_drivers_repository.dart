@@ -14,8 +14,12 @@ class ProviderDriversSnapshot {
 abstract class ProviderDriversRepository {
   Stream<ProviderDriversSnapshot> watchDrivers(String providerId);
 
-  Future<void> respondToRequest({
+  /// Accept / reject a courier's link request, or end an approved link.
+  Future<void> respond({
     required String driverId,
-    required bool accept,
+    required DriverLinkAction action,
   });
 }
+
+/// Wire values of the `respondToLinkedDriver` callable.
+enum DriverLinkAction { accept, reject, remove }

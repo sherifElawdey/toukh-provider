@@ -64,6 +64,8 @@ class WalletCubit extends Cubit<WalletState> {
   final ProviderWalletRepository _repo;
   final String _providerId;
 
+  String get providerId => _providerId;
+
   StreamSubscription<ProviderWalletSummary>? _summarySub;
   StreamSubscription<List<ProviderWalletTransaction>>? _recentSub;
 

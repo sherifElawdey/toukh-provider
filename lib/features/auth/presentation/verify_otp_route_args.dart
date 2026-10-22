@@ -2,6 +2,9 @@ enum VerifyOtpFlow {
   passwordReset,
   registerApplication,
   providerPhoneVerification,
+
+  /// Delivery company sign-up or later verification.
+  companyPhoneVerification,
 }
 
 final class VerifyOtpRouteArgs {

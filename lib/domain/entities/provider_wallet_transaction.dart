@@ -68,8 +68,9 @@ class ProviderWalletTransaction extends Equatable {
 
   static double? _num(dynamic v) => v is num ? v.toDouble() : null;
 
-  static ProviderWalletTxDirection _directionFrom(String? s) =>
-      s == 'debit' ? ProviderWalletTxDirection.debit : ProviderWalletTxDirection.credit;
+  static ProviderWalletTxDirection _directionFrom(String? s) => s == 'debit'
+      ? ProviderWalletTxDirection.debit
+      : ProviderWalletTxDirection.credit;
 
   static ProviderWalletTxKind _kindFrom(String? s) {
     switch (s) {
@@ -130,27 +131,24 @@ class ProviderWalletTransaction extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        amountEgp,
-        direction,
-        kind,
-        source,
-        title,
-        detail,
-        orderId,
-        orderDetails,
-        balanceBefore,
-        balanceAfter,
-        lastTransactionId,
-        createdAt,
-      ];
+    id,
+    amountEgp,
+    direction,
+    kind,
+    source,
+    title,
+    detail,
+    orderId,
+    orderDetails,
+    balanceBefore,
+    balanceAfter,
+    lastTransactionId,
+    createdAt,
+  ];
 }
 
 class ProviderWalletSummary extends Equatable {
-  const ProviderWalletSummary({
-    required this.balanceEgp,
-    this.pendingEgp,
-  });
+  const ProviderWalletSummary({required this.balanceEgp, this.pendingEgp});
 
   final double balanceEgp;
   final double? pendingEgp;

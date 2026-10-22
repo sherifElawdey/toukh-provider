@@ -13,9 +13,36 @@ abstract final class ProviderShellNav {
   static const _settingsBranch = 3;
 
   static List<ShellNavItem> navItems({
-    required bool isRestaurant,
+    required bool hasMenu,
     required bool isHomeService,
+    bool isCompany = false,
   }) {
+    if (isCompany) {
+      // Same branches as shops: the menu branch hosts the couriers list and
+      // the settings branch the company profile.
+      return [
+        ShellNavItem(
+          label: AppStrings.Shell.home,
+          icon: ToukhIcons.home,
+          selectedIcon: ToukhIcons.homeSelected,
+        ),
+        ShellNavItem(
+          label: AppStrings.Shell.orders,
+          icon: ToukhIcons.orders,
+          selectedIcon: ToukhIcons.ordersSelected,
+        ),
+        ShellNavItem(
+          label: AppStrings.Company.navCouriers,
+          icon: ToukhIcons.group,
+          selectedIcon: PhosphorIconsFill.users,
+        ),
+        ShellNavItem(
+          label: AppStrings.Company.navProfile,
+          icon: ToukhIcons.person,
+          selectedIcon: PhosphorIconsFill.userCircle,
+        ),
+      ];
+    }
     if (isHomeService) {
       return [
         ShellNavItem(
@@ -53,9 +80,9 @@ abstract final class ProviderShellNav {
         selectedIcon: ToukhIcons.ordersSelected,
       ),
       ShellNavItem(
-        label: isRestaurant ? AppStrings.Shell.menu : AppStrings.Shell.gallery,
-        icon: isRestaurant ? ToukhIcons.menu : ToukhIcons.gallery,
-        selectedIcon: isRestaurant
+        label: hasMenu ? AppStrings.Shell.menu : AppStrings.Shell.gallery,
+        icon: hasMenu ? ToukhIcons.menu : ToukhIcons.gallery,
+        selectedIcon: hasMenu
             ? ToukhIcons.menuSelected
             : ToukhIcons.gallerySelected,
       ),

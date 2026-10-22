@@ -10,9 +10,9 @@ class OrderHistoryStats extends Equatable {
   });
 
   const OrderHistoryStats.zero()
-      : totalOrders = 0,
-        completedOrders = 0,
-        canceledOrders = 0;
+    : totalOrders = 0,
+      completedOrders = 0,
+      canceledOrders = 0;
 
   final int totalOrders;
   final int completedOrders;
@@ -23,10 +23,7 @@ class OrderHistoryStats extends Equatable {
 }
 
 class OrderHistoryPage extends Equatable {
-  const OrderHistoryPage({
-    required this.rows,
-    required this.lastDoc,
-  });
+  const OrderHistoryPage({required this.rows, required this.lastDoc});
 
   final List<ProviderMasterOrderRow> rows;
   final DocumentSnapshot<Map<String, dynamic>>? lastDoc;

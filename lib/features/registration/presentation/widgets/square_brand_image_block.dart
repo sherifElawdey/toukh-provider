@@ -16,7 +16,8 @@ class SquareBrandImageBlock extends StatelessWidget {
   final Future<void> Function(
     BuildContext context,
     void Function(PickedMedia) onPicked,
-  ) onTapPick;
+  )
+  onTapPick;
 
   static const double _side = 128;
 
@@ -80,13 +81,16 @@ class SquareBrandImageBlock extends StatelessWidget {
                             image: file!.imageProvider,
                             fit: BoxFit.cover,
                             filterQuality: FilterQuality.medium,
-                            errorBuilder: (context, error, stackTrace) => Center(
-                              child: Icon(
-                                PhosphorIconsRegular.imageBroken,
-                                size: 40,
-                                color: scheme.onSurface.withValues(alpha: 0.35),
-                              ),
-                            ),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Center(
+                                  child: Icon(
+                                    PhosphorIconsRegular.imageBroken,
+                                    size: 40,
+                                    color: scheme.onSurface.withValues(
+                                      alpha: 0.35,
+                                    ),
+                                  ),
+                                ),
                           ),
                           Positioned(
                             left: 0,
@@ -115,7 +119,9 @@ class SquareBrandImageBlock extends StatelessWidget {
                                     Icon(
                                       ToukhIcons.edit,
                                       size: 14,
-                                      color: Colors.white.withValues(alpha: 0.95),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.95,
+                                      ),
                                     ),
                                     SizedBox(width: AppSizes.spaceXs),
                                     Flexible(
@@ -126,8 +132,9 @@ class SquareBrandImageBlock extends StatelessWidget {
                                         style: TextStyle(
                                           fontSize: AppSizes.fontCaption,
                                           fontWeight: FontWeight.w600,
-                                          color: Colors.white
-                                              .withValues(alpha: 0.95),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.95,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -140,17 +147,6 @@ class SquareBrandImageBlock extends StatelessWidget {
                       ),
               ),
             ),
-          ),
-        ),
-        SizedBox(height: AppSizes.spaceMd),
-        CustomText(
-          AppStrings.Auth.createAccountSubtitle,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: AppSizes.fontBody,
-            height: 1.45,
-            color: scheme.onSurface.withValues(alpha: 0.72),
-            fontWeight: FontWeight.w400,
           ),
         ),
       ],

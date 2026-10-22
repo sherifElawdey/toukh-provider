@@ -33,7 +33,8 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<AuthCubit, AuthState>(
-      listenWhen: (p, c) => c is AuthFailure || c is Authenticated,
+      listenWhen: (p, c) =>
+          c is AuthFailure || c is Authenticated || c is AuthenticatedCompany,
       listener: (context, state) async {
         if (state is AuthFailure) {
           AppSnack.show(
@@ -43,6 +44,12 @@ class _LoginScreenState extends State<LoginScreen> {
             icon: ToukhIcons.error,
           );
           await context.read<AuthCubit>().dismissFailure();
+          return;
+        }
+        if (state is AuthenticatedCompany) {
+          // Redirect sends companies to verify-phone, status or dashboard.
+          if (!mounted) return;
+          context.go(AppRoutes.splash);
           return;
         }
         if (state is Authenticated) {

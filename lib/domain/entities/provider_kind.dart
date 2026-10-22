@@ -8,8 +8,7 @@ enum ServiceType {
   otherShops;
 
   /// Client Other Shops list matches the literal `other_shops`, not `otherShops`.
-  String get wireValue =>
-      this == ServiceType.otherShops ? 'other_shops' : name;
+  String get wireValue => this == ServiceType.otherShops ? 'other_shops' : name;
 
   static ServiceType? tryParse(String? raw) {
     if (raw == null || raw.isEmpty) return null;

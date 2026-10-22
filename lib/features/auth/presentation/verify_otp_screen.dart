@@ -113,6 +113,17 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
     switch (widget.args.flow) {
       case VerifyOtpFlow.passwordReset:
         break;
+      case VerifyOtpFlow.companyPhoneVerification:
+        if (context.read<AuthCubit>().state is! AuthenticatedCompany) {
+          context.go(AppRoutes.login);
+          return;
+        }
+        setState(() => _registeringAfterVerify = true);
+        await context.read<AuthCubit>().confirmCompanyOtp();
+        if (!mounted) return;
+        // Redirect picks the dashboard, or the status screen if activation
+        // has not landed yet.
+        context.go(AppRoutes.splash);
       case VerifyOtpFlow.registerApplication:
       case VerifyOtpFlow.providerPhoneVerification:
         final authState = context.read<AuthCubit>().state;
@@ -141,6 +152,7 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           case VerifyOtpFlow.providerPhoneVerification:
             context.go(AppRoutes.splash);
           case VerifyOtpFlow.passwordReset:
+          case VerifyOtpFlow.companyPhoneVerification:
             // Handled in the outer switch above.
             break;
         }

@@ -21,7 +21,7 @@ import 'package:toukh_provider/features/registration/cubit/registration_cubit.da
 import 'package:toukh_provider/features/registration/presentation/register_review_edit_sheet.dart';
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/register_review_tile.dart';
-import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -110,8 +110,25 @@ class RegisterReviewScreen extends StatefulWidget {
   State<RegisterReviewScreen> createState() => _RegisterReviewScreenState();
 }
 
+/// The review row a failed sign-up should send the user to, if any.
+ReviewField? _fieldForFailure(AuthFailure failure) {
+  switch (failure.code) {
+    case AuthFailure.outsideServiceArea:
+      return ReviewField.location;
+    case AuthFailure.phoneAlreadyRegistered:
+    case 'invalid-email':
+    case 'invalid-phone-number':
+      return ReviewField.phone;
+  }
+  return null;
+}
+
 class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
   final _otpRepository = getIt<OtpRepository>();
+
+  /// Section flagged by the last failed submit; cleared once it is edited.
+  ReviewField? _errorField;
+  String? _errorMessage;
 
   Future<void> _navigateToPhoneVerification(String phoneE164) async {
     try {
@@ -161,23 +178,30 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     }
 
     final authCubit = context.read<AuthCubit>();
-    await context.withAppLoading(() async {
-      await authCubit.registerProviderInitial(data);
-    });
+    final failure = await context.withAppLoading(
+      () => authCubit.registerProviderInitial(data),
+    );
 
     if (!mounted) return;
 
-    final authState = authCubit.state;
-    if (authState is AuthFailure) {
+    if (failure != null) {
+      // Stay on review so the user can fix the flagged section and resubmit.
+      final message = failure.message.tr;
+      setState(() {
+        _errorField = _fieldForFailure(failure);
+        _errorMessage = message;
+      });
       AppSnack.show(
         context,
-        message: authState.message,
+        message: message,
         state: AppSnackState.error,
         icon: ToukhIcons.error,
       );
-      authCubit.dismissFailure();
+      unawaited(authCubit.dismissFailure());
       return;
     }
+
+    final authState = authCubit.state;
 
     if (authState is! Authenticated) return;
 
@@ -202,8 +226,16 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     await _navigateToPhoneVerification(phone);
   }
 
-  void _openEdit(BuildContext context, ReviewField field) {
-    unawaited(showRegisterReviewEditSheet(context, field: field));
+  Future<void> _openEdit(ReviewField field) async {
+    final before = context.read<RegistrationCubit>().state;
+    await showRegisterReviewEditSheet(context, field: field);
+    if (!mounted || field != _errorField) return;
+    if (context.read<RegistrationCubit>().state != before) {
+      setState(() {
+        _errorField = null;
+        _errorMessage = null;
+      });
+    }
   }
 
   List<Widget> _reviewTiles(
@@ -214,14 +246,15 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final address = draft.formattedAddress.trim();
     final locationValue = address.isEmpty ? '—' : address;
 
-    final rows = <({ReviewField? field, IconData icon, String titleKey, String value})>[
-      (
-        field: null,
-        icon: ToukhIcons.store,
-        titleKey: AppStrings.Registration.reviewBusinessType,
-        value: draft.kind == null ? '—' : _kindKey(draft.kind!).tr,
-      ),
-    ];
+    final rows =
+        <({ReviewField? field, IconData icon, String titleKey, String value})>[
+          (
+            field: null,
+            icon: ToukhIcons.store,
+            titleKey: AppStrings.Registration.reviewBusinessType,
+            value: draft.kind == null ? '—' : _kindKey(draft.kind!).tr,
+          ),
+        ];
 
     final cat = _categoryEntry(draft);
     if (cat != null) {
@@ -290,7 +323,8 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
       ));
     }
 
-    final isRestaurant = draft.kind == ServiceType.restaurant &&
+    final isRestaurant =
+        draft.kind == ServiceType.restaurant &&
         draft.shopCategory == ShopCategory.restaurant;
     if (isRestaurant) {
       final labels = draft.cuisineTags
@@ -312,7 +346,12 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
             titleKey: r.titleKey,
             value: r.value,
             scheme: scheme,
-            onTap: r.field != null ? () => _openEdit(context, r.field!) : null,
+            errorText: r.field != null && r.field == _errorField
+                ? _errorMessage
+                : null,
+            onTap: r.field != null
+                ? () => unawaited(_openEdit(r.field!))
+                : null,
           ),
         )
         .toList();
@@ -323,42 +362,15 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
     final draft = context.watch<RegistrationCubit>().state;
     final data = draft.toSubmitData();
     final scheme = Theme.of(context).colorScheme;
-    return Scaffold(
-        appBar: AppBar(
-          leading: IconButton(
-            icon: Icon(ToukhIcons.back),
-            onPressed: () => context.pop(),
-          ),
-          title: CustomText(AppStrings.Registration.reviewTitle),
-        ),
-        body: Padding(
-          padding: AppSizes.screenPadding,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              CustomText(
-                AppStrings.Registration.reviewTapToEdit.tr,
-                style: TextStyle(
-                  fontSize: AppSizes.fontCaption,
-                  color: scheme.onSurface.withValues(alpha: 0.62),
-                ),
-              ),
-              SizedBox(height: AppSizes.spaceMd),
-              Expanded(
-                child: ListView(
-                  children: _reviewTiles(context, draft, scheme),
-                ),
-              ),
-              RegistrationStepNavFooter(
-                onBack: () => context.pop(),
-                onNext: () => unawaited(_submit()),
-                nextLabelKey: AppStrings.Registration.submit,
-                nextEnabled: data != null,
-              ),
-            ],
-          ),
-        ),
+    return RegistrationStepScaffold(
+      stage: RegistrationStage.review,
+      icon: PhosphorIconsDuotone.clipboardText,
+      title: AppStrings.Registration.reviewTitle,
+      subtitle: AppStrings.Registration.reviewSubtitle,
+      onNext: () => unawaited(_submit()),
+      nextLabelKey: AppStrings.Registration.submit,
+      nextEnabled: data != null,
+      children: _reviewTiles(context, draft, scheme),
     );
   }
 }
-

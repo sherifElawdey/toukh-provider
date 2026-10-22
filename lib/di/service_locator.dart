@@ -12,6 +12,7 @@ import 'package:toukh_provider/core/storage/media_upload_service.dart';
 import 'package:toukh_provider/core/config/twilio_environment.dart';
 import 'package:toukh_provider/data/repositories/firestore_app_settings_repository.dart';
 import 'package:toukh_provider/data/repositories/firebase_auth_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_delivery_company_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_home_service_categories_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_dashboard_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_order_history_repository.dart';
@@ -31,6 +32,7 @@ import 'package:toukh_provider/data/services/release_misconfigured_otp_repositor
 import 'package:toukh_provider/data/services/twilio_verify_otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
+import 'package:toukh_provider/domain/repositories/delivery_company_repository.dart';
 import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/home_service_categories_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_dashboard_repository.dart';
@@ -39,6 +41,10 @@ import 'package:toukh_provider/domain/repositories/provider_orders_repository.da
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
+import 'package:toukh_provider/domain/repositories/grocery_catalog_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_grocery_catalog_repository.dart';
+import 'package:toukh_provider/domain/repositories/supermarket_catalog_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_supermarket_catalog_repository.dart';
 import 'package:toukh_provider/domain/services/order_qr_service.dart';
 import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
@@ -77,12 +83,29 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<FirebaseMessaging>(
     () => FirebaseMessaging.instance,
   );
+  getIt.registerLazySingleton<ToukhBannerService>(
+    () => ToukhBannerService(
+      app: ToukhBannerApp.provider,
+      firestore: getIt<FirebaseFirestore>(),
+      functions: getIt<FirebaseFunctions>(),
+    ),
+  );
+  getIt.registerLazySingleton<ToukhWalletTopUpService>(
+    () => ToukhWalletTopUpService(
+      app: ToukhTopUpApp.provider,
+      firestore: getIt<FirebaseFirestore>(),
+      functions: getIt<FirebaseFunctions>(),
+    ),
+  );
 
   getIt.registerLazySingleton<AuthRepository>(
     () => FirebaseAuthRepository(getIt<FirebaseAuth>()),
   );
   getIt.registerLazySingleton<ProviderProfileRepository>(
-    () => FirestoreProviderProfileRepository(getIt<FirebaseFirestore>()),
+    () => FirestoreProviderProfileRepository(
+      getIt<FirebaseFirestore>(),
+      getIt<FirebaseFunctions>(),
+    ),
   );
   getIt.registerLazySingleton<NotificationInboxRepository>(
     () => FirestoreNotificationInboxRepository(getIt<FirebaseFirestore>()),
@@ -100,6 +123,12 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<ProviderMenuRepository>(
     () => FirestoreProviderMenuRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<GroceryCatalogRepository>(
+    () => FirestoreGroceryCatalogRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<SupermarketCatalogRepository>(
+    () => FirestoreSupermarketCatalogRepository(getIt<FirebaseFirestore>()),
   );
   getIt.registerLazySingleton<FirestoreProviderDashboardRepository>(
     () => FirestoreProviderDashboardRepository(getIt<FirebaseFirestore>()),
@@ -143,6 +172,12 @@ Future<void> configureDependencies() async {
       getIt<FirebaseFunctions>(),
     ),
   );
+  getIt.registerLazySingleton<DeliveryCompanyRepository>(
+    () => FirestoreDeliveryCompanyRepository(
+      getIt<FirebaseFirestore>(),
+      getIt<FirebaseFunctions>(),
+    ),
+  );
   getIt.registerLazySingleton<OtpRepository>(() {
     final twilioConfig = twilioVerifyConfigFromEnvironment();
     if (twilioConfig.isComplete) {
@@ -176,6 +211,7 @@ Future<void> configureDependencies() async {
       profileRepository: getIt<ProviderProfileRepository>(),
       mediaUploadService: getIt<MediaUploadService>(),
       galleryRepository: getIt<ProviderGalleryRepository>(),
+      companyRepository: getIt<DeliveryCompanyRepository>(),
     ),
   );
 

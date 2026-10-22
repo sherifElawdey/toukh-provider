@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
-import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
-import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -17,8 +16,7 @@ class RegisterDeliveryScreen extends StatefulWidget {
   const RegisterDeliveryScreen({super.key});
 
   @override
-  State<RegisterDeliveryScreen> createState() =>
-      _RegisterDeliveryScreenState();
+  State<RegisterDeliveryScreen> createState() => _RegisterDeliveryScreenState();
 }
 
 class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
@@ -104,116 +102,148 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
         if (!context.mounted) return;
         context.pushReplacement(AppRoutes.registerReview);
       });
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final restaurant = _isRestaurant(draft);
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(ToukhIcons.back),
-          onPressed: () => context.pop(),
+    final scheme = Theme.of(context).colorScheme;
+    final noteStyle = TextStyle(
+      fontSize: AppSizes.fontCaption,
+      height: 1.45,
+      color: AppColors.muted(context),
+    );
+    Widget toggle({
+      required String title,
+      String? subtitle,
+      required bool value,
+      required ValueChanged<bool> onChanged,
+    }) {
+      return SwitchListTile(
+        contentPadding: EdgeInsets.zero,
+        activeThumbColor: AppColors.secondColor,
+        title: CustomText(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w700),
         ),
-        title: CustomText(AppStrings.Registration.deliveryTitle),
-      ),
-      body: ListView(
-        padding: AppSizes.screenPadding,
-        children: [
-          Center(
-            child: ToukhServiceLogo(
-              size: 56,
-              borderRadius: BorderRadius.circular(14),
-            ),
-          ),
-          SizedBox(height: AppSizes.spaceMd),
-          SwitchListTile(
-            title: CustomText(AppStrings.Registration.deliveryOffers),
-            value: _offers,
-            onChanged: (v) => setState(() => _offers = v),
-          ),
-          SwitchListTile(
-            title: CustomText(AppStrings.Registration.deliveryManageFromAccount),
-            subtitle: CustomText(
-              AppStrings.Registration.deliveryManageFromAccountHint,
-            ),
-            value: _manageFromAccount,
-            onChanged: (v) => setState(() => _manageFromAccount = v),
-          ),
-          if (!_offers) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                'Havit courier delivery fees are priced from route distance '
-                '(admin price/km). Use Free delivery below only if you absorb the fee.',
-                style: Theme.of(context).textTheme.bodySmall,
+        subtitle: subtitle == null
+            ? null
+            : CustomText(subtitle, style: noteStyle),
+        value: value,
+        onChanged: onChanged,
+      );
+    }
+
+    return RegistrationStepScaffold(
+      stage: RegistrationStage.place,
+      icon: PhosphorIconsDuotone.moped,
+      title: AppStrings.Registration.deliveryTitle,
+      subtitle: AppStrings.Registration.deliverySubtitle,
+      onNext: _next,
+      children: [
+        RegistrationSectionCard(
+          icon: PhosphorIconsDuotone.moped,
+          title: AppStrings.Registration.secOwnDeliveryTitle,
+          hint: AppStrings.Registration.secOwnDeliveryHint,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              toggle(
+                title: AppStrings.Registration.deliveryOffers,
+                value: _offers,
+                onChanged: (v) => setState(() => _offers = v),
               ),
-            ),
-            SwitchListTile(
-              title: CustomText(AppStrings.Registration.reviewDeliveryFree),
-              value: _free,
-              onChanged: (v) => setState(() => _free = v),
-            ),
-          ],
-          if (_offers) ...[
-            SwitchListTile(
-              title: CustomText(AppStrings.Registration.reviewDeliveryFree),
-              value: _free,
-              onChanged: (v) => setState(() => _free = v),
-            ),
-            if (!_free) ...[
-              Text(
-                'Your store-delivery price (not used for Havit courier distance fees).',
-                style: Theme.of(context).textTheme.bodySmall,
+              toggle(
+                title: AppStrings.Registration.deliveryManageFromAccount,
+                subtitle: AppStrings.Registration.deliveryManageFromAccountHint,
+                value: _manageFromAccount,
+                onChanged: (v) => setState(() => _manageFromAccount = v),
               ),
-              SizedBox(height: AppSizes.spaceSm),
-              SegmentedButton<DeliveryPricingMode>(
-                segments: [
-                  ButtonSegment(
-                    value: DeliveryPricingMode.fixed,
-                    label: CustomText(AppStrings.Registration.deliveryModeFixed),
+              toggle(
+                title: AppStrings.Registration.reviewDeliveryFree,
+                value: _free,
+                onChanged: (v) => setState(() => _free = v),
+              ),
+              if (!_offers)
+                Container(
+                  margin: const EdgeInsets.only(top: AppSizes.spaceSm),
+                  padding: const EdgeInsets.all(AppSizes.spaceMd),
+                  decoration: BoxDecoration(
+                    color: AppColors.tint(context, AppColors.secondColor),
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                   ),
-                  ButtonSegment(
-                    value: DeliveryPricingMode.perKm,
-                    label: CustomText(AppStrings.Registration.deliveryModePerKm),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        PhosphorIconsRegular.info,
+                        size: 18,
+                        color: AppColors.secondColor,
+                      ),
+                      SizedBox(width: AppSizes.spaceSm),
+                      Expanded(
+                        child: CustomText(
+                          AppStrings.Registration.deliveryHavitFeeNote,
+                          style: noteStyle.copyWith(color: scheme.onSurface),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-                selected: {_mode},
-                onSelectionChanged: (s) =>
-                    setState(() => _mode = s.first),
-              ),
-              SizedBox(height: AppSizes.spaceMd),
-              TextField(
-                controller: _price,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                inputFormatters: EnglishPriceInput.formatters,
-                decoration: InputDecoration(
-                  labelText: _mode == DeliveryPricingMode.perKm
-                      ? 'Price per km (EGP)'
-                      : AppStrings.Registration.deliveryPriceLabel.tr,
                 ),
-              ),
+              if (_offers && !_free) ...[
+                SizedBox(height: AppSizes.spaceMd),
+                CustomText(
+                  AppStrings.Registration.deliveryOwnPriceNote,
+                  style: noteStyle,
+                ),
+                SizedBox(height: AppSizes.spaceSm),
+                SegmentedButton<DeliveryPricingMode>(
+                  segments: [
+                    ButtonSegment(
+                      value: DeliveryPricingMode.fixed,
+                      label: CustomText(
+                        AppStrings.Registration.deliveryModeFixed,
+                      ),
+                    ),
+                    ButtonSegment(
+                      value: DeliveryPricingMode.perKm,
+                      label: CustomText(
+                        AppStrings.Registration.deliveryModePerKm,
+                      ),
+                    ),
+                  ],
+                  selected: {_mode},
+                  onSelectionChanged: (s) => setState(() => _mode = s.first),
+                ),
+                SizedBox(height: AppSizes.spaceMd),
+                TextField(
+                  controller: _price,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  inputFormatters: EnglishPriceInput.formatters,
+                  decoration: InputDecoration(
+                    labelText: _mode == DeliveryPricingMode.perKm
+                        ? AppStrings.Registration.deliveryPricePerKmLabel.tr
+                        : AppStrings.Registration.deliveryPriceLabel.tr,
+                  ),
+                ),
+              ],
             ],
-          ],
-          if (restaurant) ...[
-            SizedBox(height: AppSizes.spaceLg),
-            TextField(
+          ),
+        ),
+        if (restaurant)
+          RegistrationSectionCard(
+            icon: PhosphorIconsDuotone.clockCountdown,
+            title: AppStrings.Registration.secPrepTitle,
+            hint: AppStrings.Registration.secPrepHint,
+            child: TextField(
               controller: _prep,
               keyboardType: TextInputType.number,
               decoration: InputDecoration(
                 labelText: AppStrings.Registration.reviewPrepTime.tr,
               ),
             ),
-          ],
-          SizedBox(height: AppSizes.spaceXl),
-          RegistrationStepNavFooter(
-            useSafeArea: false,
-            padding: EdgeInsets.zero,
-            onBack: () => context.pop(),
-            onNext: _next,
           ),
-        ],
-      ),
+      ],
     );
   }
 }

@@ -55,14 +55,14 @@ class MainShellScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authState = context.watch<AuthCubit>().state;
-    final isRestaurant =
-        authState is Authenticated && authState.profile.isRestaurantShop;
+    final hasMenu = authState is Authenticated && authState.profile.hasMenu;
     final isHomeService =
         authState is Authenticated &&
         authState.profile.serviceType == ServiceType.homeService;
     final navItems = ProviderShellNav.navItems(
-      isRestaurant: isRestaurant,
+      hasMenu: hasMenu,
       isHomeService: isHomeService,
+      isCompany: authState is AuthenticatedCompany,
     );
     final selectedNavIndex = ProviderShellNav.navIndexForBranch(
       branchIndex: navigationShell.currentIndex,

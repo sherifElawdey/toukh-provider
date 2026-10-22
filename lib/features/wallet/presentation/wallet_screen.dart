@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/utils/wallet_format.dart';
 import 'package:toukh_provider/core/widgets/toukh_service_logo.dart';
+import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
 import 'package:toukh_provider/features/wallet/cubit/wallet_cubit.dart';
 import 'package:toukh_provider/features/wallet/presentation/wallet_earning_sheet.dart';
@@ -47,6 +48,19 @@ class WalletScreen extends StatelessWidget {
               _BalanceCard(
                 balance: state.balance,
                 pendingEgp: state.pendingEgp,
+              ),
+              const SizedBox(height: AppSizes.spaceMd),
+              AppFilledButton(
+                text: ToukhTopUpStrings.action,
+                icon: PhosphorIconsRegular.plusCircle,
+                onTap: () => showToukhWalletTopUp(
+                  context,
+                  service: getIt<ToukhWalletTopUpService>(),
+                ),
+              ),
+              ToukhTopUpRequestsSection(
+                service: getIt<ToukhWalletTopUpService>(),
+                uid: context.read<WalletCubit>().providerId,
               ),
               const SizedBox(height: AppSizes.spaceXl),
               _LastEarningSection(transaction: state.lastFeeOrEarning),
