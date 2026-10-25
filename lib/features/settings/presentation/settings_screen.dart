@@ -10,6 +10,7 @@ import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/brand_info_banner.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_sheet.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/location_operations_section.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_app_version_footer.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_profile_header_card.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/reputation_stats_section.dart';
@@ -120,6 +121,8 @@ class SettingsScreen extends StatelessWidget {
                     commitmentPercent: auth.profile.commitmentPercent,
                     avgAcceptSeconds: auth.profile.avgAcceptSeconds,
                   ),
+                  SizedBox(height: AppSizes.spaceXl),
+                  LocationOperationsSection(profile: auth.profile),
                   SizedBox(height: AppSizes.spaceLg),
                 ],
                 SettingsTile(

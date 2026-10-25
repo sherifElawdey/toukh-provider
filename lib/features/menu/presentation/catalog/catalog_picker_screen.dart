@@ -10,6 +10,7 @@ import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_cub
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_state.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 /// Opens the master catalog over the menu builder (shares its cubit).
 /// [onAddCustom] closes the picker and adds a product the catalog lacks.
@@ -311,7 +312,7 @@ class _CatalogTile extends StatelessWidget {
                     ),
                     CustomText(
                       minPrice != null
-                          ? 'EGP ${minPrice.toStringAsFixed(minPrice == minPrice.roundToDouble() ? 0 : 2)}'
+                          ? egpLabel(minPrice.toStringAsFixed(minPrice == minPrice.roundToDouble() ? 0 : 2))
                           : product.category.label(languageCode),
                       maxLines: 1,
                       style: t.labelSmall?.copyWith(

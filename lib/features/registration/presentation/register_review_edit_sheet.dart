@@ -24,6 +24,7 @@ Future<void> showRegisterReviewEditSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     useSafeArea: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(
@@ -283,11 +284,15 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
   }
 
   Widget _buildDefaultSheet(BuildContext context) {
-    final height = MediaQuery.sizeOf(context).height *
-        (_tallSheet ? 0.88 : 0.55);
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    // Grow with the keyboard so the field and the actions stay above it.
+    final height = (screenHeight * (_tallSheet ? 0.88 : 0.55) + keyboard)
+        .clamp(0.0, screenHeight * 0.92);
 
-    return SizedBox(
+    return Container(
       height: height,
+      padding: EdgeInsets.only(bottom: keyboard),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

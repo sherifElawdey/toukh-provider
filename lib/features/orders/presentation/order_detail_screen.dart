@@ -455,7 +455,7 @@ class _DetailDriverCard extends StatelessWidget {
                     context,
                     data: view,
                     title: AppStrings.Orders.detailDriverAssigned.tr,
-                    emptyReviews: 'No reviews yet',
+                    emptyReviews: AppStrings.Orders.noReviewsYet.tr,
                     reviews: reviews,
                   ),
                 ),

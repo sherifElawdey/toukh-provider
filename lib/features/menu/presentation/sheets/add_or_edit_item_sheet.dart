@@ -16,11 +16,17 @@ class AddOrEditItemSheet extends StatefulWidget {
     required this.categories,
     required this.initialCategory,
     this.existing,
+    this.onBrowseDishes,
   });
 
   final List<String> categories;
   final String initialCategory;
   final MenuItemEntity? existing;
+
+  /// Opens the dishes library when adding a new item (restaurants only);
+  /// the picked dish prefills the form.
+  final Future<DishCatalogProduct?> Function(BuildContext context)?
+  onBrowseDishes;
 
   @override
   State<AddOrEditItemSheet> createState() => _AddOrEditItemSheetState();
@@ -53,6 +59,10 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
   final _discountCtrl = TextEditingController();
   final _offerPriceCtrl = TextEditingController();
 
+  /// Library photo of the picked dish, used until the restaurant picks its own.
+  String? _templateImageUrl;
+  DishCatalogProduct? _dish;
+
   @override
   void initState() {
     super.initState();
@@ -83,7 +93,9 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
       _rows.add(
         _SizeRow(
           id: _uuid.v4(),
-          labelController: TextEditingController(text: 'Regular'),
+          labelController: TextEditingController(
+            text: AppStrings.Registration.regular.tr,
+          ),
           priceController: TextEditingController(),
         ),
       );
@@ -118,6 +130,49 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
     setState(() {
       _pickedImage = file;
       _removedImage = false;
+    });
+  }
+
+  Future<void> _browseDishes() async {
+    final dish = await widget.onBrowseDishes!(context);
+    if (dish == null || !mounted) return;
+    final lang = Get.locale?.languageCode ?? 'ar';
+    final oldRows = List.of(_rows);
+    final labels = dish.sizes.map((s) => s.label(lang)).toList();
+    // A menu section named like the dish's library shelf, if there is one.
+    final shelf = {
+      dish.category.label('ar').toLowerCase(),
+      dish.category.label('en').toLowerCase(),
+    };
+    final section = widget.categories
+        .where((c) => shelf.contains(c.trim().toLowerCase()))
+        .firstOrNull;
+    setState(() {
+      _dish = dish;
+      _titleCtrl.text = dish.localizedName(lang);
+      _descCtrl.text = dish.localizedDescription(lang) ?? '';
+      _templateImageUrl = dish.hasImage ? dish.imageUrl : null;
+      _pickedImage = null;
+      _removedImage = false;
+      _rows
+        ..clear()
+        ..addAll([
+          for (final label
+              in labels.isEmpty ? [AppStrings.Registration.regular.tr] : labels)
+            _SizeRow(
+              id: _uuid.v4(),
+              labelController: TextEditingController(text: label),
+              priceController: TextEditingController(),
+            ),
+        ]);
+      if (section != null) _selectedCategory = section;
+    });
+    // The old fields still hold these until the next frame.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final r in oldRows) {
+        r.labelController.dispose();
+        r.priceController.dispose();
+      }
     });
   }
 
@@ -180,7 +235,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
 
   String? _effectiveImageUrl() {
     if (_removedImage) return null;
-    return widget.existing?.imageUrl;
+    return _templateImageUrl ?? widget.existing?.imageUrl;
   }
 
   void _submit() {
@@ -250,6 +305,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
       offerType: _offerType,
       discountPercent: discountPercent,
       offerPriceEgp: offerPriceEgp,
+      dishCatalogId: _dish?.id ?? widget.existing?.dishCatalogId,
     );
 
     final clearImage = _removedImage && _pickedImage == null;
@@ -289,8 +345,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
 
   Widget _buildImagePicker(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final ex = widget.existing;
-    final remoteUrl = ex?.imageUrl?.trim();
+    final remoteUrl = (_templateImageUrl ?? widget.existing?.imageUrl)?.trim();
     final hasRemote =
         remoteUrl != null && remoteUrl.isNotEmpty && !_removedImage;
 
@@ -434,6 +489,14 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                 ?.copyWith(fontWeight: FontWeight.w800),
                           ),
                         ),
+                        if (widget.onBrowseDishes != null &&
+                            widget.existing == null)
+                          AppOutlinedButton(
+                            text: AppStrings.Catalog.browse,
+                            icon: ToukhIcons.restaurant,
+                            size: AppButtonSize.small,
+                            onTap: _browseDishes,
+                          ),
                         IconButton(
                           onPressed: () => Navigator.pop(context),
                           icon: Icon(ToukhIcons.close),
@@ -448,6 +511,14 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                         controller: scrollCtrl,
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
                         children: [
+                          if (_dish != null) ...[
+                            _DishAppliedNote(
+                              name: _dish!.localizedName(
+                                Get.locale?.languageCode ?? 'ar',
+                              ),
+                            ),
+                            SizedBox(height: AppSizes.spaceMd),
+                          ],
                           _buildImagePicker(context),
                           SizedBox(height: AppSizes.spaceMd),
                           AppTextField(
@@ -646,7 +717,7 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
                                               const TextInputType.numberWithOptions(
                                                 decimal: true,
                                               ),
-                                          suffixText: 'EGP',
+                                          suffixText: AppStrings.Common.egp.tr,
                                           inputFormatters:
                                               EnglishPriceInput.formatters,
                                         ),
@@ -697,6 +768,41 @@ class _AddOrEditItemSheetState extends State<AddOrEditItemSheet> {
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// "From the Havit library: Koshari. You can change anything."
+class _DishAppliedNote extends StatelessWidget {
+  const _DishAppliedNote({required this.name});
+
+  final String name;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSizes.spaceMd,
+        vertical: AppSizes.spaceSm,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.infoSoft,
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+      ),
+      child: Row(
+        children: [
+          Icon(ToukhIcons.restaurant, size: 18, color: AppColors.secondColor),
+          SizedBox(width: AppSizes.spaceSm),
+          Expanded(
+            child: Text(
+              AppStrings.Catalog.dishApplied.trParams({'name': name}),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: AppColors.brandDeep,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

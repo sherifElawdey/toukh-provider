@@ -6,6 +6,8 @@ import 'package:toukh_provider/domain/entities/provider_home_service_request.dar
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:get/get.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 
 const _kCollection = ToukhFirestoreCollections.homeServiceRequests;
 
@@ -199,7 +201,7 @@ class FirestoreProviderHomeServiceRequestsRepository
       throw StateError(
         (message != null && message.isNotEmpty)
             ? message
-            : 'Could not cancel request.',
+            : AppStrings.HomeServiceRequests.cancelFailed.tr,
       );
     }
   }
@@ -312,7 +314,7 @@ class FirestoreProviderHomeServiceRequestsRepository
           throw StateError(
             (message != null && message.isNotEmpty)
                 ? message
-                : 'Could not complete request.',
+                : AppStrings.HomeServiceRequests.completeFailed.tr,
           );
         }
       }

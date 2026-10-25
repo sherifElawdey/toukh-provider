@@ -11,6 +11,7 @@ import 'package:toukh_provider/features/wallet/cubit/wallet_cubit.dart';
 import 'package:toukh_provider/features/wallet/presentation/wallet_earning_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 class WalletScreen extends StatelessWidget {
   const WalletScreen({super.key});
@@ -205,7 +206,7 @@ class _BalanceCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   CustomText(
-                    'EGP ${formatWalletMoney(balance)}',
+                    egpLabel(formatWalletMoney(balance)),
                     style: t.headlineMedium?.copyWith(
                       color: AppColors.surface,
                       fontWeight: FontWeight.w800,
@@ -214,7 +215,7 @@ class _BalanceCard extends StatelessWidget {
                   if (pendingEgp != null && pendingEgp! > 0) ...[
                     const SizedBox(height: AppSizes.spaceSm),
                     CustomText(
-                      '${AppStrings.Wallet.pendingBalance.tr}: EGP ${formatWalletMoney(pendingEgp!)}',
+                      '${AppStrings.Wallet.pendingBalance.tr}: ${egpLabel(formatWalletMoney(pendingEgp!))}',
                       style: t.bodySmall?.copyWith(
                         color: AppColors.surface.withValues(alpha: 0.8),
                       ),
@@ -283,8 +284,8 @@ class _LastEarningSection extends StatelessWidget {
                 ),
                 CustomText(
                   transaction!.isPlatformFee
-                      ? '-EGP ${formatWalletMoney(transaction!.amountEgp)}'
-                      : '+EGP ${formatWalletMoney(transaction!.amountEgp)}',
+                      ? '-${egpLabel(formatWalletMoney(transaction!.amountEgp))}'
+                      : '+${egpLabel(formatWalletMoney(transaction!.amountEgp))}',
                   style: t.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                     color: transaction!.isPlatformFee
@@ -350,7 +351,7 @@ class _EarningTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             CustomText(
-              '${isCredit ? '+' : '-'}EGP ${formatWalletMoney(transaction.amountEgp)}',
+              '${isCredit ? '+' : '-'}${egpLabel(formatWalletMoney(transaction.amountEgp))}',
               style: t.labelLarge?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: isCredit ? AppColors.success : AppColors.onSurface,

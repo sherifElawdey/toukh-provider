@@ -61,7 +61,7 @@ class MenuCategorySectionCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       CustomText(
-                        '$itemCount items',
+                        AppStrings.Catalog.itemsCount.trParams({'count': '$itemCount'}),
                         style: t.bodySmall?.copyWith(
                           color: scheme.onSurface.withValues(alpha: 0.5),
                           fontWeight: FontWeight.w500,

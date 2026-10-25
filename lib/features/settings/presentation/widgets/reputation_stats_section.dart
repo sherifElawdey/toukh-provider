@@ -20,11 +20,14 @@ class ReputationMiniCardsRow extends StatelessWidget {
     final seconds = avgAcceptSeconds;
     if (seconds == null || seconds <= 0) return '—';
     final s = seconds.round();
-    if (s < 60) return '${s}s';
+    if (s < 60) return AppStrings.Common.durationSeconds.trParams({'s': '$s'});
     final m = s ~/ 60;
     final rem = s % 60;
-    if (rem == 0) return '${m}m';
-    return '${m}m ${rem}s';
+    if (rem == 0) return AppStrings.Common.durationMinutes.trParams({'m': '$m'});
+    return AppStrings.Common.durationMinutesSeconds.trParams({
+      'm': '$m',
+      's': '$rem',
+    });
   }
 
   @override

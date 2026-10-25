@@ -4,4 +4,6 @@ abstract class AppSettingsRepository {
   Stream<OrderAcceptanceSla> watchAcceptanceSla();
 
   Stream<WalletBalanceLimits> watchWalletBalanceLimits();
+
+  Stream<DispatchSettings> watchDispatchSettings();
 }

@@ -175,82 +175,86 @@ class _HomeServiceSubmitQuoteSheetState
         left: AppSizes.spaceXl,
         right: AppSizes.spaceXl,
         top: AppSizes.spaceSm,
-        bottom: MediaQuery.paddingOf(context).bottom + AppSizes.spaceXl,
+        bottom: MediaQuery.viewInsetsOf(context).bottom +
+            MediaQuery.paddingOf(context).bottom +
+            AppSizes.spaceXl,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CustomText(
-            AppStrings.HomeServiceRequests.quoteSheetTitle.tr,
-            style: TextStyle(
-              fontSize: AppSizes.fontTitle,
-              fontWeight: FontWeight.w800,
-              color: scheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: AppSizes.spaceMd),
-          if (clientPrice != null && clientPrice > 0) ...[
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             CustomText(
-              AppStrings.HomeServiceRequests.quoteClientPriceLabel.trParams({
-                'price': NumberFormat.decimalPattern(locale)
-                    .format(clientPrice.round()),
-              }),
+              AppStrings.HomeServiceRequests.quoteSheetTitle.tr,
               style: TextStyle(
-                color: scheme.onSurface.withValues(alpha: 0.72),
-                fontSize: AppSizes.fontBody,
+                fontSize: AppSizes.fontTitle,
+                fontWeight: FontWeight.w800,
+                color: scheme.onSurface,
               ),
             ),
-            const SizedBox(height: AppSizes.spaceSm),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: CustomText(
-                AppStrings.HomeServiceRequests.quoteUseClientPrice.tr,
-                style: const TextStyle(fontWeight: FontWeight.w600),
+            const SizedBox(height: AppSizes.spaceMd),
+            if (clientPrice != null && clientPrice > 0) ...[
+              CustomText(
+                AppStrings.HomeServiceRequests.quoteClientPriceLabel.trParams({
+                  'price': NumberFormat.decimalPattern(locale)
+                      .format(clientPrice.round()),
+                }),
+                style: TextStyle(
+                  color: scheme.onSurface.withValues(alpha: 0.72),
+                  fontSize: AppSizes.fontBody,
+                ),
               ),
-              value: _useClientPrice,
-              onChanged: (v) {
-                setState(() {
-                  _useClientPrice = v;
-                  if (v) _syncClientPrice();
-                });
+              const SizedBox(height: AppSizes.spaceSm),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: CustomText(
+                  AppStrings.HomeServiceRequests.quoteUseClientPrice.tr,
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+                value: _useClientPrice,
+                onChanged: (v) {
+                  setState(() {
+                    _useClientPrice = v;
+                    if (v) _syncClientPrice();
+                  });
+                },
+              ),
+            ],
+            TextField(
+              controller: _price,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: EnglishPriceInput.formatters,
+              decoration: InputDecoration(
+                labelText: AppStrings.HomeServiceRequests.quotePriceLabel.tr,
+                suffixText: AppStrings.Common.egp.tr,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                ),
+              ),
+              onChanged: (_) {
+                if (_useClientPrice) {
+                  setState(() => _useClientPrice = false);
+                }
               },
             ),
-          ],
-          TextField(
-            controller: _price,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: EnglishPriceInput.formatters,
-            decoration: InputDecoration(
-              labelText: AppStrings.HomeServiceRequests.quotePriceLabel.tr,
-              suffixText: 'EGP',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+            if (!_isTrip) ...[
+              const SizedBox(height: AppSizes.spaceMd),
+              OutlinedButton.icon(
+                onPressed: _submitting ? null : _pickDateTime,
+                icon: Icon(ToukhIcons.calendar),
+                label: CustomText(scheduledLabel),
               ),
-            ),
-            onChanged: (_) {
-              if (_useClientPrice) {
-                setState(() => _useClientPrice = false);
-              }
-            },
-          ),
-          if (!_isTrip) ...[
-            const SizedBox(height: AppSizes.spaceMd),
-            OutlinedButton.icon(
-              onPressed: _submitting ? null : _pickDateTime,
-              icon: Icon(ToukhIcons.calendar),
-              label: CustomText(scheduledLabel),
+            ],
+            const SizedBox(height: AppSizes.spaceLg),
+            AppFilledButton(
+              text: AppStrings.HomeServiceRequests.quoteSendToClient,
+              onTap: _submitting ? null : _submit,
+              status: _submitting
+                  ? AppButtonStatus.disabled
+                  : AppButtonStatus.enabled,
             ),
           ],
-          const SizedBox(height: AppSizes.spaceLg),
-          AppFilledButton(
-            text: AppStrings.HomeServiceRequests.quoteSendToClient,
-            onTap: _submitting ? null : _submit,
-            status: _submitting
-                ? AppButtonStatus.disabled
-                : AppButtonStatus.enabled,
-          ),
-        ],
+        ),
       ),
     );
   }

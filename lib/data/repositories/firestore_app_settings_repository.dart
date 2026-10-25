@@ -21,6 +21,15 @@ class FirestoreAppSettingsRepository implements AppSettingsRepository {
   }
 
   @override
+  Stream<DispatchSettings> watchDispatchSettings() {
+    return _global.snapshots().map(
+          (snap) => DispatchSettings.fromMap(
+            snap.data()?['dispatchSettings'] as Map<String, dynamic>?,
+          ),
+        );
+  }
+
+  @override
   Stream<WalletBalanceLimits> watchWalletBalanceLimits() {
     return _global.snapshots().map(
           (snap) => WalletBalanceLimits.fromMap(

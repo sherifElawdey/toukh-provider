@@ -8,6 +8,8 @@ import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_state.dart';
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
+import 'package:get/get.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 
 class MenuBuilderCubit extends Cubit<MenuBuilderState> {
   MenuBuilderCubit({
@@ -102,7 +104,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
 
   Future<String?> addCategory(String name) async {
     final uid = _uid;
-    if (uid == null) return 'Not signed in.';
+    if (uid == null) return AppStrings.Common.notSignedIn.tr;
     try {
       await _menuRepository.upsertCategory(uid, name);
       emit(
@@ -119,7 +121,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
 
   Future<String?> renameCategory(String oldName, String newName) async {
     final uid = _uid;
-    if (uid == null) return 'Not signed in.';
+    if (uid == null) return AppStrings.Common.notSignedIn.tr;
     try {
       await _menuRepository.renameCategory(uid, oldName, newName);
       return null;
@@ -130,7 +132,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
 
   Future<String?> deleteCategory(String name) async {
     final uid = _uid;
-    if (uid == null) return 'Not signed in.';
+    if (uid == null) return AppStrings.Common.notSignedIn.tr;
     try {
       await _menuRepository.deleteCategory(uid, name);
       return null;
@@ -141,7 +143,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
 
   Future<String?> removeItem(String id) async {
     final uid = _uid;
-    if (uid == null) return 'Not signed in.';
+    if (uid == null) return AppStrings.Common.notSignedIn.tr;
     MenuItemEntity? item;
     for (final e in state.items) {
       if (e.id == id) {
@@ -176,7 +178,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
 
     if (result.newImageFile != null) {
       final user = _authRepository.currentUser;
-      if (user == null) return 'Not signed in.';
+      if (user == null) return AppStrings.Common.notSignedIn.tr;
       try {
         final up = await _media.uploadImage(
           source: result.newImageFile!,
@@ -189,7 +191,7 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     }
 
     final uid = _uid;
-    if (uid == null) return 'Not signed in.';
+    if (uid == null) return AppStrings.Common.notSignedIn.tr;
     try {
       await _menuRepository.upsertItem(uid, entity);
       return null;

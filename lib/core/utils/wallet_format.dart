@@ -1,4 +1,6 @@
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
+import 'package:get/get.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 
 String formatWalletMoney(double value) {
   if (value % 1 == 0) return value.toStringAsFixed(0);
@@ -12,15 +14,15 @@ String walletEarningLabel(ProviderWalletTransaction transaction) {
   switch (transaction.kind) {
     case ProviderWalletTxKind.orderEarning:
       return transaction.source == ProviderWalletTxSource.homeService
-          ? 'Service earning'
-          : 'Order earning';
+          ? AppStrings.Wallet.kindServiceEarning.tr
+          : AppStrings.Wallet.kindOrderEarning.tr;
     case ProviderWalletTxKind.payout:
-      return 'Payout';
+      return AppStrings.Wallet.kindPayout.tr;
     case ProviderWalletTxKind.adjustment:
-      return 'Adjustment';
+      return AppStrings.Wallet.kindAdjustment.tr;
     case ProviderWalletTxKind.appFee:
-      return 'App fee';
+      return AppStrings.Wallet.kindAppFee.tr;
     case ProviderWalletTxKind.customerServiceFee:
-      return 'Customer service fee';
+      return AppStrings.Wallet.kindCustomerServiceFee.tr;
   }
 }

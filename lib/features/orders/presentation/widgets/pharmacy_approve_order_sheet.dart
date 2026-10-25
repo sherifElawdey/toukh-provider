@@ -122,7 +122,8 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.paddingOf(context).bottom;
+    final bottom = MediaQuery.viewInsetsOf(context).bottom +
+        MediaQuery.paddingOf(context).bottom;
     final t = Theme.of(context).textTheme;
 
     return Padding(

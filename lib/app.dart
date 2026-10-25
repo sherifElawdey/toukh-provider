@@ -6,6 +6,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/notifications/push_bootstrap.dart';
+import 'package:toukh_provider/core/settings/driver_search_timeout_cubit.dart';
 import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
@@ -126,6 +127,9 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
         BlocProvider<OrderAcceptanceSlaCubit>.value(
           value: getIt<OrderAcceptanceSlaCubit>(),
         ),
+        BlocProvider<DriverSearchTimeoutCubit>.value(
+          value: getIt<DriverSearchTimeoutCubit>(),
+        ),
         BlocProvider<NotificationsCubit>.value(
           value: getIt<NotificationsCubit>(),
         ),
@@ -162,6 +166,9 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
               routeInformationProvider: _router.routeInformationProvider,
               routeInformationParser: _router.routeInformationParser,
               routerDelegate: _router.routerDelegate,
+              builder: (context, child) => ToukhKeyboardDismiss(
+                child: child ?? const SizedBox.shrink(),
+              ),
             );
           },
         ),

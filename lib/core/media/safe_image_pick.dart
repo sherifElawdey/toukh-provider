@@ -147,7 +147,7 @@ Future<PickedMedia?> pickImageFromSource(
       if (context.mounted) {
         AppSnack.show(
           context,
-          message: 'Could not read the selected image. Please try again.',
+          message: AppStrings.Common.imageReadFailed.tr,
           state: AppSnackState.error,
           icon: PhosphorIconsRegular.imageBroken,
         );

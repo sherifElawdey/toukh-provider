@@ -5,6 +5,7 @@ import 'package:toukh_provider/core/utils/wallet_format.dart';
 import 'package:toukh_provider/domain/entities/provider_wallet_transaction.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 Future<void> showWalletEarningSheet(
   BuildContext context,
@@ -52,7 +53,7 @@ Future<void> showWalletEarningSheet(
               _sheetRow(
                 ctx,
                 AppStrings.Wallet.amount.tr,
-                '${isCredit ? '+' : '-'}EGP ${formatWalletMoney(transaction.amountEgp)}',
+                '${isCredit ? '+' : '-'}${egpLabel(formatWalletMoney(transaction.amountEgp))}',
                 emphasize: true,
               ),
               _sheetRow(ctx, AppStrings.Wallet.date.tr, dateStr),
@@ -161,7 +162,7 @@ class _OrderDetailSection extends StatelessWidget {
                 ),
               ),
               CustomText(
-                'EGP $totalStr',
+                egpLabel(totalStr),
                 style: t.labelLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
             ],
@@ -187,7 +188,7 @@ class _OrderDetailSection extends StatelessWidget {
           ),
         ),
         CustomText(
-          'EGP $priceStr',
+          egpLabel(priceStr),
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),

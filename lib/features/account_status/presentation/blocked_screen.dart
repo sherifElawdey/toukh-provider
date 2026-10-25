@@ -44,7 +44,7 @@ class _BlockedScreenState extends State<BlockedScreen> {
     final mins = d.inMinutes % 60;
     final secs = d.inSeconds % 60;
     if (days > 0) {
-      return '${days}d ${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+      return '${AppStrings.Common.daysShort.trParams({'days': '$days'})} ${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
     }
     return '${hours.toString().padLeft(2, '0')}:${mins.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
   }

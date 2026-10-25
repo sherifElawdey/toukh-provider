@@ -23,6 +23,9 @@ class WorkingHoursFormState extends State<WorkingHoursForm> {
   late bool _twentyFourHours;
   late Map<Weekday, _DayTimes> _times;
 
+  /// When on, the first open day's times are copied to every day.
+  bool _applyToAll = false;
+
   @override
   void initState() {
     super.initState();
@@ -98,7 +101,15 @@ class WorkingHoursFormState extends State<WorkingHoursForm> {
       _times[day] = from
           ? times.copyWith(openFrom: minutes)
           : times.copyWith(openTo: minutes);
+      if (_applyToAll) _copyTimesToAllDays(day);
     });
+  }
+
+  void _copyTimesToAllDays(Weekday source) {
+    final times = _times[source]!;
+    for (final day in Weekday.values) {
+      _times[day] = times;
+    }
   }
 
   String _fmt(int minutes) {
@@ -155,7 +166,12 @@ class WorkingHoursFormState extends State<WorkingHoursForm> {
                 label: Text(_weekdayLabel(day)),
                 selected: _dayOpen[day]!,
                 showCheckmark: false,
-                onSelected: (open) => setState(() => _dayOpen[day] = open),
+                onSelected: (open) => setState(() {
+                  _dayOpen[day] = open;
+                  if (!_dayOpen.values.any((isOpen) => isOpen)) {
+                    _applyToAll = false;
+                  }
+                }),
               ),
           ],
         ),
@@ -180,7 +196,7 @@ class WorkingHoursFormState extends State<WorkingHoursForm> {
           ),
         ),
         if (hasDay && !_twentyFourHours) ...[
-          for (final day in selected) ...[
+          for (final day in _applyToAll ? selected.take(1) : selected) ...[
             SizedBox(height: AppSizes.spaceMd),
             Text(
               _weekdayLabel(day),
@@ -214,6 +230,7 @@ class WorkingHoursFormState extends State<WorkingHoursForm> {
               value: _times[day]!.overnight,
               onChanged: (value) => setState(() {
                 _times[day] = _times[day]!.copyWith(overnight: value);
+                if (_applyToAll) _copyTimesToAllDays(day);
               }),
             ),
             if (_times[day]!.overnight)
@@ -225,6 +242,21 @@ class WorkingHoursFormState extends State<WorkingHoursForm> {
                   fontSize: AppSizes.fontBody,
                   color: scheme.onSurface.withValues(alpha: 0.72),
                 ),
+              ),
+            if (selected.length > 1 && day == selected.first)
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
+                title: CustomText(AppStrings.Registration.hoursApplyToAll.tr),
+                subtitle: CustomText(
+                  _applyToAll
+                      ? AppStrings.Registration.hoursSameForAllHint.tr
+                      : AppStrings.Registration.hoursApplyToAllHint.tr,
+                ),
+                value: _applyToAll,
+                onChanged: (value) => setState(() {
+                  _applyToAll = value;
+                  if (value) _copyTimesToAllDays(day);
+                }),
               ),
           ],
         ],

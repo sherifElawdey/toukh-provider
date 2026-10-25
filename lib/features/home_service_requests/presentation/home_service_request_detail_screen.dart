@@ -22,6 +22,7 @@ import 'package:toukh_provider/features/orders/presentation/delivery_qr_scan_scr
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_client_details_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 const _pageBg = Color(0xFFF2F4F7);
 
@@ -41,7 +42,7 @@ class HomeServiceRequestDetailScreen extends StatelessWidget {
               surfaceTintColor: Colors.transparent,
               title: CustomText(AppStrings.HomeServiceRequests.detailTitle.tr),
             ),
-            body: Center(child: CustomText('Sign in required')),
+            body: Center(child: CustomText(AppStrings.Common.signInRequired)),
           );
         }
         return _HomeServiceRequestDetailBody(
@@ -512,12 +513,12 @@ class _HomeServiceRequestDetailBodyState
                   if (request.clientPriceEgp != null)
                     _DetailRow(
                       label: AppStrings.HomeServiceRequests.fieldClientPrice.tr,
-                      value: '${request.clientPriceEgp!.round()} EGP',
+                      value: egpLabel(request.clientPriceEgp!.round()),
                     ),
                   if (request.quotedPriceEgp != null)
                     _DetailRow(
                       label: AppStrings.HomeServiceRequests.fieldQuotedPrice.tr,
-                      value: '${request.quotedPriceEgp!.round()} EGP',
+                      value: egpLabel(request.quotedPriceEgp!.round()),
                       emphasized: true,
                     ),
                   if (request.scheduledAt != null && !request.isTripCategory)

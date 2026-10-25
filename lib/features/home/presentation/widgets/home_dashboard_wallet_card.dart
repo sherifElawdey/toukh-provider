@@ -5,6 +5,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/utils/wallet_format.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 class HomeDashboardRevenueCard extends StatelessWidget {
   const HomeDashboardRevenueCard({
@@ -84,7 +85,7 @@ class HomeDashboardRevenueCard extends StatelessWidget {
               ),
               const SizedBox(width: 6),
               CustomText(
-                'EGP',
+                AppStrings.Common.egp.tr,
                 style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
@@ -121,7 +122,7 @@ class HomeDashboardRevenueCard extends StatelessWidget {
                 ),
               ),
               CustomText(
-                'EGP ${formatWalletMoney(weekRevenueEgp)}',
+                egpLabel(formatWalletMoney(weekRevenueEgp)),
                 style: const TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
@@ -224,7 +225,7 @@ class HomeDashboardWalletCard extends StatelessWidget {
                       ),
                       const SizedBox(height: 2),
                       CustomText(
-                        'EGP ${formatWalletMoney(balanceEgp)}',
+                        egpLabel(formatWalletMoney(balanceEgp)),
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
@@ -247,7 +248,7 @@ class HomeDashboardWalletCard extends StatelessWidget {
                       ] else if (pendingEgp != null && pendingEgp! > 0) ...[
                         const SizedBox(height: 4),
                         CustomText(
-                          '${AppStrings.Home.dashboardWalletPending.tr}: EGP ${formatWalletMoney(pendingEgp!)}',
+                          '${AppStrings.Home.dashboardWalletPending.tr}: ${egpLabel(formatWalletMoney(pendingEgp!))}',
                           style: TextStyle(
                             fontSize: 12,
                             color: scheme.onSurfaceVariant,

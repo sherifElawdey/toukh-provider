@@ -10,6 +10,7 @@ import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_cub
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_state.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 /// Opens the supermarket catalog over the menu builder (shares its cubit).
 /// [onAddCustom] closes the picker and adds a product the catalog lacks.
@@ -303,7 +304,7 @@ class _ProductTile extends StatelessWidget {
                     if (minPrice != null)
                       CustomText(
                         [
-                          'EGP ${minPrice.toStringAsFixed(minPrice == minPrice.roundToDouble() ? 0 : 2)}',
+                          egpLabel(minPrice.toStringAsFixed(minPrice == minPrice.roundToDouble() ? 0 : 2)),
                           if (item!.maxOrderQty != null)
                             AppStrings.Catalog.maxPerOrderShort.trParams({'count': '${item.maxOrderQty}'}),
                         ].join(' · '),

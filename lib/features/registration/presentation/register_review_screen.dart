@@ -9,6 +9,7 @@ import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/delivery_pricing_fields.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/working_hours_form.dart';
@@ -91,6 +92,9 @@ String? _deliverySummary(RegistrationDraft d) {
     return AppStrings.Registration.reviewDeliveryNone.tr;
   }
   if (c.isFree) return AppStrings.Registration.reviewDeliveryFree.tr;
+  if (c.pricingMode == DeliveryPricingMode.byRegion) {
+    return byRegionDeliverySummary(c);
+  }
   final p = c.priceEgp;
   final mode = c.pricingMode == DeliveryPricingMode.perKm
       ? AppStrings.Registration.deliveryModePerKm.tr

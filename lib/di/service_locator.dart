@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
+import 'package:toukh_provider/core/settings/driver_search_timeout_cubit.dart';
 import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/core/storage/backblaze_b2_client.dart';
@@ -41,7 +42,9 @@ import 'package:toukh_provider/domain/repositories/provider_orders_repository.da
 import 'package:toukh_provider/domain/repositories/provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_gallery_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_menu_repository.dart';
+import 'package:toukh_provider/domain/repositories/dish_catalog_repository.dart';
 import 'package:toukh_provider/domain/repositories/grocery_catalog_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_dish_catalog_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_grocery_catalog_repository.dart';
 import 'package:toukh_provider/domain/repositories/supermarket_catalog_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_supermarket_catalog_repository.dart';
@@ -126,6 +129,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<GroceryCatalogRepository>(
     () => FirestoreGroceryCatalogRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<DishCatalogRepository>(
+    () => FirestoreDishCatalogRepository(getIt<FirebaseFirestore>()),
   );
   getIt.registerLazySingleton<SupermarketCatalogRepository>(
     () => FirestoreSupermarketCatalogRepository(getIt<FirebaseFirestore>()),
@@ -256,6 +262,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<OrderAcceptanceSlaCubit>(
     () => OrderAcceptanceSlaCubit(getIt<AppSettingsRepository>()),
+  );
+  getIt.registerLazySingleton<DriverSearchTimeoutCubit>(
+    () => DriverSearchTimeoutCubit(getIt<AppSettingsRepository>()),
   );
 
   getIt.registerLazySingleton<ProviderOrdersCubit>(

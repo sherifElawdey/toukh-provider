@@ -11,6 +11,7 @@ import 'package:toukh_provider/features/menu/presentation/sheets/add_category_sh
 import 'package:toukh_provider/features/menu/presentation/sheets/bulk_add_items_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/catalog/catalog_menu_actions.dart';
 import 'package:toukh_provider/features/menu/presentation/catalog/catalog_picker_screen.dart';
+import 'package:toukh_provider/features/menu/presentation/catalog/dish_catalog_browser_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/catalog/supermarket_catalog_picker_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/menu_qr_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_or_edit_item_sheet.dart';
@@ -337,6 +338,12 @@ class MenuBuilderView extends StatelessWidget {
     final ic = merged.any((c) => c == initialCategory)
         ? initialCategory
         : merged.first;
+    final auth = context.read<AuthCubit>().state;
+    final canBrowseDishes =
+        existing == null && auth is Authenticated && auth.profile.isRestaurantShop;
+    final dishesInMenu = {
+      for (final item in cubit.state.items) ?item.dishCatalogId,
+    };
 
     final result = await showModalBottomSheet<MenuItemEditorResult>(
       context: context,
@@ -347,6 +354,10 @@ class MenuBuilderView extends StatelessWidget {
         categories: merged,
         initialCategory: ic,
         existing: existing,
+        onBrowseDishes: canBrowseDishes
+            ? (sheetContext) =>
+                  openDishCatalogBrowser(sheetContext, inMenu: dishesInMenu)
+            : null,
       ),
     );
     if (!context.mounted || result == null) return;

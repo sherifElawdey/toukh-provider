@@ -25,6 +25,7 @@ import 'package:toukh_provider/features/registration/presentation/review_field.d
 import 'package:toukh_provider/features/settings/domain/provider_profile_draft_mapper.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:get/get.dart';
 
 export 'auth_state.dart';
 
@@ -469,7 +470,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> confirmCompanyOtp() async {
     final current = state;
     if (current is! AuthenticatedCompany) {
-      emit(const AuthFailure(message: 'Not signed in.'));
+      emit(AuthFailure(message: AppStrings.Common.notSignedIn.tr));
       return;
     }
     try {
@@ -502,16 +503,16 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final user = _authRepository.currentUser;
       if (user == null) {
-        emit(AuthFailure(message: 'Not signed in.'));
+        emit(AuthFailure(message: AppStrings.Common.notSignedIn.tr));
         return;
       }
       final profile = await _profileRepository.getProfile(user.uid);
       if (profile == null) {
-        emit(AuthFailure(message: 'Profile not found.'));
+        emit(AuthFailure(message: AppStrings.Common.profileNotFound.tr));
         return;
       }
       if (profile.phoneVerified) {
-        emit(AuthFailure(message: 'Phone already verified.'));
+        emit(AuthFailure(message: AppStrings.Auth.phoneAlreadyVerified.tr));
         return;
       }
       final now = DateTime.now();
@@ -529,12 +530,12 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final user = _authRepository.currentUser;
       if (user == null) {
-        emit(const AuthFailure(message: 'Not signed in.'));
+        emit(AuthFailure(message: AppStrings.Common.notSignedIn.tr));
         return;
       }
       final profile = await _profileRepository.getProfile(user.uid);
       if (profile == null) {
-        emit(const AuthFailure(message: 'Profile not found.'));
+        emit(AuthFailure(message: AppStrings.Common.profileNotFound.tr));
         return;
       }
       final now = DateTime.now();
@@ -557,7 +558,7 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final user = _authRepository.currentUser;
       if (user == null) {
-        emit(const AuthFailure(message: 'Not signed in.'));
+        emit(AuthFailure(message: AppStrings.Common.notSignedIn.tr));
         return;
       }
 
@@ -567,7 +568,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       final profile = await _profileRepository.getProfile(user.uid);
       if (profile == null) {
-        emit(const AuthFailure(message: 'Profile not found.'));
+        emit(AuthFailure(message: AppStrings.Common.profileNotFound.tr));
         return;
       }
 

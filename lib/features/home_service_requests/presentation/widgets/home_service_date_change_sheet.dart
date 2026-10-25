@@ -122,35 +122,37 @@ class _DateChangeSheetState extends State<_DateChangeSheet> {
         top: AppSizes.spaceSm,
         bottom: MediaQuery.viewInsetsOf(context).bottom + AppSizes.spaceXl,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CustomText(
-            AppStrings.HomeServiceRequests.dateChangeTitle.tr,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          const SizedBox(height: AppSizes.spaceMd),
-          AppOutlinedButton(text: label, onTap: _sending ? null : _pickDate),
-          const SizedBox(height: AppSizes.spaceMd),
-          TextField(
-            controller: _reason,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: AppStrings.HomeServiceRequests.dateChangeReason.tr,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CustomText(
+              AppStrings.HomeServiceRequests.dateChangeTitle.tr,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
             ),
-          ),
-          const SizedBox(height: AppSizes.spaceLg),
-          AppFilledButton(
-            text: AppStrings.HomeServiceRequests.dateChangeSend.tr,
-            onTap: _sending ? null : _send,
-            status: _sending
-                ? AppButtonStatus.loading
-                : AppButtonStatus.enabled,
-          ),
-        ],
+            const SizedBox(height: AppSizes.spaceMd),
+            AppOutlinedButton(text: label, onTap: _sending ? null : _pickDate),
+            const SizedBox(height: AppSizes.spaceMd),
+            TextField(
+              controller: _reason,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: AppStrings.HomeServiceRequests.dateChangeReason.tr,
+              ),
+            ),
+            const SizedBox(height: AppSizes.spaceLg),
+            AppFilledButton(
+              text: AppStrings.HomeServiceRequests.dateChangeSend.tr,
+              onTap: _sending ? null : _send,
+              status: _sending
+                  ? AppButtonStatus.loading
+                  : AppButtonStatus.enabled,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -231,7 +231,9 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
   }) async {
     final requestRef = _firestore.collection(deliveryRequestsCollection).doc();
     final now = DateTime.now();
-    final expiresAt = now.add(const Duration(minutes: 15));
+    // Admin-set wait (dispatchSettings); the cubit keeps this current.
+    final searchWindow = DriverSearchWindow.current;
+    final expiresAt = now.add(searchWindow);
 
     late final String resultRequestId;
 
@@ -260,8 +262,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
           ToukhFirestoreTimestamps.toDateTime(slice['deliveryRequestedAt']);
       final searchExpired = requestedAt == null
           ? true
-          : now.toUtc().difference(requestedAt.toUtc()) >=
-              const Duration(minutes: 15);
+          : now.toUtc().difference(requestedAt.toUtc()) >= searchWindow;
       final hasDriver = (master['driverAssignment'] is Map &&
               ((master['driverAssignment'] as Map)['driverId'] as String?)
                       ?.trim()
@@ -380,7 +381,7 @@ class FirestoreProviderOrdersRepository implements ProviderOrdersRepository {
 
       tx.update(masterRef, {
         'providerSlices': slices,
-        'globalStatus': 'searching_driver',
+        // Overall status is server-derived from every store's slice.
         'driverSearchRequestId': requestRef.id,
         'deliveryRequestedAt': FieldValue.serverTimestamp(),
         'updatedAt': FieldValue.serverTimestamp(),

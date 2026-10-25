@@ -2,7 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -194,9 +193,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
         _hasLocationPermission = true;
         _locationPermanentlyDenied = false;
       });
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(timeLimit: _locationTimeout),
-      );
+      final pos = await ToukhPreciseLocation.current(timeout: _locationTimeout);
       if (!mounted) return;
       final next = LatLng(pos.latitude, pos.longitude);
       setState(() {
@@ -217,25 +214,12 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   bool _lookupCurrent(int gen) => mounted && gen == _lookupGen;
 
   Future<void> _reverseGeocode(LatLng ll, int gen) async {
-    try {
-      final marks = await placemarkFromCoordinates(ll.latitude, ll.longitude);
-      if (marks.isEmpty || !_lookupCurrent(gen)) return;
-      final p = marks.first;
-      final raw = [
-        p.street,
-        p.subLocality,
-        p.locality,
-        p.administrativeArea,
-        p.country,
-      ];
-      final parts = raw
-          .whereType<String>()
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .join(', ');
-      if (!_lookupCurrent(gen) || parts.isEmpty) return;
-      setState(() => _setAddress(parts));
-    } catch (_) {}
+    // Always Arabic, whatever the app language.
+    final address = await ToukhArabicAddress.resolve(ll.latitude, ll.longitude);
+    final line = address?.formattedAddress ?? '';
+    if (_lookupCurrent(gen) && line.isNotEmpty) {
+      setState(() => _setAddress(line));
+    }
   }
 
   Future<void> _checkServiceArea(LatLng ll, int gen) async {

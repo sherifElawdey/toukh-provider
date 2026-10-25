@@ -64,14 +64,18 @@ class _StoreDriverPickSheetState extends State<_StoreDriverPickSheet> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final height = MediaQuery.sizeOf(context).height * 0.72;
+    final screenHeight = MediaQuery.sizeOf(context).height;
+    final keyboard = MediaQuery.viewInsetsOf(context).bottom;
+    // Grow with the keyboard so the search results stay visible above it.
+    final height =
+        (screenHeight * 0.72 + keyboard).clamp(0.0, screenHeight * 0.92);
 
     return SizedBox(
       height: height,
       child: Padding(
         padding: AppSizes.screenPadding.copyWith(
           top: AppSizes.spaceMd,
-          bottom: AppSizes.spaceLg,
+          bottom: AppSizes.spaceLg + keyboard,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

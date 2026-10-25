@@ -58,7 +58,7 @@ class _MasterOrdersScreen extends StatelessWidget {
                       ),
                     ),
                     IconButton(
-                      tooltip: 'Refresh',
+                      tooltip: AppStrings.Common.refresh.tr,
                       onPressed: state.loading ||
                               state.actionInFlightId != null
                           ? null

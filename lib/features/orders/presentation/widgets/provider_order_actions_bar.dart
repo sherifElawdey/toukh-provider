@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
+import 'package:toukh_provider/core/settings/driver_search_timeout_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -123,7 +125,7 @@ class ProviderOrderActionsBar extends StatelessWidget {
   }
 }
 
-/// Stateful so the 15‑minute count-up can flip to Re-request without a
+/// Stateful so the count-up (admin-set wait) can flip to Re-request without a
 /// Firestore rebuild.
 class _InProgressActions extends StatefulWidget {
   const _InProgressActions({
@@ -151,9 +153,10 @@ class _InProgressActions extends StatefulWidget {
 }
 
 class _InProgressActionsState extends State<_InProgressActions> {
-  /// Set when the local count-up hits 15:00 (or model already expired).
+  /// Set when the local count-up hits the wait (or model already expired).
   bool _localSearchTimedOut = false;
   DateTime? _fallbackSearchStartedAt;
+  Duration? _window;
 
   @override
   void initState() {
@@ -235,6 +238,14 @@ class _InProgressActionsState extends State<_InProgressActions> {
 
   @override
   Widget build(BuildContext context) {
+    // Admin changed the wait mid-search: re-evaluate searching vs re-request.
+    final window = context.watch<DriverSearchTimeoutCubit>().state;
+    if (_window != null && _window != window) {
+      _localSearchTimedOut = false;
+      _syncFromRow();
+    }
+    _window = window;
+
     final buttons = <Widget>[];
 
     if (_showSearching) {
@@ -367,7 +378,7 @@ class _InProgressActionsState extends State<_InProgressActions> {
   }
 }
 
-/// Live count-up while looking for a courier (00:00 → 15:00).
+/// Live count-up while looking for a courier (00:00 → admin-set wait).
 class DriverSearchStatusPanel extends StatefulWidget {
   const DriverSearchStatusPanel({
     super.key,
@@ -413,7 +424,10 @@ class _DriverSearchStatusPanelState extends State<DriverSearchStatusPanel> {
     final diff = DateTime.now().toUtc().difference(_startedAt);
     final elapsed = diff.isNegative ? Duration.zero : diff;
     setState(() => _elapsed = elapsed);
-    if (!_timedOutNotified && elapsed >= kDriverSearchTimeout) {
+    if (_timedOutNotified && elapsed < DriverSearchWindow.current) {
+      _timedOutNotified = false;
+    }
+    if (!_timedOutNotified && elapsed >= DriverSearchWindow.current) {
       _timedOutNotified = true;
       widget.onTimedOut?.call();
     }
@@ -426,7 +440,7 @@ class _DriverSearchStatusPanelState extends State<DriverSearchStatusPanel> {
   }
 
   String _formatCountUp(Duration d) {
-    final total = d.inSeconds.clamp(0, kDriverSearchTimeout.inSeconds);
+    final total = d.inSeconds.clamp(0, DriverSearchWindow.current.inSeconds);
     final m = (total ~/ 60).toString().padLeft(2, '0');
     final s = (total % 60).toString().padLeft(2, '0');
     return '$m:$s';

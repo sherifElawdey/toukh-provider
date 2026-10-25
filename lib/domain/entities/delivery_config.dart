@@ -1,8 +1,12 @@
 import 'package:equatable/equatable.dart';
+import 'package:toukh_ui/toukh_ui.dart' show kStoreCityRadiusKm;
 
 enum DeliveryPricingMode {
   fixed,
-  perKm;
+  perKm,
+
+  /// One fee within the city (under [kStoreCityRadiusKm]), another outside.
+  byRegion;
 
   String get wireValue => name;
 
@@ -22,6 +26,8 @@ class DeliveryConfig extends Equatable {
     this.manageFromAccount = false,
     this.pricingMode,
     this.priceEgp,
+    this.innerCityFeeEgp,
+    this.outerCityFeeEgp,
     this.avgPrepMinutes,
   });
 
@@ -32,6 +38,10 @@ class DeliveryConfig extends Equatable {
   final bool manageFromAccount;
   final DeliveryPricingMode? pricingMode;
   final double? priceEgp;
+
+  /// [DeliveryPricingMode.byRegion] fees.
+  final double? innerCityFeeEgp;
+  final double? outerCityFeeEgp;
   final int? avgPrepMinutes;
 
   Map<String, dynamic> toFirestore() => {
@@ -40,6 +50,8 @@ class DeliveryConfig extends Equatable {
         'manageFromAccount': manageFromAccount,
         if (pricingMode != null) 'pricingMode': pricingMode!.wireValue,
         if (priceEgp != null) 'priceEgp': priceEgp,
+        if (innerCityFeeEgp != null) 'innerCityFeeEgp': innerCityFeeEgp,
+        if (outerCityFeeEgp != null) 'outerCityFeeEgp': outerCityFeeEgp,
         if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
       };
 
@@ -61,6 +73,8 @@ class DeliveryConfig extends Equatable {
       manageFromAccount: manageFromAccount,
       pricingMode: DeliveryPricingMode.tryParse(m['pricingMode'] as String?),
       priceEgp: (m['priceEgp'] as num?)?.toDouble(),
+      innerCityFeeEgp: (m['innerCityFeeEgp'] as num?)?.toDouble(),
+      outerCityFeeEgp: (m['outerCityFeeEgp'] as num?)?.toDouble(),
       avgPrepMinutes: m['avgPrepMinutes'] as int?,
     );
   }
@@ -72,6 +86,8 @@ class DeliveryConfig extends Equatable {
         manageFromAccount,
         pricingMode,
         priceEgp,
+        innerCityFeeEgp,
+        outerCityFeeEgp,
         avgPrepMinutes,
       ];
 }

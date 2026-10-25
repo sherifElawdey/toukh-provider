@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:toukh_provider/domain/entities/pre_service_question.dart';
+import 'package:get/get.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 
 class ProviderHomeServiceRequest extends Equatable {
   const ProviderHomeServiceRequest({
@@ -134,9 +136,9 @@ class ProviderHomeServiceRequest extends Equatable {
 
   String get preferredTimeLabel {
     return switch (preferredTimeRaw?.trim()) {
-      'morning' => 'Morning',
-      'evening' => 'Evening',
-      'night' => 'At night',
+      'morning' => AppStrings.HomeServiceRequests.preferredMorning.tr,
+      'evening' => AppStrings.HomeServiceRequests.preferredEvening.tr,
+      'night' => AppStrings.HomeServiceRequests.preferredNight.tr,
       _ => preferredTimeRaw ?? '',
     };
   }

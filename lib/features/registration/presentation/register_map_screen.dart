@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -35,50 +34,109 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   final _mapKey = GlobalKey();
   final _pinKey = GlobalKey();
   GoogleMapController? _map;
-  LatLng _target = const LatLng(30.0444, 31.2357);
+
+  /// Where the map opens. Null until resolved, so the map is never built at
+  /// [_fallbackTarget] only to jump to the device location a moment later.
+  LatLng? _start;
+  LatLng _target = _fallbackTarget;
   String _address = '';
   bool _locating = true;
   bool _hasLocationPermission = false;
   bool _locationPermanentlyDenied = false;
   bool _locationBusy = false;
+  bool _checkingArea = true;
   bool _inServiceArea = true;
-  double _zoom = 14;
+  double _zoom = 15;
   bool _mapReady = false;
   LatLng? _lastHandledCenter;
   int _lookupGen = 0;
 
+  static const _fallbackTarget = LatLng(30.0444, 31.2357);
   static const _locationTimeout = Duration(seconds: 12);
+  static const _freshFixAge = Duration(minutes: 2);
   static const _minMoveDegrees = 0.00008;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _startAtLocation());
+    WidgetsBinding.instance.addPostFrameCallback((_) => _resolveStart());
   }
 
-  /// A saved pin stays put. Otherwise the map opens on the device location.
-  Future<void> _startAtLocation() async {
+  /// A saved pin stays put. Otherwise the map opens on the device location,
+  /// and only falls back to Cairo when no location is available.
+  Future<void> _resolveStart() async {
     if (!mounted) return;
     final draft = context.read<RegistrationCubit>().state;
     final lat = draft.lat;
     final lng = draft.lng;
+    LatLng start;
     if (lat != null && lng != null) {
-      setState(() {
-        _target = LatLng(lat, lng);
-        _locating = false;
-      });
-      _zoom = 15;
-      await _map?.animateCamera(CameraUpdate.newLatLngZoom(_target, _zoom));
-      if (!mounted) return;
-      await _handleCenterChanged(_target);
-      return;
+      start = LatLng(lat, lng);
+      _address = draft.formattedAddress;
+    } else {
+      start = await _deviceLocation(request: true) ?? _fallbackTarget;
     }
-    await _initLocation(request: true);
+    if (!mounted) return;
+    setState(() {
+      _start = start;
+      _target = start;
+      _locating = false;
+    });
+    await _handleCenterChanged(start);
   }
 
-  @override
-  void dispose() {
-    super.dispose();
+  /// Device position, or null without service / permission / a fix.
+  /// A recent last-known fix is used at once instead of waiting for GPS.
+  Future<LatLng?> _deviceLocation({
+    bool request = false,
+    bool openSettings = false,
+  }) async {
+    try {
+      final serviceOn = await Geolocator.isLocationServiceEnabled();
+      if (!serviceOn) {
+        if (openSettings) await Geolocator.openLocationSettings();
+        if (mounted) {
+          setState(() {
+            _hasLocationPermission = false;
+            _locationPermanentlyDenied = true;
+          });
+        }
+        return null;
+      }
+      var perm = await Geolocator.checkPermission();
+      if (request &&
+          (perm == LocationPermission.denied ||
+              perm == LocationPermission.unableToDetermine)) {
+        perm = await Geolocator.requestPermission();
+      }
+      final granted =
+          perm == LocationPermission.always ||
+          perm == LocationPermission.whileInUse;
+      if (mounted) {
+        setState(() {
+          _hasLocationPermission = granted;
+          _locationPermanentlyDenied = perm == LocationPermission.deniedForever;
+        });
+      }
+      if (!granted) return null;
+      if (!kIsWeb) {
+        final last = await Geolocator.getLastKnownPosition();
+        if (last != null &&
+            DateTime.now().difference(last.timestamp) < _freshFixAge) {
+          return LatLng(last.latitude, last.longitude);
+        }
+      }
+      final pos = await ToukhPreciseLocation.current(timeout: _locationTimeout);
+      return LatLng(pos.latitude, pos.longitude);
+    } catch (_) {
+      if (kIsWeb) return null;
+      try {
+        final last = await Geolocator.getLastKnownPosition();
+        return last == null ? null : LatLng(last.latitude, last.longitude);
+      } catch (_) {
+        return null;
+      }
+    }
   }
 
   Future<void> _goToCurrentLocation() async {
@@ -87,7 +145,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       await _promptLocationPermission();
       return;
     }
-    await _initLocation(request: true, openSettings: true);
+    await _moveToDeviceLocation(request: true, openSettings: true);
   }
 
   Future<void> _promptLocationPermission() async {
@@ -115,110 +173,43 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
           _hasLocationPermission = granted;
           _locationPermanentlyDenied = perm == LocationPermission.deniedForever;
         });
-        if (granted) await _initLocation(request: false);
+        if (granted) await _moveToDeviceLocation();
       } else {
-        await _initLocation(request: true, openSettings: true);
+        await _moveToDeviceLocation(request: true, openSettings: true);
       }
     } finally {
       if (mounted) setState(() => _locationBusy = false);
     }
   }
 
-  Future<void> _initLocation({
+  /// Recenters on the device; the pin's address and area follow at once.
+  Future<void> _moveToDeviceLocation({
     bool request = false,
     bool openSettings = false,
   }) async {
-    try {
-      final serviceOn = await Geolocator.isLocationServiceEnabled();
-      if (!serviceOn) {
-        if (openSettings) {
-          await Geolocator.openLocationSettings();
-        }
-        if (!mounted) return;
-        setState(() {
-          _locating = false;
-          _hasLocationPermission = false;
-          _locationPermanentlyDenied = true;
-        });
-        await _handleCenterChanged(_target);
-        return;
-      }
-      var perm = await Geolocator.checkPermission();
-      if (request &&
-          (perm == LocationPermission.denied ||
-              perm == LocationPermission.unableToDetermine)) {
-        perm = await Geolocator.requestPermission();
-      }
-      if (perm == LocationPermission.denied ||
-          perm == LocationPermission.deniedForever ||
-          perm == LocationPermission.unableToDetermine) {
-        if (mounted) {
-          setState(() {
-            _locating = false;
-            _hasLocationPermission = false;
-            _locationPermanentlyDenied =
-                perm == LocationPermission.deniedForever;
-          });
-        }
-        await _handleCenterChanged(_target);
-        return;
-      }
-      if (!mounted) return;
-      setState(() {
-        _locating = true;
-        _hasLocationPermission = true;
-        _locationPermanentlyDenied = false;
-      });
-      if (!kIsWeb) {
-        final last = await Geolocator.getLastKnownPosition();
-        if (last != null && mounted) {
-          setState(() => _target = LatLng(last.latitude, last.longitude));
-          await _map?.animateCamera(CameraUpdate.newLatLngZoom(_target, 15));
-          _zoom = 15;
-        }
-      }
-      final pos = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(timeLimit: _locationTimeout),
-      );
-      if (!mounted) return;
-      setState(() {
-        _target = LatLng(pos.latitude, pos.longitude);
-        _locating = false;
-      });
-      await _handleCenterChanged(_target);
-      await _map?.animateCamera(CameraUpdate.newLatLngZoom(_target, 15));
-      _zoom = 15;
-    } catch (_) {
-      if (mounted) {
-        setState(() => _locating = false);
-      }
-      await _handleCenterChanged(_target);
-    }
+    setState(() => _locating = true);
+    final here = await _deviceLocation(
+      request: request,
+      openSettings: openSettings,
+    );
+    if (!mounted) return;
+    setState(() => _locating = false);
+    if (here == null) return;
+    _target = here;
+    _zoom = 15;
+    await _handleCenterChanged(here);
+    await _map?.animateCamera(CameraUpdate.newLatLngZoom(here, _zoom));
   }
 
   bool _lookupCurrent(int gen) => mounted && gen == _lookupGen;
 
   Future<void> _reverseGeocode(LatLng ll, int gen) async {
-    try {
-      final marks = await placemarkFromCoordinates(ll.latitude, ll.longitude);
-      if (marks.isEmpty || !_lookupCurrent(gen)) return;
-      final p = marks.first;
-      final raw = [
-        p.street,
-        p.subLocality,
-        p.locality,
-        p.administrativeArea,
-        p.country,
-      ];
-      final parts = raw
-          .whereType<String>()
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .join(', ');
-      if (_lookupCurrent(gen) && parts.isNotEmpty) {
-        setState(() => _address = parts);
-      }
-    } catch (_) {}
+    // Always Arabic, whatever the app language.
+    final address = await ToukhArabicAddress.resolve(ll.latitude, ll.longitude);
+    final line = address?.formattedAddress ?? '';
+    if (_lookupCurrent(gen) && line.isNotEmpty) {
+      setState(() => _address = line);
+    }
   }
 
   Future<void> _checkServiceArea(LatLng ll, int gen) async {
@@ -232,8 +223,11 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     } catch (_) {
       areaId = null;
     }
-    if (!mounted || gen != _lookupGen) return;
-    setState(() => _inServiceArea = areaId != null);
+    if (!mounted || !_lookupCurrent(gen)) return;
+    setState(() {
+      _inServiceArea = areaId != null;
+      _checkingArea = false;
+    });
     final draft = context.read<RegistrationCubit>().state;
     final address = _address.trim().isNotEmpty
         ? _address.trim()
@@ -252,9 +246,12 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
         (a.longitude - b.longitude).abs() > _minMoveDegrees;
   }
 
+  /// The address and the service area follow the pin; a newer move cancels
+  /// an older lookup.
   Future<void> _handleCenterChanged(LatLng center) async {
     final gen = ++_lookupGen;
     _lastHandledCenter = center;
+    if (mounted) setState(() => _checkingArea = true);
     await _reverseGeocode(center, gen);
     if (!_lookupCurrent(gen)) return;
     await _checkServiceArea(center, gen);
@@ -313,10 +310,15 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     final formattedAddress = _address.isEmpty
         ? '${point.latitude},${point.longitude}'
         : _address;
-    final area = await getIt<GeofenceService>().findContaining(
-      lat: point.latitude,
-      lng: point.longitude,
-    );
+    ServiceArea? area;
+    try {
+      area = await getIt<GeofenceService>().findContaining(
+        lat: point.latitude,
+        lng: point.longitude,
+      );
+    } catch (_) {
+      area = null;
+    }
     if (!mounted) return;
     if (area == null) {
       setState(() => _inServiceArea = false);
@@ -359,45 +361,44 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          Positioned.fill(
-            child: ToukhGoogleMap(
-              key: _mapKey,
-              debugScreenName: 'register_map',
-              initialCameraPosition: CameraPosition(
-                target: _target,
-                zoom: _zoom,
+          if (_start != null)
+            Positioned.fill(
+              child: ToukhGoogleMap(
+                key: _mapKey,
+                debugScreenName: 'register_map',
+                initialCameraPosition: CameraPosition(
+                  target: _start!,
+                  zoom: _zoom,
+                ),
+                padding: EdgeInsets.only(bottom: bottomInset),
+                myLocationEnabled: _hasLocationPermission,
+                myLocationButtonEnabled: false,
+                compassEnabled: true,
+                mapToolbarEnabled: false,
+                zoomControlsEnabled: false,
+                onMapCreated: (c) async {
+                  _map = c;
+                  // Already on [_start]; wait for layout before reading the pin.
+                  await Future<void>.delayed(const Duration(milliseconds: 350));
+                  if (!mounted) return;
+                  setState(() => _mapReady = true);
+                  await _onCameraIdle();
+                },
+                onCameraMove: (pos) {
+                  _target = pos.target;
+                  _zoom = pos.zoom;
+                },
+                onCameraIdle: _onCameraIdle,
               ),
-              padding: EdgeInsets.only(bottom: bottomInset),
-              myLocationEnabled: _hasLocationPermission,
-              myLocationButtonEnabled: false,
-              compassEnabled: true,
-              mapToolbarEnabled: false,
-              zoomControlsEnabled: false,
-              onMapCreated: (c) async {
-                _map = c;
-                await c.animateCamera(
-                  CameraUpdate.newLatLngZoom(_target, _zoom),
-                );
-                if (!mounted) return;
-                await Future<void>.delayed(const Duration(milliseconds: 350));
-                if (!mounted) return;
-                setState(() => _mapReady = true);
-                await _onCameraIdle();
-              },
-              onCameraMove: (pos) {
-                _target = pos.target;
-                _zoom = pos.zoom;
-              },
-              onCameraIdle: _onCameraIdle,
             ),
-          ),
-          IgnorePointer(
-            child: Padding(
-              padding: EdgeInsets.only(bottom: bottomInset),
-              child: Center(child: _RegisterMapPin(pinKey: _pinKey)),
+          if (_start != null)
+            IgnorePointer(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: bottomInset),
+                child: Center(child: _RegisterMapPin(pinKey: _pinKey)),
+              ),
             ),
-          ),
-          if (!_hasLocationPermission)
+          if (!_hasLocationPermission && _start != null)
             Positioned(
               left: AppSizes.spaceMd,
               right: AppSizes.spaceMd,
@@ -413,7 +414,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
                 onAction: _promptLocationPermission,
               ),
             ),
-          if (!_inServiceArea)
+          if (!_inServiceArea && !_checkingArea)
             Positioned(
               left: AppSizes.spaceMd,
               right: AppSizes.spaceMd,
@@ -522,7 +523,7 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    if (!_inServiceArea) ...[
+                    if (!_inServiceArea && !_checkingArea) ...[
                       SizedBox(height: AppSizes.spaceSm),
                       CustomText(
                         AppStrings.Registration.locationOutsideServiceArea.tr,
@@ -539,7 +540,11 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
                       padding: EdgeInsets.zero,
                       onBack: () => context.pop(),
                       onNext: _continue,
-                      nextEnabled: !_locating && _inServiceArea,
+                      nextEnabled:
+                          _start != null &&
+                          !_locating &&
+                          !_checkingArea &&
+                          _inServiceArea,
                     ),
                   ],
                 ),

@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:toukh_provider/domain/entities/brand_info.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/delivery_pricing_fields.dart';
 import 'package:toukh_provider/domain/entities/provider_account_status.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
@@ -88,6 +89,10 @@ String? deliverySummaryFromDraft(RegistrationDraft draft) {
   if (config.isFree) {
     final free = AppStrings.Registration.reviewDeliveryFree.tr;
     return self == null ? free : '$self · $free';
+  }
+  if (config.pricingMode == DeliveryPricingMode.byRegion) {
+    final paid = byRegionDeliverySummary(config);
+    return self == null ? paid : '$self · $paid';
   }
   final price = config.priceEgp;
   final mode = config.pricingMode == DeliveryPricingMode.perKm

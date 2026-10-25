@@ -286,7 +286,7 @@ GoRouter createAppRouter({
               appBar: AppBar(
                 title: CustomText(AppStrings.Settings.accountDetails),
               ),
-              body: const Center(child: CustomText('Sign in required')),
+              body: Center(child: CustomText(AppStrings.Common.signInRequired)),
             );
           }
           return BlocProvider(

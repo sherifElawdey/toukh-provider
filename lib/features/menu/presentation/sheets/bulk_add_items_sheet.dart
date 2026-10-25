@@ -550,7 +550,7 @@ class _BulkItemCard extends StatelessWidget {
                       keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      suffixText: 'EGP',
+                      suffixText: AppStrings.Common.egp.tr,
                       inputFormatters: EnglishPriceInput.formatters,
                     ),
                   ),

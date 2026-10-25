@@ -5,6 +5,7 @@ import 'package:toukh_provider/features/orders/presentation/widgets/order_detail
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_surface_card.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 class OrderDetailPharmacyRequestCard extends StatelessWidget {
   const OrderDetailPharmacyRequestCard({super.key, required this.row});
@@ -79,7 +80,7 @@ class OrderDetailPharmacyRequestCard extends StatelessWidget {
                 ),
               ),
             CustomText(
-              'EGP ${quote.quotedTotalEgp.toStringAsFixed(0)}',
+              egpLabel(quote.quotedTotalEgp.toStringAsFixed(0)),
               style: t.titleMedium?.copyWith(
                 fontWeight: FontWeight.w800,
                 color: Theme.of(context).colorScheme.primary,
@@ -94,20 +95,20 @@ class OrderDetailPharmacyRequestCard extends StatelessWidget {
             const Divider(height: 1, thickness: 0.5),
             const SizedBox(height: AppSizes.spaceSm),
             CustomText(
-              'Subtotal EGP ${master.subtotalEgp.toStringAsFixed(0)}',
+              '${AppStrings.Orders.detailSubtotal.tr}: ${egpLabel(master.subtotalEgp.toStringAsFixed(0))}',
               style: t.bodySmall,
             ),
             CustomText(
-              'Delivery EGP ${master.deliveryFeeEgp.toStringAsFixed(0)}',
+              '${AppStrings.Orders.detailDeliveryFee.tr}: ${egpLabel(master.deliveryFeeEgp.toStringAsFixed(0))}',
               style: t.bodySmall,
             ),
             if (master.serviceFeeEgp > 0)
               CustomText(
-                'Service fee EGP ${master.serviceFeeEgp.toStringAsFixed(0)}',
+                '${AppStrings.Orders.detailServiceFee.tr}: ${egpLabel(master.serviceFeeEgp.toStringAsFixed(0))}',
                 style: t.bodySmall,
               ),
             CustomText(
-              'Total EGP ${master.totalEgp.toStringAsFixed(0)}',
+              '${AppStrings.Orders.detailTotal.tr}: ${egpLabel(master.totalEgp.toStringAsFixed(0))}',
               style: t.titleSmall?.copyWith(fontWeight: FontWeight.w800),
             ),
           ],

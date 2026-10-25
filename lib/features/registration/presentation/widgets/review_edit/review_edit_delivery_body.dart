@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/delivery_pricing_fields.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -22,6 +22,8 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
   late bool _free;
   late DeliveryPricingMode _mode;
   late final TextEditingController _price;
+  late final TextEditingController _innerCity;
+  late final TextEditingController _outerCity;
   late final TextEditingController _prep;
 
   bool _isRestaurant(RegistrationDraft d) =>
@@ -37,10 +39,12 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
     _manageFromAccount = c?.manageFromAccount ?? false;
     _free = c?.isFree ?? false;
     _mode = c?.pricingMode ?? DeliveryPricingMode.fixed;
-    _price = TextEditingController(
-      text: c?.priceEgp != null && c!.priceEgp! > 0
-          ? c.priceEgp.toString()
-          : '',
+    _price = TextEditingController(text: deliveryFeeText(c?.priceEgp));
+    _innerCity = TextEditingController(
+      text: deliveryFeeText(c?.innerCityFeeEgp),
+    );
+    _outerCity = TextEditingController(
+      text: deliveryFeeText(c?.outerCityFeeEgp),
     );
     _prep = TextEditingController(
       text: d.avgPrepMinutes != null && d.avgPrepMinutes! > 0
@@ -52,27 +56,32 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
   @override
   void dispose() {
     _price.dispose();
+    _innerCity.dispose();
+    _outerCity.dispose();
     _prep.dispose();
     super.dispose();
   }
 
+  DeliveryPricingInput get _fees => DeliveryPricingInput(
+    mode: _mode,
+    price: _price,
+    innerCity: _innerCity,
+    outerCity: _outerCity,
+  );
+
   DeliveryConfig _buildConfig(RegistrationDraft draft) {
-    if (!_offers) {
-      return DeliveryConfig(
-        offersDelivery: false,
-        isFree: _free,
+    final prep = int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), ''));
+    if (_offers && !_free) {
+      return _fees.toConfig(
         manageFromAccount: _manageFromAccount,
-        avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
+        avgPrepMinutes: prep,
       );
     }
-    final p = double.tryParse(_price.text.replaceAll(',', '.'));
     return DeliveryConfig(
-      offersDelivery: true,
+      offersDelivery: _offers,
       isFree: _free,
       manageFromAccount: _manageFromAccount,
-      pricingMode: _free ? null : _mode,
-      priceEgp: _free ? null : p,
-      avgPrepMinutes: int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), '')),
+      avgPrepMinutes: prep,
     );
   }
 
@@ -80,11 +89,11 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
     final cubit = context.read<RegistrationCubit>();
     final draft = cubit.state;
     if (_offers && !_free) {
-      final p = double.tryParse(_price.text.replaceAll(',', '.'));
-      if (p == null || p <= 0) {
+      final error = _fees.errorKey;
+      if (error != null) {
         AppSnack.show(
           context,
-          message: AppStrings.Registration.deliveryPriceRequired.tr,
+          message: error.tr,
           state: AppSnackState.warning,
           icon: PhosphorIconsRegular.creditCard,
         );
@@ -135,31 +144,14 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
             value: _free,
             onChanged: (v) => setState(() => _free = v),
           ),
-          if (!_free) ...[
-            SegmentedButton<DeliveryPricingMode>(
-              segments: [
-                ButtonSegment(
-                  value: DeliveryPricingMode.fixed,
-                  label: CustomText(AppStrings.Registration.deliveryModeFixed),
-                ),
-                ButtonSegment(
-                  value: DeliveryPricingMode.perKm,
-                  label: CustomText(AppStrings.Registration.deliveryModePerKm),
-                ),
-              ],
-              selected: {_mode},
-              onSelectionChanged: (s) => setState(() => _mode = s.first),
+          if (!_free)
+            DeliveryPricingFields(
+              mode: _mode,
+              onModeChanged: (m) => setState(() => _mode = m),
+              price: _price,
+              innerCity: _innerCity,
+              outerCity: _outerCity,
             ),
-            SizedBox(height: AppSizes.spaceMd),
-            TextField(
-              controller: _price,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: EnglishPriceInput.formatters,
-              decoration: InputDecoration(
-                labelText: AppStrings.Registration.deliveryPriceLabel.tr,
-              ),
-            ),
-          ],
         ],
         if (restaurant) ...[
           SizedBox(height: AppSizes.spaceLg),

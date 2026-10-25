@@ -91,40 +91,42 @@ class _ReasonSheetState extends State<_ReasonSheet> {
         top: AppSizes.spaceSm,
         bottom: MediaQuery.viewInsetsOf(context).bottom + AppSizes.spaceXl,
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CustomText(
-            widget.title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-          if (widget.hint != null) ...[
-            const SizedBox(height: AppSizes.spaceSm),
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             CustomText(
-              widget.hint!,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    height: 1.35,
+              widget.title,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
                   ),
             ),
+            if (widget.hint != null) ...[
+              const SizedBox(height: AppSizes.spaceSm),
+              CustomText(
+                widget.hint!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      height: 1.35,
+                    ),
+              ),
+            ],
+            const SizedBox(height: AppSizes.spaceMd),
+            TextField(
+              controller: _reason,
+              maxLines: 3,
+              decoration: InputDecoration(labelText: widget.reasonLabel),
+            ),
+            const SizedBox(height: AppSizes.spaceLg),
+            AppFilledButton(
+              text: widget.title,
+              onTap: _sending ? null : _send,
+              status: _sending
+                  ? AppButtonStatus.loading
+                  : AppButtonStatus.enabled,
+            ),
           ],
-          const SizedBox(height: AppSizes.spaceMd),
-          TextField(
-            controller: _reason,
-            maxLines: 3,
-            decoration: InputDecoration(labelText: widget.reasonLabel),
-          ),
-          const SizedBox(height: AppSizes.spaceLg),
-          AppFilledButton(
-            text: widget.title,
-            onTap: _sending ? null : _send,
-            status: _sending
-                ? AppButtonStatus.loading
-                : AppButtonStatus.enabled,
-          ),
-        ],
+        ),
       ),
     );
   }

@@ -55,6 +55,7 @@ class MenuItemEntity extends Equatable {
     this.nameEn,
     this.maxOrderQty,
     this.salesTerms,
+    this.dishCatalogId,
   });
 
   final String id;
@@ -83,6 +84,11 @@ class MenuItemEntity extends Equatable {
 
   /// Store's conditions shown to customers ("sold by carton only", …).
   final String? salesTerms;
+
+  /// `dishCatalog/{id}` this item was copied from. Unlike
+  /// [catalogProductId] the item is the restaurant's own; this only marks
+  /// the dish as already on the menu in the library browser.
+  final String? dishCatalogId;
 
   bool get isFromCatalog =>
       catalogProductId != null && catalogProductId!.isNotEmpty;
@@ -118,6 +124,7 @@ class MenuItemEntity extends Equatable {
       nameEn: nameEn,
       maxOrderQty: maxOrderQty,
       salesTerms: salesTerms,
+      dishCatalogId: dishCatalogId,
     );
   }
 
@@ -151,6 +158,7 @@ class MenuItemEntity extends Equatable {
     if (nameEn != null) 'nameEn': nameEn,
     'maxOrderQty': maxOrderQty,
     'salesTerms': salesTerms,
+    if (dishCatalogId != null) 'dishCatalogId': dishCatalogId,
   };
 
   static MenuItemEntity fromFirestore(Map<String, dynamic> m) {
@@ -175,6 +183,7 @@ class MenuItemEntity extends Equatable {
       nameEn: m['nameEn'] as String?,
       maxOrderQty: (m['maxOrderQty'] as num?)?.toInt(),
       salesTerms: m['salesTerms'] as String?,
+      dishCatalogId: m['dishCatalogId'] as String?,
     );
   }
 
@@ -196,5 +205,6 @@ class MenuItemEntity extends Equatable {
     nameEn,
     maxOrderQty,
     salesTerms,
+    dishCatalogId,
   ];
 }

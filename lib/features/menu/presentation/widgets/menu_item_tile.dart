@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
+import 'package:get/get.dart';
+import 'package:toukh_provider/l10n/app_strings.dart';
 
 /// Professional menu item row for the provider menu builder.
 class MenuItemTile extends StatelessWidget {
@@ -136,7 +139,7 @@ class MenuItemTile extends StatelessWidget {
                                     minWidth: 32,
                                     minHeight: 32,
                                   ),
-                                  tooltip: 'Delete',
+                                  tooltip: AppStrings.Common.delete.tr,
                                   icon: Icon(
                                     ToukhIcons.delete,
                                     size: 18,
@@ -174,8 +177,10 @@ class MenuItemTile extends StatelessWidget {
                                 if (from != null) ...[
                                   CustomText(
                                     multiSize
-                                        ? 'from EGP ${from.toStringAsFixed(0)}'
-                                        : 'EGP ${from.toStringAsFixed(0)}',
+                                        ? AppStrings.Catalog.priceFrom.trParams({
+                                            'price': egpLabel(from.toStringAsFixed(0)),
+                                          })
+                                        : egpLabel(from.toStringAsFixed(0)),
                                     style: t.titleSmall?.copyWith(
                                       fontWeight: FontWeight.w800,
                                       color: AppColors.secondColor,
@@ -186,7 +191,7 @@ class MenuItemTile extends StatelessWidget {
                                       original > from) ...[
                                     const SizedBox(width: 6),
                                     Text(
-                                      'EGP ${original.toStringAsFixed(0)}',
+                                      egpLabel(original.toStringAsFixed(0)),
                                       style: t.labelSmall?.copyWith(
                                         decoration: TextDecoration.lineThrough,
                                         color: scheme.onSurface

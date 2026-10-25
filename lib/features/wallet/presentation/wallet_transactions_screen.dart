@@ -7,6 +7,7 @@ import 'package:toukh_provider/features/wallet/cubit/wallet_cubit.dart';
 import 'package:toukh_provider/features/wallet/presentation/wallet_earning_sheet.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 class WalletTransactionsScreen extends StatefulWidget {
   const WalletTransactionsScreen({super.key});
@@ -175,7 +176,7 @@ class _TxListRow extends StatelessWidget {
           ),
         ),
         trailing: CustomText(
-          '${isCredit ? '+' : '-'}EGP ${formatWalletMoney(transaction.amountEgp)}',
+          '${isCredit ? '+' : '-'}${egpLabel(formatWalletMoney(transaction.amountEgp))}',
           style: t.labelLarge?.copyWith(
             fontWeight: FontWeight.w800,
             color: isCredit ? AppColors.success : AppColors.onSurface,

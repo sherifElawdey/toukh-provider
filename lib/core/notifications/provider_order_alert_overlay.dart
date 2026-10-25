@@ -7,6 +7,7 @@ import 'package:toukh_provider/features/home_service_requests/cubit/provider_hom
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 /// Persistent top banner for new orders while the provider app is in the foreground.
 class ProviderOrderAlertOverlay extends StatelessWidget {
@@ -75,16 +76,24 @@ class _OrderAlertBannerState extends State<_OrderAlertBanner> {
       for (final raw in items.take(3)) {
         if (raw is! Map) continue;
         final m = Map<String, dynamic>.from(raw);
-        final name = m['name']?.toString() ?? 'Item';
+        final name = m['name']?.toString() ?? AppStrings.Common.item.tr;
         final qty = m['quantity'] ?? 1;
         final total = m['lineTotalEgp'] ?? m['unitPrice'];
-        lines.add('$qty× $name — ${total ?? ''} EGP');
+        lines.add('$qty× $name — ${total == null ? '' : egpLabel(total)}');
       }
       if (items.length > 3) {
-        lines.add('+${items.length - 3} more');
+        lines.add(
+          AppStrings.Orders.alertMoreItems.trParams({
+            'count': '${items.length - 3}',
+          }),
+        );
       }
       final total = payload['totalEgp'];
-      if (total != null) lines.add('Total: $total EGP');
+      if (total != null) {
+        lines.add(
+          AppStrings.Orders.alertTotal.trParams({'amount': egpLabel(total)}),
+        );
+      }
       return lines.join('\n');
     }
     return notification.description;

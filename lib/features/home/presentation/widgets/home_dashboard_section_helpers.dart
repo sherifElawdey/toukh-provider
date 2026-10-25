@@ -4,11 +4,12 @@ import 'package:intl/intl.dart';
 import 'package:toukh_provider/domain/entities/provider_dashboard_order.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 
 String formatDashboardEgp(BuildContext context, double value) {
   final locale = Localizations.localeOf(context).toLanguageTag();
   final fmt = NumberFormat.decimalPattern(locale);
-  return '${fmt.format(value.round())} EGP';
+  return egpLabel(fmt.format(value.round()));
 }
 
 String dashboardOrderStatusLabel(ProviderOrderDashboard o) {

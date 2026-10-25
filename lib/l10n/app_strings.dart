@@ -82,6 +82,18 @@ class _Common {
   String get mediaGalleryRationaleBody => 'common.media_gallery_rationale_body';
   String get mediaCameraRationaleTitle => 'common.media_camera_rationale_title';
   String get mediaCameraRationaleBody => 'common.media_camera_rationale_body';
+  String get egpAmount => 'common.egp_amount';
+  String get egp => 'common.egp';
+  String get signInRequired => 'common.sign_in_required';
+  String get notSignedIn => 'common.not_signed_in';
+  String get profileNotFound => 'common.profile_not_found';
+  String get refresh => 'common.refresh';
+  String get item => 'common.item';
+  String get imageReadFailed => 'common.image_read_failed';
+  String get durationSeconds => 'common.duration_seconds';
+  String get durationMinutes => 'common.duration_minutes';
+  String get durationMinutesSeconds => 'common.duration_minutes_seconds';
+  String get daysShort => 'common.days_short';
 }
 
 class _Auth {
@@ -146,6 +158,7 @@ class _Auth {
   String get otpSendFailed => 'auth.otp_send_failed';
   String get otpTwilioNotConfigured => 'auth.otp_twilio_not_configured';
   String get otpTrialUnverified => 'auth.otp_trial_unverified';
+  String get phoneAlreadyVerified => 'auth.phone_already_verified';
 }
 
 class _Permissions {
@@ -381,6 +394,11 @@ class _HomeServiceRequests {
   String get visitOverdueBanner => 'home_service_requests.visit_overdue_banner';
   String get statusOnTheWay => 'home_service_requests.status_on_the_way';
   String get statusInProgress => 'home_service_requests.status_in_progress';
+  String get preferredMorning => 'home_service_requests.preferred_morning';
+  String get preferredEvening => 'home_service_requests.preferred_evening';
+  String get preferredNight => 'home_service_requests.preferred_night';
+  String get cancelFailed => 'home_service_requests.cancel_failed';
+  String get completeFailed => 'home_service_requests.complete_failed';
 }
 
 class _Notifications {
@@ -567,6 +585,10 @@ class _Orders {
   String get trackPickup => 'orders.track_pickup';
   String get trackDelivered => 'orders.track_delivered';
   String get trackAwaitingUpdate => 'orders.track_awaiting_update';
+  String get alertMoreItems => 'orders.alert_more_items';
+  String get alertTotal => 'orders.alert_total';
+  String get noReviewsYet => 'orders.no_reviews_yet';
+  String get detailTotal => 'orders.detail_total';
 }
 
 class _Accepted {
@@ -746,6 +768,13 @@ class _Registration {
   String get prepTimeRequired => 'registration.prep_time_required';
   String get deliveryModeFixed => 'registration.delivery_mode_fixed';
   String get deliveryModePerKm => 'registration.delivery_mode_per_km';
+  String get deliveryModeByRegion => 'registration.delivery_mode_by_region';
+  String get deliveryInnerCityLabel => 'registration.delivery_inner_city_label';
+  String get deliveryInnerCityNote => 'registration.delivery_inner_city_note';
+  String get deliveryOuterCityLabel => 'registration.delivery_outer_city_label';
+  String get deliveryOuterCityNote => 'registration.delivery_outer_city_note';
+  String get deliveryRegionRequired => 'registration.delivery_region_required';
+  String get reviewDeliveryByRegion => 'registration.review_delivery_by_region';
   String get reviewTitle => 'registration.review_title';
   String get reviewEditSave => 'registration.review_edit_save';
   String get reviewTapToEdit => 'registration.review_tap_to_edit';
@@ -842,6 +871,8 @@ class _Registration {
   String get menuOfferFixed => 'registration.menu_offer_fixed';
   String get menuOfferPercentLabel => 'registration.menu_offer_percent_label';
   String get menuOfferFixedLabel => 'registration.menu_offer_fixed_label';
+  String get hoursApplyToAll => 'registration.hours_apply_to_all';
+  String get hoursApplyToAllHint => 'registration.hours_apply_to_all_hint';
 }
 
 class _Pending {
@@ -880,6 +911,12 @@ class _Wallet {
   String get details => 'wallet.details';
   String get type => 'wallet.type';
   String get total => 'wallet.total';
+  String get kindServiceEarning => 'wallet.kind_service_earning';
+  String get kindOrderEarning => 'wallet.kind_order_earning';
+  String get kindPayout => 'wallet.kind_payout';
+  String get kindAdjustment => 'wallet.kind_adjustment';
+  String get kindAppFee => 'wallet.kind_app_fee';
+  String get kindCustomerServiceFee => 'wallet.kind_customer_service_fee';
 }
 
 class _Revenues {
@@ -941,6 +978,14 @@ class _Catalog {
   String get salesTerms => 'catalog.sales_terms';
   String get salesTermsHint => 'catalog.sales_terms_hint';
   String get maxPerOrderShort => 'catalog.max_per_order_short';
+  String get itemsCount => 'catalog.items_count';
+  String get priceFrom => 'catalog.price_from';
+  String get browse => 'catalog.browse';
+  String get dishesTitle => 'catalog.dishes_title';
+  String get dishesHint => 'catalog.dishes_hint';
+  String get dishesSearch => 'catalog.dishes_search';
+  String get dishesEmpty => 'catalog.dishes_empty';
+  String get dishApplied => 'catalog.dish_applied';
 }
 
 class _Drivers {

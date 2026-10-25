@@ -14,7 +14,7 @@ import 'package:toukh_provider/features/registration/presentation/register_revie
 import 'package:toukh_provider/features/registration/presentation/review_field.dart';
 import 'package:toukh_provider/features/settings/presentation/provider_profile_display.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/editable_provider_avatar.dart';
-import 'package:toukh_provider/features/settings/presentation/widgets/settings_section_title.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/profile_detail_rows.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -80,8 +80,8 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
           final draft = context.watch<RegistrationCubit>().state;
           final locale = Localizations.localeOf(context).languageCode;
 
-          final businessRows = <_ProfileRow>[
-            _ProfileRow(
+          final businessRows = <ProfileDetailRow>[
+            ProfileDetailRow(
               icon: PhosphorIconsRegular.storefront,
               labelKey: AppStrings.Registration.reviewBusinessType,
               value: draft.kind == null
@@ -91,28 +91,28 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               onTap: () => _showLockedSnack(context),
             ),
             if (categoryEntryFromDraft(draft) case final cat?)
-              _ProfileRow(
+              ProfileDetailRow(
                 icon: PhosphorIconsRegular.squaresFour,
                 labelKey: cat.$1,
                 value: cat.$2,
                 locked: true,
                 onTap: () => _showLockedSnack(context),
               ),
-            _ProfileRow(
+            ProfileDetailRow(
               icon: PhosphorIconsRegular.tag,
               labelKey: AppStrings.Registration.brandName,
               value: draft.name.trim().isEmpty ? '—' : draft.name.trim(),
               onTap: () => _openEdit(context, ReviewField.profile),
             ),
             if (draft.description.trim().isNotEmpty)
-              _ProfileRow(
+              ProfileDetailRow(
                 icon: PhosphorIconsRegular.textAlignLeft,
                 labelKey: AppStrings.Registration.description,
                 value: draft.description.trim(),
                 onTap: () => _openEdit(context, ReviewField.profile),
               ),
             if (draft.kind == ServiceType.homeService)
-              _ProfileRow(
+              ProfileDetailRow(
                 icon: PhosphorIconsRegular.listChecks,
                 labelKey: AppStrings.Registration.preServiceQuestionsTitle,
                 value: draft.preServiceQuestions.isEmpty
@@ -125,50 +125,20 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
               ),
           ];
 
-          final contactRows = <_ProfileRow>[
-            _ProfileRow(
+          final contactRows = <ProfileDetailRow>[
+            ProfileDetailRow(
               icon: PhosphorIconsRegular.phone,
               labelKey: AppStrings.Auth.phoneNumber,
               value: formatProviderPhone(profile.phone),
               locked: true,
               onTap: () => _showLockedSnack(context),
             ),
-            _ProfileRow(
+            ProfileDetailRow(
               icon: PhosphorIconsRegular.addressBook,
               labelKey: AppStrings.Settings.brandInfo,
               value: brandInfoSummary(profile.brandInfo),
               onTap: () => context.push(AppRoutes.brandInfo),
             ),
-          ];
-
-          final locationValue = () {
-            final fromProfile = profile.address?.trim() ?? '';
-            if (fromProfile.isNotEmpty) return fromProfile;
-            final fromDraft = draft.formattedAddress.trim();
-            return fromDraft.isEmpty ? '—' : fromDraft;
-          }();
-
-          final operationRows = <_ProfileRow>[
-            _ProfileRow(
-              icon: PhosphorIconsRegular.clock,
-              labelKey: AppStrings.Registration.hoursTitle,
-              value: hoursSummaryFromDraft(draft),
-              onTap: () => _openEdit(context, ReviewField.hours),
-            ),
-            if (deliverySummaryFromDraft(draft) case final delivery?)
-              _ProfileRow(
-                icon: PhosphorIconsRegular.moped,
-                labelKey: AppStrings.Registration.deliveryTitle,
-                value: delivery,
-                onTap: () => _openEdit(context, ReviewField.delivery),
-              ),
-            if (draft.avgPrepMinutes != null && draft.avgPrepMinutes! > 0)
-              _ProfileRow(
-                icon: PhosphorIconsRegular.timer,
-                labelKey: AppStrings.Registration.reviewPrepTime,
-                value: '${draft.avgPrepMinutes}',
-                onTap: () => _openEdit(context, ReviewField.delivery),
-              ),
           ];
 
           return Scaffold(
@@ -190,42 +160,25 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 children: [
                   _ProfileHeader(profile: profile),
                   SizedBox(height: AppSizes.spaceXl),
-                  _ProfileSection(
+                  ProfileDetailSection(
                     titleKey: AppStrings.Settings.businessInfo,
                     rows: businessRows,
                   ),
                   SizedBox(height: AppSizes.spaceXl),
-                  _ProfileSection(
+                  ProfileDetailSection(
                     titleKey: AppStrings.Settings.contactInfo,
                     rows: contactRows,
                   ),
                   SizedBox(height: AppSizes.spaceXl),
-                  _ProfileSection(
-                    titleKey: AppStrings.Settings.location,
-                    rows: [
-                      _ProfileRow(
-                        icon: PhosphorIconsRegular.mapPin,
-                        labelKey: AppStrings.Registration.mapTitle,
-                        value: locationValue,
-                        onTap: () => _openEdit(context, ReviewField.location),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: AppSizes.spaceXl),
-                  _ProfileSection(
-                    titleKey: AppStrings.Settings.operations,
-                    rows: operationRows,
-                  ),
-                  SizedBox(height: AppSizes.spaceXl),
-                  _ProfileSection(
+                  ProfileDetailSection(
                     titleKey: AppStrings.Settings.accountInfo,
                     rows: [
-                      _ProfileRow(
+                      ProfileDetailRow(
                         icon: PhosphorIconsRegular.calendarBlank,
                         labelKey: AppStrings.Settings.memberSince,
                         value: formatMemberSince(profile.createdAt, locale),
                       ),
-                      _ProfileRow(
+                      ProfileDetailRow(
                         icon: PhosphorIconsRegular.sealCheck,
                         labelKey: AppStrings.Settings.phoneVerified,
                         value: profile.phoneVerified
@@ -320,106 +273,6 @@ class _ProfileHeader extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ProfileSection extends StatelessWidget {
-  const _ProfileSection({required this.titleKey, required this.rows});
-
-  final String titleKey;
-  final List<_ProfileRow> rows;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SettingsSectionTitle(labelKey: titleKey),
-        SizedBox(height: AppSizes.spaceSm),
-        for (var i = 0; i < rows.length; i++) ...[
-          rows[i],
-          if (i < rows.length - 1)
-            const Divider(
-              height: 1,
-              thickness: 0.5,
-              indent: _ProfileRow.iconSize + AppSizes.spaceMd,
-            ),
-        ],
-      ],
-    );
-  }
-}
-
-class _ProfileRow extends StatelessWidget {
-  const _ProfileRow({
-    required this.icon,
-    required this.labelKey,
-    required this.value,
-    this.onTap,
-    this.locked = false,
-  });
-
-  final IconData icon;
-  final String labelKey;
-  final String value;
-  final VoidCallback? onTap;
-  final bool locked;
-
-  static const double iconSize = 40;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final content = Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceMd),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          ToukhIconWell(icon: icon, size: _ProfileRow.iconSize),
-          SizedBox(width: AppSizes.spaceMd),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-                  labelKey,
-                  style: TextStyle(
-                    fontSize: AppSizes.fontLabel,
-                    fontWeight: FontWeight.w600,
-                    color: scheme.onSurface.withValues(alpha: 0.55),
-                  ),
-                ),
-                SizedBox(height: AppSizes.spaceXs),
-                Text(
-                  value,
-                  style: TextStyle(
-                    fontSize: AppSizes.fontBody,
-                    height: 1.35,
-                    fontWeight: FontWeight.w500,
-                    color: scheme.onSurface,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (onTap != null) ...[
-            SizedBox(width: AppSizes.spaceSm),
-            Icon(
-              locked ? ToukhIcons.lock : ToukhIcons.chevronRight,
-              size: locked ? 18 : 20,
-              color: scheme.onSurface.withValues(alpha: locked ? 0.35 : 0.45),
-            ),
-          ],
-        ],
-      ),
-    );
-
-    if (onTap == null) return content;
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(onTap: onTap, child: content),
     );
   }
 }
