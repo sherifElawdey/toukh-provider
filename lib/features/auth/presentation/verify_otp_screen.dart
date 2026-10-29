@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/data/services/password_reset_service.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
@@ -76,15 +77,34 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
     final code = _otp.text.replaceAll(RegExp(r'\D'), '');
     if (code.length != 6) return;
 
-    // Password reset verifies once on [ResetPasswordScreen.resetPassword].
+    // Password reset: the server checks the code (once) and returns a reset
+    // token for the new-password screen.
     if (widget.args.flow == VerifyOtpFlow.passwordReset) {
+      final String resetToken;
+      try {
+        resetToken = await context.withAppLoading(
+          () => getIt<PasswordResetService>().verifyCode(
+            phone: widget.args.phone,
+            code: code,
+          ),
+        );
+      } catch (e) {
+        if (mounted) {
+          AppSnack.show(
+            context,
+            message: otpOrFirebaseError(e),
+            state: AppSnackState.error,
+            icon: PhosphorIconsRegular.password,
+          );
+        }
+        return;
+      }
       if (!mounted) return;
       context.pushReplacement(
         AppRoutes.resetPassword,
         extra: ResetPasswordRouteArgs(
           phone: widget.args.phone,
-          requestToken: _requestToken,
-          code: code,
+          resetToken: resetToken,
         ),
       );
       return;

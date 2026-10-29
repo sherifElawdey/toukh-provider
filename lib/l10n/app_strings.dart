@@ -30,6 +30,7 @@ abstract final class AppStrings {
   static const Revenues = _Revenues();
   static const Welcome = _Welcome();
   static const Registration = _Registration();
+  static const ShopRequests = _ShopRequests();
   static const Pending = _Pending();
   static const AppUpdate = _AppUpdate();
   static const Wallet = _Wallet();
@@ -431,6 +432,16 @@ class _Notifications {
 
 class _Orders {
   const _Orders();
+  String get waCustomerMessage => 'orders.wa_customer_message';
+  String get waActionPending => 'orders.wa_action_pending';
+  String get waActionPreparing => 'orders.wa_action_preparing';
+  String get waActionReady => 'orders.wa_action_ready';
+  String get waActionOnTheWay => 'orders.wa_action_on_the_way';
+  String get waActionDelivered => 'orders.wa_action_delivered';
+  String get waActionCancelled => 'orders.wa_action_cancelled';
+  String get waActionDefault => 'orders.wa_action_default';
+  String get callCustomer => 'orders.call_customer';
+  String get whatsAppCustomer => 'orders.whatsapp_customer';
   String get title => 'orders.title';
   String get emptyNotified => 'orders.empty_notified';
   String get waitingSinceAcceptLabel => 'orders.waiting_since_accept_label';
@@ -540,6 +551,8 @@ class _Orders {
   String get detailSubtotal => 'orders.detail_subtotal';
   String get detailItemsTotal => 'orders.detail_items_total';
   String get detailDeliveryFee => 'orders.detail_delivery_fee';
+  String get detailZoneInside => 'orders.detail_zone_inside';
+  String get detailZoneOutside => 'orders.detail_zone_outside';
   String get detailServiceFee => 'orders.detail_service_fee';
   String get detailServiceFeeInfo => 'orders.detail_service_fee_info';
   String get detailCourierFeeHint => 'orders.detail_courier_fee_hint';
@@ -698,6 +711,18 @@ class _Welcome {
 
 class _Registration {
   const _Registration();
+  String get otherShopTitle => 'registration.other_shop_title';
+  String get otherShopSubtitle => 'registration.other_shop_subtitle';
+  String get otherShopTypesHint => 'registration.other_shop_types_hint';
+  String get otherShopTypesSelected => 'registration.other_shop_types_selected';
+  String get otherShopPickCategory => 'registration.other_shop_pick_category';
+  String get otherShopReviewTitle => 'registration.other_shop_review_title';
+  String get orderModeTitle => 'registration.order_mode_title';
+  String get orderModeMenu => 'registration.order_mode_menu';
+  String get orderModeMenuHint => 'registration.order_mode_menu_hint';
+  String get orderModeCustom => 'registration.order_mode_custom';
+  String get orderModeCustomHint => 'registration.order_mode_custom_hint';
+  String get orderModeReviewTitle => 'registration.order_mode_review_title';
   String get kindTitle => 'registration.kind_title';
   String get kindSubtitle => 'registration.kind_subtitle';
   String get stageBusiness => 'registration.stage_business';
@@ -1190,4 +1215,33 @@ class _FirebaseErrors {
   String get authTooManyRequests => 'firebase.errors.auth_too_many_requests';
   String get authRequiresRecentLogin => 'firebase.errors.auth_requires_recent_login';
   String get indexBuilding => 'firebase.errors.index_building';
+}
+
+class _ShopRequests {
+  const _ShopRequests();
+  String get title => 'shop_requests.title';
+  String get tabNew => 'shop_requests.tab_new';
+  String get tabQuoted => 'shop_requests.tab_quoted';
+  String get tabClosed => 'shop_requests.tab_closed';
+  String get empty => 'shop_requests.empty';
+  String get sendPrice => 'shop_requests.send_price';
+  String get changePrice => 'shop_requests.change_price';
+  String get decline => 'shop_requests.decline';
+  String get priceLabel => 'shop_requests.price_label';
+  String get noteLabel => 'shop_requests.note_label';
+  String get declineTitle => 'shop_requests.decline_title';
+  String get declineReason => 'shop_requests.decline_reason';
+  String get invalidPrice => 'shop_requests.invalid_price';
+  String get quoteSent => 'shop_requests.quote_sent';
+  String get declined => 'shop_requests.declined';
+  String get statusPending => 'shop_requests.status_pending';
+  String get statusQuoted => 'shop_requests.status_quoted';
+  String get statusDeclined => 'shop_requests.status_declined';
+  String get statusAccepted => 'shop_requests.status_accepted';
+  String get statusCancelled => 'shop_requests.status_cancelled';
+  String get yourNote => 'shop_requests.your_note';
+  String get photoOnly => 'shop_requests.photo_only';
+  String get dashboardTitle => 'shop_requests.dashboard_title';
+  String get dashboardSubtitle => 'shop_requests.dashboard_subtitle';
+  String get viewOrder => 'shop_requests.view_order';
 }

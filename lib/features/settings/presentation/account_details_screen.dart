@@ -98,6 +98,26 @@ class _AccountDetailsScreenState extends State<AccountDetailsScreen> {
                 locked: true,
                 onTap: () => _showLockedSnack(context),
               ),
+            if (draft.kind == ServiceType.otherShops) ...[
+              ProfileDetailRow(
+                icon: PhosphorIconsRegular.tag,
+                labelKey: AppStrings.Registration.otherShopReviewTitle,
+                value: otherShopChoiceLabel(
+                  draft.otherShopCategoryId,
+                  draft.otherShopTypeIds,
+                  locale,
+                ),
+                onTap: () => _openEdit(context, ReviewField.otherShop),
+              ),
+              ProfileDetailRow(
+                icon: PhosphorIconsRegular.chatCircleText,
+                labelKey: AppStrings.Registration.orderModeReviewTitle,
+                value: draft.orderMode == ProviderOrderMode.customRequests
+                    ? AppStrings.Registration.orderModeCustom.tr
+                    : AppStrings.Registration.orderModeMenu.tr,
+                onTap: () => _openEdit(context, ReviewField.otherShop),
+              ),
+            ],
             ProfileDetailRow(
               icon: PhosphorIconsRegular.tag,
               labelKey: AppStrings.Registration.brandName,

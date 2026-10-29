@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:get_it/get_it.dart';
+import 'package:toukh_provider/data/services/password_reset_service.dart';
 import 'package:toukh_provider/core/settings/driver_search_timeout_cubit.dart';
 import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
@@ -183,6 +184,9 @@ Future<void> configureDependencies() async {
       getIt<FirebaseFirestore>(),
       getIt<FirebaseFunctions>(),
     ),
+  );
+  getIt.registerLazySingleton<PasswordResetService>(
+    () => PasswordResetService(getIt<FirebaseFunctions>()),
   );
   getIt.registerLazySingleton<OtpRepository>(() {
     final twilioConfig = twilioVerifyConfigFromEnvironment();

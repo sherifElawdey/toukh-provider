@@ -1,5 +1,6 @@
 import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/domain/entities/pre_service_question.dart';
+import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/provider_profile.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -31,6 +32,9 @@ abstract final class ProviderProfileDraftMapper {
       shopCategory: profile.shopCategory,
       serviceCategoryId: profile.serviceCategoryId,
       serviceCategoryTitle: profile.serviceCategoryTitle,
+      otherShopCategoryId: profile.otherShopCategoryId,
+      otherShopTypeIds: profile.otherShopTypeIds,
+      orderMode: profile.serviceType == ServiceType.otherShops ? profile.orderMode : null,
       phoneNational: phoneNational,
       password: profile.password,
       name: profile.name,
@@ -94,6 +98,13 @@ abstract final class ProviderProfileDraftMapper {
         return base.copyWith(
           preServiceQuestions:
               PreServiceQuestion.normalize(draft.preServiceQuestions),
+          updatedAt: now,
+        );
+      case ReviewField.otherShop:
+        return base.copyWith(
+          otherShopCategoryId: draft.otherShopCategoryId,
+          otherShopTypeIds: draft.otherShopTypeIds,
+          orderMode: draft.orderMode,
           updatedAt: now,
         );
       case ReviewField.kind:

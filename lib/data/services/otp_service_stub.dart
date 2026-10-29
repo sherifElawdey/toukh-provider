@@ -12,8 +12,7 @@ import 'package:toukh_ui/toukh_ui.dart';
 ///     `token` matches [AppConstants.mockOtpPhone] (national or Egyptian
 ///     E.164 digits) and `code` matches [AppConstants.mockOtpCode]. Anything
 ///     else throws.
-///   * `resetPassword` delegates to `verifyOtp` and remains a no-op on success
-///     (Firebase Auth password update would happen here in production).
+///   * Password reset is server-side (`PasswordResetService`), not here.
 class OtpServiceStub implements OtpRepository {
   final Map<String, String> _tokenToPhone = {};
 
@@ -55,20 +54,4 @@ class OtpServiceStub implements OtpRepository {
     }
   }
 
-  @override
-  Future<void> resetPassword({
-    required String phone,
-    required String requestToken,
-    required String code,
-    required String newPassword,
-  }) async {
-    debugPrint(
-      '[OtpServiceStub] resetPassword(phone=$phone, code=$code, password=<hidden>)',
-    );
-    await verifyOtp(requestToken: requestToken, code: code);
-    if (newPassword.length < 6) {
-      throw const FormatException('Password is too short.');
-    }
-    await Future<void>.delayed(const Duration(milliseconds: 400));
-  }
 }

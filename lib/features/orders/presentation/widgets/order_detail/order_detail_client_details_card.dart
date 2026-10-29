@@ -5,6 +5,8 @@ import 'package:toukh_provider/features/orders/presentation/widgets/order_detail
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:toukh_provider/di/service_locator.dart';
+import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 
 /// Shared client contact + address payload for order detail screens.
 class ClientDetailsViewData {
@@ -19,6 +21,7 @@ class ClientDetailsViewData {
     this.canView = true,
     this.hiddenMessage,
     this.nameOnly = false,
+    this.whatsAppMessage,
   });
 
   final String name;
@@ -31,6 +34,9 @@ class ClientDetailsViewData {
   final bool canView;
   final String? hiddenMessage;
   final bool nameOnly;
+
+  /// Prefilled WhatsApp text (order status + what happens next).
+  final String Function()? whatsAppMessage;
 
   bool get hasCoords => lat != 0 || lng != 0;
 
@@ -54,8 +60,39 @@ class ClientDetailsViewData {
       lng: address.lng,
       canView: row.canViewCustomerContact,
       hiddenMessage: AppStrings.Orders.pharmacyCustomerContactHidden.tr,
+      whatsAppMessage: () => customerWhatsAppMessage(row),
     );
   }
+}
+
+/// "Hello …, this is [store] about your order #…": status + next step.
+String customerWhatsAppMessage(ProviderMasterOrderRow row) {
+  final auth = getIt<AuthCubit>().state;
+  final store = row.slice.providerName?.trim().isNotEmpty == true
+      ? row.slice.providerName!.trim()
+      : (auth is Authenticated ? auth.profile.name : '');
+  final name = row.slice.customerName?.trim().isNotEmpty == true
+      ? row.slice.customerName!.trim()
+      : (row.master.customerName?.trim() ?? '');
+  final action = switch (row.slice.statusWire) {
+    'pending' || 'placed' => AppStrings.Orders.waActionPending,
+    'accepted' || 'preparing' => AppStrings.Orders.waActionPreparing,
+    'ready_for_pickup' => AppStrings.Orders.waActionReady,
+    'picked_up' || 'out_for_delivery' => AppStrings.Orders.waActionOnTheWay,
+    'delivered' || 'completed' => AppStrings.Orders.waActionDelivered,
+    'cancelled' => AppStrings.Orders.waActionCancelled,
+    _ => AppStrings.Orders.waActionDefault,
+  };
+  final statusKey = row.isAwaitingStoreDriverAccept
+      ? AppStrings.Orders.awaitingDriverApproval
+      : ToukhStatusKeys.provider(row.slice.statusWire);
+  return ToukhContactLinks.arabic(AppStrings.Orders.waCustomerMessage, {
+    'name': name,
+    'store': store,
+    'order': ToukhContactLinks.orderRef(row.master.id),
+    'status': ToukhContactLinks.arabic(statusKey),
+    'action': ToukhContactLinks.arabic(action),
+  });
 }
 
 /// Shared client details card used by all provider order-detail screens.
@@ -195,7 +232,7 @@ class _ClientDetailsBody extends StatelessWidget {
                         const SizedBox(width: AppSizes.spaceSm),
                         Expanded(
                           child: CustomText(
-                            phone,
+                            ToukhContactLinks.localPhone(phone),
                             style: Theme.of(context)
                                 .textTheme
                                 .bodyMedium
@@ -211,6 +248,13 @@ class _ClientDetailsBody extends StatelessWidget {
                 ],
               ),
             ),
+            if (phone != null && phone.isNotEmpty)
+              ToukhContactActions(
+                phone: phone,
+                whatsAppMessage: data.whatsAppMessage,
+                callTooltip: AppStrings.Orders.callCustomer.tr,
+                whatsAppTooltip: AppStrings.Orders.whatsAppCustomer.tr,
+              ),
           ],
         ),
         const SizedBox(height: AppSizes.spaceMd),

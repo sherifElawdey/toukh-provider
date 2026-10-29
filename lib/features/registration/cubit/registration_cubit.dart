@@ -35,6 +35,9 @@ class RegistrationDraft extends Equatable {
     this.shopCategory,
     this.serviceCategoryId,
     this.serviceCategoryTitle,
+    this.otherShopCategoryId,
+    this.otherShopTypeIds = const [],
+    this.orderMode,
     this.phoneNational = '',
     this.password = '',
     this.idFront,
@@ -58,6 +61,12 @@ class RegistrationDraft extends Equatable {
   final ShopCategory? shopCategory;
   final String? serviceCategoryId;
   final String? serviceCategoryTitle;
+
+  /// Other shops: main category, its shop types, and how customers order
+  /// (null until chosen).
+  final String? otherShopCategoryId;
+  final List<String> otherShopTypeIds;
+  final ProviderOrderMode? orderMode;
 
   final String phoneNational;
   final String password;
@@ -88,6 +97,10 @@ class RegistrationDraft extends Equatable {
     String? serviceCategoryId,
     String? serviceCategoryTitle,
     bool clearServiceCategoryId = false,
+    String? otherShopCategoryId,
+    List<String>? otherShopTypeIds,
+    ProviderOrderMode? orderMode,
+    bool clearOtherShop = false,
     String? phoneNational,
     String? password,
     PickedMedia? idFront,
@@ -116,6 +129,12 @@ class RegistrationDraft extends Equatable {
           ? null
           : (serviceCategoryId ?? this.serviceCategoryId),
       serviceCategoryTitle: serviceCategoryTitle ?? this.serviceCategoryTitle,
+      otherShopCategoryId: clearOtherShop
+          ? null
+          : (otherShopCategoryId ?? this.otherShopCategoryId),
+      otherShopTypeIds:
+          clearOtherShop ? const [] : (otherShopTypeIds ?? this.otherShopTypeIds),
+      orderMode: clearOtherShop ? null : (orderMode ?? this.orderMode),
       phoneNational: phoneNational ?? this.phoneNational,
       password: password ?? this.password,
       idFront: idFront ?? this.idFront,
@@ -145,8 +164,15 @@ class RegistrationDraft extends Equatable {
     if (k == ServiceType.homeService) {
       return serviceCategoryId != null && serviceCategoryId!.isNotEmpty;
     }
+    if (k == ServiceType.otherShops) return hasOtherShopChoice;
     return true;
   }
+
+  bool get hasOtherShopChoice =>
+      (otherShopCategoryId?.isNotEmpty ?? false) &&
+      otherShopTypeIds.isNotEmpty &&
+      orderMode != null;
+
 
   RegistrationSubmitData? toSubmitData() {
     final k = kind;
@@ -178,6 +204,9 @@ class RegistrationDraft extends Equatable {
       shopCategory: shopCategoryForSubmit(k, shopCategory),
       serviceCategoryId: k == ServiceType.homeService ? serviceCategoryId : null,
       serviceCategoryTitle: k == ServiceType.homeService ? serviceCategoryTitle : null,
+      otherShopCategoryId: k == ServiceType.otherShops ? otherShopCategoryId : null,
+      otherShopTypeIds: k == ServiceType.otherShops ? otherShopTypeIds : const [],
+      orderMode: k == ServiceType.otherShops ? orderMode : null,
       idFront: idFront!,
       idBack: idBack!,
       brandImage: brandImage!,
@@ -204,6 +233,9 @@ class RegistrationDraft extends Equatable {
         shopCategory,
         serviceCategoryId,
         serviceCategoryTitle,
+        otherShopCategoryId,
+        otherShopTypeIds,
+        orderMode,
         phoneNational,
         password,
         idFront?.path,
@@ -282,6 +314,17 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
         ));
     }
   }
+
+  void updateOtherShop(
+    String? categoryId,
+    List<String> typeIds,
+    ProviderOrderMode? orderMode,
+  ) =>
+      emit(state.copyWith(clearOtherShop: true).copyWith(
+        otherShopCategoryId: categoryId,
+        otherShopTypeIds: List.unmodifiable(typeIds),
+        orderMode: orderMode,
+      ));
 
   void setShopCategory(ShopCategory c) => emit(state.copyWith(
         shopCategory: c,

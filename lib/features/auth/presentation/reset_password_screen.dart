@@ -1,23 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/data/services/password_reset_service.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/twilio/twilio_otp_errors.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/di/service_locator.dart';
-import 'package:toukh_provider/domain/repositories/otp_repository.dart';
 import 'package:toukh_provider/features/auth/presentation/widgets/auth_brand_header.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 
 final class ResetPasswordRouteArgs {
   const ResetPasswordRouteArgs({
     required this.phone,
-    required this.requestToken,
-    required this.code,
+    required this.resetToken,
   });
 
   final String phone;
-  final String requestToken;
-  final String code;
+
+  /// From `verifyPasswordResetCode` (the code was checked by the server).
+  final String resetToken;
 }
 
 class ResetPasswordScreen extends StatefulWidget {
@@ -33,7 +33,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
   final _password = TextEditingController();
   final _confirm = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  final _otpRepository = getIt<OtpRepository>();
+  final _passwordReset = getIt<PasswordResetService>();
 
   @override
   void dispose() {
@@ -46,10 +46,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     if (!_formKey.currentState!.validate()) return;
     try {
       await context.withAppLoading(
-        () => _otpRepository.resetPassword(
-          phone: widget.args.phone,
-          requestToken: widget.args.requestToken,
-          code: widget.args.code,
+        () => _passwordReset.completeReset(
+          resetToken: widget.args.resetToken,
           newPassword: _password.text,
         ),
       );

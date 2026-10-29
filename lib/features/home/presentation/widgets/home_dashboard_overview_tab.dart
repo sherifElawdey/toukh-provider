@@ -16,6 +16,9 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
 import 'package:toukh_provider/domain/repositories/provider_wallet_repository.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
+import 'package:toukh_provider/features/shop_requests/presentation/shop_requests_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -207,7 +210,31 @@ class HomeDashboardOverviewTab extends StatelessWidget {
                             (m.sliceFor(uid)?.isIncoming ?? false),
                       )
                       .length;
-            return HomeDashboardPendingOrdersBanner(pendingCount: pendingCount);
+            final banner =
+                HomeDashboardPendingOrdersBanner(pendingCount: pendingCount);
+            final profile = auth is Authenticated ? auth.profile : null;
+            if (profile == null ||
+                profile.serviceType != ServiceType.otherShops ||
+                profile.orderMode != ProviderOrderMode.customRequests) {
+              return banner;
+            }
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                StreamBuilder<List<ShopRequest>>(
+                  stream: watchProviderShopRequests(profile.uid),
+                  builder: (context, snap) => HomeDashboardPendingOrdersBanner(
+                    pendingCount: (snap.data ?? const [])
+                        .where((r) => r.status == ShopRequestStatus.pending)
+                        .length,
+                    titleKey: AppStrings.ShopRequests.dashboardTitle,
+                    subtitleKey: AppStrings.ShopRequests.dashboardSubtitle,
+                    onTap: () => context.push(AppRoutes.shopRequests),
+                  ),
+                ),
+                banner,
+              ],
+            );
           },
         );
       },

@@ -51,6 +51,9 @@ class AuthWebCentered extends StatelessWidget {
     if (!ProviderWebLayout.isWide(context)) return child;
     return Align(
       alignment: Alignment.topCenter,
+      // Hug the child's height: under loose constraints (e.g. a Scaffold's
+      // bottomNavigationBar) Align would otherwise fill the whole screen.
+      heightFactor: 1,
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: child,

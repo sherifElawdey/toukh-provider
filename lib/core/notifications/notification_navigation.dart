@@ -42,7 +42,8 @@ Future<void> handleProviderNotificationTap(ToukhNotification notification) async
   final router = NotificationRouterHolder.router;
   if (router == null) return;
 
-  final isHsrDetail = route.startsWith('/home-service-request/');
+  final isHsrDetail = route.startsWith('/home-service-request/') ||
+      route == ToukhNotificationRoutes.providerShopRequests;
   final isOrderDetail = route.startsWith('${AppRoutes.orders}/') &&
       route != AppRoutes.orders;
 

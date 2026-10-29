@@ -4,6 +4,7 @@ import 'package:toukh_provider/domain/entities/pre_service_question.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/domain/entities/working_hours.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 /// Full payload collected before account creation (review step).
 class RegistrationSubmitData {
@@ -14,6 +15,9 @@ class RegistrationSubmitData {
     this.shopCategory,
     this.serviceCategoryId,
     this.serviceCategoryTitle,
+    this.otherShopCategoryId,
+    this.otherShopTypeIds = const [],
+    this.orderMode,
     required this.idFront,
     required this.idBack,
     required this.brandImage,
@@ -37,6 +41,9 @@ class RegistrationSubmitData {
   final ShopCategory? shopCategory;
   final String? serviceCategoryId;
   final String? serviceCategoryTitle;
+  final String? otherShopCategoryId;
+  final List<String> otherShopTypeIds;
+  final ProviderOrderMode? orderMode;
 
   final PickedMedia idFront;
   final PickedMedia idBack;

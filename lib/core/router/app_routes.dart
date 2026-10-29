@@ -51,6 +51,7 @@ abstract final class AppRoutes {
   static const menu = '/menu';
   static const settings = '/settings';
   static const notifications = '/notifications';
+  static const shopRequests = '/shop-requests';
 
   static const legalTerms = '/legal/terms';
   static const legalPrivacy = '/legal/privacy';

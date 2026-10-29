@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/active_order_elapsed_timer.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
@@ -134,12 +135,24 @@ class ProviderOrderCard extends StatelessWidget {
                 ),
               ] else ...[
                 const SizedBox(height: 6),
-                CustomText(
-                  formatDashboardEgp(context, _slice.totalEgp),
-                  style: TextStyle(
-                    color: scheme.onSurface.withValues(alpha: 0.62),
-                    fontSize: AppSizes.fontLabel,
-                  ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: CustomText(
+                        formatDashboardEgp(context, _slice.totalEgp),
+                        style: TextStyle(
+                          color: scheme.onSurface.withValues(alpha: 0.62),
+                          fontSize: AppSizes.fontLabel,
+                        ),
+                      ),
+                    ),
+                    // Live time since the store accepted (out-for-delivery
+                    // orders show time since dispatch below).
+                    if (tab == ProviderOrdersTab.inProgress)
+                      ActiveOrderElapsedTimer(
+                        anchor: _slice.acceptedAt ?? _slice.createdAt,
+                      ),
+                  ],
                 ),
               ],
               if (_slice.showCourierLateWarning) ...[
@@ -356,8 +369,6 @@ class _OutgoingMeta extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final slice = row.slice;
-    final elapsed = _formatElapsed(slice.dispatchedAt);
-
     if (slice.isStoreDelivery) {
       return Row(
         children: [
@@ -376,13 +387,10 @@ class _OutgoingMeta extends StatelessWidget {
               ),
             ),
           ),
-          if (elapsed != null)
-            CustomText(
-              '${AppStrings.Orders.elapsedSinceDispatch.tr} $elapsed',
-              style: TextStyle(
-                fontSize: 12,
-                color: scheme.onSurface.withValues(alpha: 0.55),
-              ),
+          if (slice.dispatchedAt != null)
+            ActiveOrderElapsedTimer(
+              anchor: slice.dispatchedAt,
+              labelKey: AppStrings.Orders.elapsedSinceDispatch,
             ),
         ],
       );
@@ -402,29 +410,18 @@ class _OutgoingMeta extends StatelessWidget {
           fallbackName: AppStrings.Orders.courierAssignedLabel.tr,
           showCallButton: true,
         ),
-        if (elapsed != null) ...[
+        if (slice.dispatchedAt != null) ...[
           const SizedBox(height: 4),
           Align(
             alignment: AlignmentDirectional.centerEnd,
-            child: CustomText(
-              '${AppStrings.Orders.elapsedSinceDispatch.tr} $elapsed',
-              style: TextStyle(
-                fontSize: 12,
-                color: scheme.onSurface.withValues(alpha: 0.55),
-              ),
+            child: ActiveOrderElapsedTimer(
+              anchor: slice.dispatchedAt,
+              labelKey: AppStrings.Orders.elapsedSinceDispatch,
             ),
           ),
         ],
       ],
     );
-  }
-
-  String? _formatElapsed(DateTime? from) {
-    if (from == null) return null;
-    final d = DateTime.now().difference(from);
-    if (d.inHours > 0) return '${d.inHours}h ${d.inMinutes % 60}m';
-    if (d.inMinutes > 0) return '${d.inMinutes}m';
-    return '${d.inSeconds}s';
   }
 }
 

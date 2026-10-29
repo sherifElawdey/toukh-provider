@@ -20,7 +20,7 @@ Future<void> contactHomeServiceCustomer(
     return;
   }
 
-  final uri = Uri(scheme: 'tel', path: phone);
+  final uri = Uri(scheme: 'tel', path: ToukhContactLinks.localPhone(phone));
   if (!await canLaunchUrl(uri)) {
     if (!context.mounted) return;
     AppSnack.show(

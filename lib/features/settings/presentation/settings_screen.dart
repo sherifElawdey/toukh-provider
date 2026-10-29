@@ -174,6 +174,21 @@ class SettingsScreen extends StatelessWidget {
                   onTap: () => context.push(AppRoutes.reviews),
                 ),
                 if (auth is Authenticated &&
+                    auth.profile.serviceType == ServiceType.otherShops &&
+                    auth.profile.orderMode == ProviderOrderMode.customRequests)
+                  SettingsTile(
+                    icon: PhosphorIconsRegular.chatCircleText,
+                    titleKey: AppStrings.ShopRequests.title,
+                    trailing: Icon(
+                      ToukhIcons.chevronRight,
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurface
+                          .withValues(alpha: 0.45),
+                    ),
+                    onTap: () => context.push(AppRoutes.shopRequests),
+                  ),
+                if (auth is Authenticated &&
                     auth.profile.serviceType == ServiceType.homeService)
                   SettingsTile(
                     icon: ToukhIcons.gallery,

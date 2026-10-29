@@ -9,4 +9,7 @@ enum ReviewField {
   delivery,
   cuisineTags,
   preServiceQuestions,
+
+  /// Other shops: category, shop types and order mode.
+  otherShop,
 }

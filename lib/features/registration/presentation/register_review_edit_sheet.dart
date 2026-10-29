@@ -10,6 +10,7 @@ import 'package:toukh_provider/features/registration/presentation/widgets/review
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_hours_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_kind_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_location_body.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_other_shop_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_phone_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_pre_service_questions_body.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/review_edit/review_edit_profile_body.dart';
@@ -64,6 +65,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
   final _cuisineKey = GlobalKey<ReviewEditCuisineBodyState>();
   final _preServiceQuestionsKey =
       GlobalKey<ReviewEditPreServiceQuestionsBodyState>();
+  final _otherShopKey = GlobalKey<ReviewEditOtherShopBodyState>();
 
   late String _locationAddress;
   bool _locationInServiceArea = true;
@@ -99,6 +101,8 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         return AppStrings.Registration.cuisineTitle;
       case ReviewField.preServiceQuestions:
         return AppStrings.Registration.preServiceQuestionsTitle;
+      case ReviewField.otherShop:
+        return AppStrings.Registration.otherShopReviewTitle;
     }
   }
 
@@ -111,6 +115,7 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
       case ReviewField.cuisineTags:
       case ReviewField.category:
       case ReviewField.preServiceQuestions:
+      case ReviewField.otherShop:
         return true;
       case ReviewField.profile:
       case ReviewField.phone:
@@ -148,6 +153,8 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         return _cuisineKey.currentState?.apply() ?? false;
       case ReviewField.preServiceQuestions:
         return _preServiceQuestionsKey.currentState?.save() ?? false;
+      case ReviewField.otherShop:
+        return _otherShopKey.currentState?.save() ?? false;
     }
   }
 
@@ -193,6 +200,8 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
         return ReviewEditCuisineBody(key: _cuisineKey);
       case ReviewField.preServiceQuestions:
         return ReviewEditPreServiceQuestionsBody(key: _preServiceQuestionsKey);
+      case ReviewField.otherShop:
+        return ReviewEditOtherShopBody(key: _otherShopKey);
     }
   }
 

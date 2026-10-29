@@ -270,6 +270,34 @@ class _RegisterReviewScreenState extends State<RegisterReviewScreen> {
       ));
     }
 
+    if (draft.kind == ServiceType.otherShops) {
+      final lang = Get.locale?.languageCode ?? 'ar';
+      final label = otherShopChoiceLabel(
+        draft.otherShopCategoryId,
+        draft.otherShopTypeIds,
+        lang,
+      );
+      rows.addAll([
+        (
+          field: ReviewField.otherShop,
+          icon: PhosphorIconsRegular.tag,
+          titleKey: AppStrings.Registration.otherShopReviewTitle,
+          value: label.isEmpty ? '—' : label,
+        ),
+        (
+          field: ReviewField.otherShop,
+          icon: PhosphorIconsRegular.chatCircleText,
+          titleKey: AppStrings.Registration.orderModeReviewTitle,
+          value: switch (draft.orderMode) {
+            ProviderOrderMode.menu => AppStrings.Registration.orderModeMenu.tr,
+            ProviderOrderMode.customRequests =>
+              AppStrings.Registration.orderModeCustom.tr,
+            null => '—',
+          },
+        ),
+      ]);
+    }
+
     rows.add((
       field: ReviewField.profile,
       icon: PhosphorIconsRegular.identificationBadge,

@@ -11,11 +11,15 @@ class HomeDashboardPendingOrdersBanner extends StatelessWidget {
     required this.pendingCount,
     this.titleKey,
     this.subtitleKey,
+    this.onTap,
   });
 
   final int pendingCount;
   final String? titleKey;
   final String? subtitleKey;
+
+  /// Defaults to the orders tab.
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +38,7 @@ class HomeDashboardPendingOrdersBanner extends StatelessWidget {
         ),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
-          onTap: () => context.go(AppRoutes.orders),
+          onTap: onTap ?? () => context.go(AppRoutes.orders),
           child: Padding(
             padding: const EdgeInsets.all(AppSizes.spaceBase),
             child: Row(

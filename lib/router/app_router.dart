@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
+import 'package:toukh_provider/features/shop_requests/presentation/shop_requests_screen.dart';
 import 'package:toukh_provider/core/constants/legal_urls.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/router/go_router_auth_refresh.dart';
@@ -314,6 +315,16 @@ GoRouter createAppRouter({
         path: AppRoutes.notifications,
         parentNavigatorKey: providerRootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.shopRequests,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) {
+          final auth = getIt<AuthCubit>().state;
+          return ShopRequestsScreen(
+            providerId: auth is Authenticated ? auth.user.uid : '',
+          );
+        },
       ),
       GoRoute(
         path: '/home-service-request/:requestId',

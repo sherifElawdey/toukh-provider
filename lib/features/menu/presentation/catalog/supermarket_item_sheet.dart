@@ -262,7 +262,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
                         child: TextField(
                           controller: o.count,
                           keyboardType: TextInputType.number,
-                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          inputFormatters: [const EnglishDigitsInputFormatter(), FilteringTextInputFormatter.digitsOnly],
                           onChanged: (_) => _clearError(),
                           decoration: _decoration(AppStrings.Catalog.packCount),
                         ),
@@ -274,7 +274,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
                       child: TextField(
                         controller: o.price,
                         keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
+                        inputFormatters: [const EnglishDigitsInputFormatter(), FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]'))],
                         onChanged: (_) => _clearError(),
                         decoration: _decoration(AppStrings.Catalog.priceLabel),
                       ),
@@ -313,7 +313,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
             TextField(
               controller: _maxQty,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [const EnglishDigitsInputFormatter(), FilteringTextInputFormatter.digitsOnly],
               onChanged: (_) => _clearError(),
               decoration: _decoration(AppStrings.Catalog.maxQty, helperKey: AppStrings.Catalog.maxQtyHint),
             ),

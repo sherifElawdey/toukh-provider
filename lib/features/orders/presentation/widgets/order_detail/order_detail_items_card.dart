@@ -75,6 +75,19 @@ class OrderDetailItemsCard extends StatelessWidget {
                   color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
                 ),
           ),
+          if (row.master.route?.zone case final zone?)
+            CustomText(
+              (zone.leftZone
+                      ? AppStrings.Orders.detailZoneOutside
+                      : AppStrings.Orders.detailZoneInside)
+                  .trParams({
+                'zone': zone.zoneName,
+                'km': zone.outsideKm.toStringAsFixed(1),
+              }),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.55),
+                  ),
+            ),
         ],
       ],
     );

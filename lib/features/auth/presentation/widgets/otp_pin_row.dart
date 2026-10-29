@@ -41,7 +41,7 @@ class OtpPinRow extends StatelessWidget {
                 counterText: '',
                 contentPadding: EdgeInsets.zero,
               ),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [const EnglishDigitsInputFormatter(), FilteringTextInputFormatter.digitsOnly],
               onChanged: onChanged,
               autofillHints: const [AutofillHints.oneTimeCode],
             ),

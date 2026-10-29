@@ -7,6 +7,7 @@ import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/home_services_category_body.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/other_shop_picker.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -46,6 +47,25 @@ class RegisterCategoryScreen extends StatelessWidget {
     final draft = cubit.state;
     final kind = draft.kind;
     final scheme = Theme.of(context).colorScheme;
+
+    if (kind == ServiceType.otherShops) {
+      return RegistrationStepScaffold(
+        stage: RegistrationStage.business,
+        icon: PhosphorIconsDuotone.storefront,
+        title: AppStrings.Registration.otherShopTitle,
+        subtitle: AppStrings.Registration.otherShopSubtitle,
+        nextEnabled: draft.hasOtherShopChoice,
+        onNext: () => context.push(AppRoutes.registerCredentials),
+        children: [
+          OtherShopPicker(
+            categoryId: draft.otherShopCategoryId,
+            typeIds: draft.otherShopTypeIds,
+            orderMode: draft.orderMode,
+            onChanged: cubit.updateOtherShop,
+          ),
+        ],
+      );
+    }
 
     if (kind != ServiceType.restaurant && kind != ServiceType.homeService) {
       WidgetsBinding.instance.addPostFrameCallback((_) {

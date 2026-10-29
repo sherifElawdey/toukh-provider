@@ -22,6 +22,9 @@ class ProviderProfile extends Equatable {
     this.shopCategory,
     this.serviceCategoryId,
     this.serviceCategoryTitle,
+    this.otherShopCategoryId,
+    this.otherShopTypeIds = const [],
+    this.orderMode = ProviderOrderMode.menu,
     this.slug,
     required this.name,
     this.description,
@@ -66,6 +69,13 @@ class ProviderProfile extends Equatable {
   final ShopCategory? shopCategory;
   final String? serviceCategoryId;
   final String? serviceCategoryTitle;
+
+  /// Other shops only: main category and shop types (`shopCategories`).
+  final String? otherShopCategoryId;
+  final List<String> otherShopTypeIds;
+
+  /// Other shops only: menu, or custom requests answered with a price.
+  final ProviderOrderMode orderMode;
 
   /// Public website slug (`/{locale}/{kind}/{slug}`); set by the landing site.
   final String? slug;
@@ -129,6 +139,9 @@ class ProviderProfile extends Equatable {
     ShopCategory? shopCategory,
     String? serviceCategoryId,
     String? serviceCategoryTitle,
+    String? otherShopCategoryId,
+    List<String>? otherShopTypeIds,
+    ProviderOrderMode? orderMode,
     String? slug,
     String? name,
     String? description,
@@ -171,6 +184,9 @@ class ProviderProfile extends Equatable {
       shopCategory: shopCategory ?? this.shopCategory,
       serviceCategoryId: serviceCategoryId ?? this.serviceCategoryId,
       serviceCategoryTitle: serviceCategoryTitle ?? this.serviceCategoryTitle,
+      otherShopCategoryId: otherShopCategoryId ?? this.otherShopCategoryId,
+      otherShopTypeIds: otherShopTypeIds ?? this.otherShopTypeIds,
+      orderMode: orderMode ?? this.orderMode,
       slug: slug ?? this.slug,
       name: name ?? this.name,
       description: description ?? this.description,
@@ -221,6 +237,11 @@ class ProviderProfile extends Equatable {
       if (serviceCategoryId != null) 'serviceCategoryId': serviceCategoryId,
       if (serviceCategoryTitle != null)
         'serviceCategoryTitle': serviceCategoryTitle,
+      if (serviceType == ServiceType.otherShops) ...{
+        if (otherShopCategoryId != null) 'otherShopCategoryId': otherShopCategoryId,
+        'otherShopTypeIds': otherShopTypeIds,
+        'orderMode': orderMode.wire,
+      },
       'name': name,
       if (description != null) 'description': description,
       if (brandImageUrl != null) 'brandImageUrl': brandImageUrl,
@@ -302,6 +323,12 @@ class ProviderProfile extends Equatable {
       shopCategory: ShopCategory.tryParse(data['shopCategory'] as String?),
       serviceCategoryId: data['serviceCategoryId'] as String?,
       serviceCategoryTitle: data['serviceCategoryTitle'] as String?,
+      otherShopCategoryId: data['otherShopCategoryId'] as String?,
+      otherShopTypeIds: [
+        for (final t in (data['otherShopTypeIds'] as List<dynamic>? ?? const []))
+          if ('$t'.trim().isNotEmpty) '$t',
+      ],
+      orderMode: ProviderOrderMode.fromWire(data['orderMode'] as String?),
       slug: (data['slug'] as String?)?.trim().isNotEmpty == true
           ? (data['slug'] as String).trim()
           : null,
@@ -397,6 +424,9 @@ class ProviderProfile extends Equatable {
     shopCategory,
     serviceCategoryId,
     serviceCategoryTitle,
+    otherShopCategoryId,
+    otherShopTypeIds,
+    orderMode,
     slug,
     name,
     description,

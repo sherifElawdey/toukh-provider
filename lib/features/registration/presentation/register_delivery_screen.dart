@@ -221,6 +221,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
             child: TextField(
               controller: _prep,
               keyboardType: TextInputType.number,
+              inputFormatters: const [EnglishDigitsInputFormatter()],
               decoration: InputDecoration(
                 labelText: AppStrings.Registration.reviewPrepTime.tr,
               ),

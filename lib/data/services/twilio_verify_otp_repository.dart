@@ -37,17 +37,4 @@ class TwilioVerifyOtpRepository implements OtpRepository {
     _tokenToE164.remove(requestToken);
   }
 
-  @override
-  Future<void> resetPassword({
-    required String phone,
-    required String requestToken,
-    required String code,
-    required String newPassword,
-  }) async {
-    await verifyOtp(requestToken: requestToken, code: code);
-    if (newPassword.length < 6) {
-      throw const FormatException('Password is too short.');
-    }
-    await Future<void>.delayed(const Duration(milliseconds: 200));
-  }
 }

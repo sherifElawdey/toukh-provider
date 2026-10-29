@@ -247,7 +247,7 @@ class _CatalogItemSheetState extends State<_CatalogItemSheet> {
                         child: TextField(
                           controller: _prices[unit],
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          inputFormatters: [
+                          inputFormatters: [const EnglishDigitsInputFormatter(), 
                             FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                           ],
                           onChanged: (_) {

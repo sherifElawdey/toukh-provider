@@ -7,10 +7,4 @@ abstract class OtpRepository {
 
   /// Should call [verifyOtp] internally if not done yet.
 
-  Future<void> resetPassword({
-    required String phone,
-    required String requestToken,
-    required String code,
-    required String newPassword,
-  });
 }

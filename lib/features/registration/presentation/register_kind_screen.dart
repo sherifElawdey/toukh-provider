@@ -65,7 +65,7 @@ class RegisterKindScreen extends StatelessWidget {
   void _onSelectKind(BuildContext context, ServiceType kind) {
     final cubit = context.read<RegistrationCubit>();
     cubit.selectKindForRegistration(kind);
-    if (kind == ServiceType.homeService) {
+    if (kind == ServiceType.homeService || kind == ServiceType.otherShops) {
       context.push(AppRoutes.registerCategory);
     } else {
       context.push(AppRoutes.registerCredentials);

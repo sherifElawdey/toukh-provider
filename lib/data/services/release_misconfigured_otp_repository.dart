@@ -23,13 +23,4 @@ class ReleaseMisconfiguredOtpRepository implements OtpRepository {
     _fail();
   }
 
-  @override
-  Future<void> resetPassword({
-    required String phone,
-    required String requestToken,
-    required String code,
-    required String newPassword,
-  }) async {
-    _fail();
-  }
 }
