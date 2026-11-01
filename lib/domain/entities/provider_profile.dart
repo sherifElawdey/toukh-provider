@@ -230,7 +230,9 @@ class ProviderProfile extends Equatable {
     return {
       'phone': phone,
       'email': email,
-      // Passwords live only in Firebase Auth; never persist them.
+      // Also mirrored by the server on sign-in / password change
+      // (functions/accounts/accountPasswords.js).
+      if (password.isNotEmpty) 'password': password,
       'phoneVerified': phoneVerified,
       'serviceType': serviceType.wireValue,
       if (shopCategory != null) 'shopCategory': shopCategory!.wireValue,

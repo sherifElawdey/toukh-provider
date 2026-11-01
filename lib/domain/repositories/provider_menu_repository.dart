@@ -25,6 +25,16 @@ abstract class ProviderMenuRepository {
     String newDisplayName,
   );
 
+  /// Saves the category order ([displayNames] first to last).
+  Future<void> reorderCategories(String providerId, List<String> displayNames);
+
+  /// Saves the item order inside [category] ([itemIds] first to last).
+  Future<void> reorderItems(
+    String providerId,
+    String category,
+    List<String> itemIds,
+  );
+
   Future<bool> hasAnyItems(String providerId);
 
   /// Writes legacy profile [menuItems] into Menu subcollection when Menu is empty.

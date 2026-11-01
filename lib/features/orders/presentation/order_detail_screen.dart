@@ -247,6 +247,8 @@ class _OrderDetailBody extends StatelessWidget {
               pickupCode: row.master.pickupCode,
             ),
           ],
+          const SizedBox(height: AppSizes.spaceLg),
+          ToukhFeedbackLink(about: ToukhFeedbackContext.order, aboutId: row.id),
         ],
       ),
     );

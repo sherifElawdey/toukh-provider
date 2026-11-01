@@ -6,6 +6,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_cubit.dart';
 import 'package:toukh_provider/features/menu/presentation/cubit/menu_builder_state.dart';
 import 'package:toukh_provider/features/menu/presentation/models/menu_item_editor_result.dart';
+import 'package:toukh_provider/features/menu/presentation/menu_arrange_screen.dart';
 import 'package:toukh_provider/features/menu/presentation/menu_public_url.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/add_category_sheet.dart';
 import 'package:toukh_provider/features/menu/presentation/sheets/bulk_add_items_sheet.dart';
@@ -521,6 +522,20 @@ class MenuBuilderView extends StatelessWidget {
                             ),
                           ),
                         ),
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: Align(
+                              alignment: AlignmentDirectional.centerEnd,
+                              child: AppTextButton(
+                                text: AppStrings.Registration.menuArrange,
+                                icon: PhosphorIconsRegular.arrowsDownUp,
+                                size: AppButtonSize.small,
+                                onTap: () => openMenuArrange(context),
+                              ),
+                            ),
+                          ),
+                        ),
                         SliverPadding(
                           padding: AppSizes.screenHorizontal,
                           sliver: SliverList(
@@ -556,6 +571,8 @@ class MenuBuilderView extends StatelessWidget {
                                           ),
                                     onDeleteItem: (e) =>
                                         _confirmDeleteItem(context, e),
+                                    onArrangeItems: () =>
+                                        openMenuArrangeItems(context, cat),
                                     onRenameCategory: () =>
                                         _renameCategory(context, cat),
                                     onDeleteCategory: () =>

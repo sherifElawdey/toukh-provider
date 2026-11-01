@@ -15,6 +15,7 @@ class MenuCategorySectionCard extends StatelessWidget {
     this.onBulkAdd,
     required this.onEditItem,
     required this.onDeleteItem,
+    required this.onArrangeItems,
     required this.onRenameCategory,
     required this.onDeleteCategory,
   });
@@ -28,6 +29,7 @@ class MenuCategorySectionCard extends StatelessWidget {
   final VoidCallback? onBulkAdd;
   final void Function(MenuItemEntity) onEditItem;
   final void Function(MenuItemEntity) onDeleteItem;
+  final VoidCallback onArrangeItems;
   final VoidCallback onRenameCategory;
   final VoidCallback onDeleteCategory;
 
@@ -86,10 +88,22 @@ class MenuCategorySectionCard extends StatelessWidget {
                 ),
                 PopupMenuButton<String>(
                   onSelected: (v) {
+                    if (v == 'arrange') onArrangeItems();
                     if (v == 'rename') onRenameCategory();
                     if (v == 'delete') onDeleteCategory();
                   },
                   itemBuilder: (ctx) => [
+                    if (items.length > 1)
+                      PopupMenuItem(
+                        value: 'arrange',
+                        child: ListTile(
+                          leading: Icon(PhosphorIconsRegular.arrowsDownUp),
+                          title: CustomText(
+                            AppStrings.Registration.menuArrangeItems,
+                          ),
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
                     PopupMenuItem(
                       value: 'rename',
                       child: ListTile(

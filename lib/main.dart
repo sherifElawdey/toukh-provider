@@ -1,3 +1,4 @@
+import 'package:toukh_provider/core/feedback/feedback_setup.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'dart:async';
@@ -50,6 +51,7 @@ Future<void> main() async {
     debugPrint('$st');
     rethrow;
   }
+  configureFeedback();
 
   final settingsCubit = getIt<SettingsCubit>();
   await settingsCubit.hydrate();

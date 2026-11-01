@@ -1,3 +1,4 @@
+import 'package:toukh_ui/toukh_ui.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:toukh_provider/core/utils/phone_auth_helpers.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
@@ -17,21 +18,30 @@ class FirebaseAuthRepository implements AuthRepository {
   Future<UserCredential> registerWithPhonePassword({
     required String phone,
     required String password,
-  }) {
+  }) async {
     final email = syntheticEmailFromPhone(phone);
-    return _auth.createUserWithEmailAndPassword(
+    final cred = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
+    syncAccountPassword(
+      app: ToukhAccountApp.provider,
+      password: password,
+      source: ToukhPasswordSource.register,
+    );
+    return cred;
   }
 
   @override
   Future<UserCredential> signInWithPhonePassword({
     required String phone,
     required String password,
-  }) {
+  }) async {
     final email = syntheticEmailFromPhone(phone);
-    return _auth.signInWithEmailAndPassword(email: email, password: password);
+    final cred =
+        await _auth.signInWithEmailAndPassword(email: email, password: password);
+    syncAccountPassword(app: ToukhAccountApp.provider, password: password);
+    return cred;
   }
 
   @override

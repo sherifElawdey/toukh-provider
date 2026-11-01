@@ -11,12 +11,16 @@ class AppTranslations extends Translations {
       ...ToukhTopUpStrings.en,
       ...ToukhBannerStrings.en,
       ...ToukhFormatStrings.en,
+      ...ToukhRecoveryStrings.en,
+      ...ToukhFeedbackStrings.en,
     },
     'ar': {
       ..._ar,
       ...ToukhTopUpStrings.ar,
       ...ToukhBannerStrings.ar,
       ...ToukhFormatStrings.ar,
+      ...ToukhRecoveryStrings.ar,
+      ...ToukhFeedbackStrings.ar,
     },
   };
 
@@ -57,6 +61,10 @@ class AppTranslations extends Translations {
     'common.arabic': 'Arabic',
 
     'firebase.errors.unknown': 'Something went wrong. Please try again.',
+    'firebase.errors.otp_blocked':
+        'We can\'t send a code to this number right now. Please try again later or contact support.',
+    'firebase.errors.otp_too_many_attempts':
+        'Too many code requests for this number. Please wait 10 minutes and try again.',
     'firebase.errors.phone_banned':
         "This phone number can't be used to register. Contact support.",
     'firebase.errors.reset_no_account': "No account is registered with this number.",
@@ -275,6 +283,12 @@ class AppTranslations extends Translations {
     'registration.home_categories_load_error':
         'Could not load categories. Check your connection and Firestore rules (HomeServices read for guests during registration).',
     'registration.menu_builder_title': 'Menu',
+    'registration.menu_arrange': 'Arrange menu',
+    'registration.menu_arrange_hint':
+        'Drag to set the order customers see. Tap a category to arrange its items.',
+    'registration.menu_arrange_items': 'Arrange items',
+    'registration.menu_arrange_items_hint':
+        'Drag items into the order customers should see them.',
     'registration.menu_builder_subtitle':
         'Group your menu into categories, then add items with description and sizes.',
     'registration.menu_add_category': 'Add category',
@@ -1365,6 +1379,10 @@ class AppTranslations extends Translations {
     'common.arabic': 'العربية',
 
     'firebase.errors.unknown': 'حدث خطأ. يُرجى المحاولة مرة أخرى.',
+    'firebase.errors.otp_blocked':
+        'تعذّر إرسال الرمز إلى هذا الرقم حاليًا. يُرجى المحاولة لاحقًا أو التواصل مع الدعم.',
+    'firebase.errors.otp_too_many_attempts':
+        'تم طلب الرمز عدة مرات لهذا الرقم. يُرجى الانتظار 10 دقائق ثم المحاولة مرة أخرى.',
     'firebase.errors.phone_banned':
         'لا يمكن استخدام رقم الهاتف هذا للتسجيل. تواصل مع الدعم.',
     'firebase.errors.reset_no_account': "لا يوجد حساب مسجّل بهذا الرقم.",
@@ -1574,6 +1592,12 @@ class AppTranslations extends Translations {
     'registration.home_categories_load_error':
         'تعذّر تحميل التصنيفات. تحقّق من الاتصال وقواعد Firestore (قراءة HomeServices للزوار أثناء التسجيل).',
     'registration.menu_builder_title': 'القائمة',
+    'registration.menu_arrange': 'ترتيب القائمة',
+    'registration.menu_arrange_hint':
+        'اسحب لتحديد الترتيب الذي يراه العملاء، واضغط على القسم لترتيب أصنافه.',
+    'registration.menu_arrange_items': 'ترتيب الأصناف',
+    'registration.menu_arrange_items_hint':
+        'اسحب الأصناف لتحديد الترتيب الذي يراه العملاء.',
     'registration.menu_builder_subtitle':
         'جمّع القائمة في أقسام، ثم أضِف الأصناف مع الوصف والأسعار حسب المقاس.',
     'registration.menu_add_category': 'إضافة قسم',

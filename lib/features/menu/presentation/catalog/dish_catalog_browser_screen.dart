@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/di/service_locator.dart';
@@ -12,9 +13,7 @@ Future<DishCatalogProduct?> openDishCatalogBrowser(
   Set<String> inMenu = const {},
 }) {
   return Navigator.of(context).push<DishCatalogProduct>(
-    MaterialPageRoute(
-      builder: (_) => DishCatalogBrowserScreen(inMenu: inMenu),
-    ),
+    MaterialPageRoute(builder: (_) => DishCatalogBrowserScreen(inMenu: inMenu)),
   );
 }
 
@@ -33,7 +32,10 @@ class DishCatalogBrowserScreen extends StatefulWidget {
 class _DishCatalogBrowserScreenState extends State<DishCatalogBrowserScreen> {
   final _search = TextEditingController();
   late final _dishes = getIt<DishCatalogRepository>().watchActive();
-  DishCatalogCategory? _category;
+  late final _shelves = watchDishCategories(getIt<FirebaseFirestore>());
+
+  /// Shelf key filter (built-in or admin-added); null = all.
+  String? _category;
 
   String get _lang => Get.locale?.languageCode ?? 'ar';
 
@@ -54,107 +56,121 @@ class _DishCatalogBrowserScreenState extends State<DishCatalogBrowserScreen> {
           onPressed: () => Navigator.of(context).maybePop(),
         ),
       ),
-      body: StreamBuilder<List<DishCatalogProduct>>(
-        stream: _dishes,
-        builder: (context, snap) {
-          if (snap.hasError) {
-            return Center(child: CustomText(AppStrings.Common.error));
-          }
-          if (!snap.hasData) return const Center(child: AppLoadingMark());
-          final all = snap.data!;
-          if (all.isEmpty) {
-            return Center(child: CustomText(AppStrings.Catalog.dishesEmpty));
-          }
-          final categories = DishCatalogCategory.values
-              .where((c) => all.any((p) => p.category == c))
-              .toList();
-          final shown = all
-              .where((p) => _category == null || p.category == _category)
-              .where((p) => p.matches(_search.text))
-              .toList();
+      body: StreamBuilder<List<DishCategory>>(
+        stream: _shelves,
+        builder: (context, shelfSnap) {
+          final shelves = shelfSnap.data ?? DishCategories.builtIn;
+          return StreamBuilder<List<DishCatalogProduct>>(
+            stream: _dishes,
+            builder: (context, snap) {
+              if (snap.hasError) {
+                return Center(child: CustomText(AppStrings.Common.error));
+              }
+              if (!snap.hasData) return const Center(child: AppLoadingMark());
+              final all = snap.data!;
+              if (all.isEmpty) {
+                return Center(
+                  child: CustomText(AppStrings.Catalog.dishesEmpty),
+                );
+              }
+              final categories = shelves
+                  .where((c) => all.any((p) => p.shelfKey == c.key))
+                  .toList();
+              final shown = all
+                  .where((p) => _category == null || p.shelfKey == _category)
+                  .where((p) => p.matches(_search.text))
+                  .toList();
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: AppSizes.screenPadding.copyWith(bottom: 0),
-                child: CustomText(
-                  AppStrings.Catalog.dishesHint,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
-                ),
-              ),
-              Padding(
-                padding: AppSizes.screenPadding.copyWith(
-                  top: AppSizes.spaceSm,
-                  bottom: AppSizes.spaceSm,
-                ),
-                child: TextField(
-                  controller: _search,
-                  onChanged: (_) => setState(() {}),
-                  textInputAction: TextInputAction.search,
-                  decoration: InputDecoration(
-                    hintText: AppStrings.Catalog.dishesSearch.tr,
-                    prefixIcon: Icon(ToukhIcons.search),
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 44,
-                child: ListView(
-                  scrollDirection: Axis.horizontal,
-                  padding: AppSizes.screenHorizontal,
-                  children: [
-                    _CategoryChip(
-                      label: AppStrings.Catalog.all.tr,
-                      selected: _category == null,
-                      onTap: () => setState(() => _category = null),
-                    ),
-                    for (final c in categories)
-                      _CategoryChip(
-                        label: c.label(_lang),
-                        selected: _category == c,
-                        onTap: () => setState(() => _category = c),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Padding(
+                    padding: AppSizes.screenPadding.copyWith(bottom: 0),
+                    child: CustomText(
+                      AppStrings.Catalog.dishesHint,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: scheme.onSurfaceVariant,
                       ),
-                  ],
-                ),
-              ),
-              Expanded(
-                child: shown.isEmpty
-                    ? Center(child: CustomText(AppStrings.Catalog.noMatch))
-                    : LayoutBuilder(
-                        builder: (context, constraints) => GridView.builder(
-                          padding: AppSizes.screenPadding,
-                          gridDelegate:
-                              SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: constraints.maxWidth >= 900
-                                    ? 4
-                                    : constraints.maxWidth >= 600
-                                    ? 3
-                                    : 2,
-                                mainAxisSpacing: AppSizes.spaceMd,
-                                crossAxisSpacing: AppSizes.spaceMd,
-                                childAspectRatio: 0.82,
-                              ),
-                          itemCount: shown.length,
-                          itemBuilder: (context, i) {
-                            final p = shown[i];
-                            return _DishTile(
-                              product: p,
-                              languageCode: _lang,
-                              inMenu: widget.inMenu.contains(p.id),
-                              onTap: () => Navigator.of(context).pop(p),
-                            );
-                          },
+                    ),
+                  ),
+                  Padding(
+                    padding: AppSizes.screenPadding.copyWith(
+                      top: AppSizes.spaceSm,
+                      bottom: AppSizes.spaceSm,
+                    ),
+                    child: TextField(
+                      controller: _search,
+                      onChanged: (_) => setState(() {}),
+                      textInputAction: TextInputAction.search,
+                      decoration: InputDecoration(
+                        hintText: AppStrings.Catalog.dishesSearch.tr,
+                        prefixIcon: Icon(ToukhIcons.search),
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusLg,
+                          ),
                         ),
                       ),
-              ),
-            ],
+                    ),
+                  ),
+                  SizedBox(
+                    height: 44,
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      padding: AppSizes.screenHorizontal,
+                      children: [
+                        _CategoryChip(
+                          label: AppStrings.Catalog.all.tr,
+                          selected: _category == null,
+                          onTap: () => setState(() => _category = null),
+                        ),
+                        for (final c in categories)
+                          _CategoryChip(
+                            label: c.label(_lang),
+                            selected: _category == c.key,
+                            onTap: () => setState(() => _category = c.key),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    child: shown.isEmpty
+                        ? Center(child: CustomText(AppStrings.Catalog.noMatch))
+                        : LayoutBuilder(
+                            builder: (context, constraints) => GridView.builder(
+                              padding: AppSizes.screenPadding,
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: constraints.maxWidth >= 900
+                                        ? 4
+                                        : constraints.maxWidth >= 600
+                                        ? 3
+                                        : 2,
+                                    mainAxisSpacing: AppSizes.spaceMd,
+                                    crossAxisSpacing: AppSizes.spaceMd,
+                                    childAspectRatio: 0.82,
+                                  ),
+                              itemCount: shown.length,
+                              itemBuilder: (context, i) {
+                                final p = shown[i];
+                                return _DishTile(
+                                  product: p,
+                                  languageCode: _lang,
+                                  shelfLabel: DishCategories.resolve(
+                                    shelves,
+                                    p.shelfKey,
+                                  ).label(_lang),
+                                  inMenu: widget.inMenu.contains(p.id),
+                                  onTap: () => Navigator.of(context).pop(p),
+                                );
+                              },
+                            ),
+                          ),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
@@ -190,12 +206,14 @@ class _DishTile extends StatelessWidget {
   const _DishTile({
     required this.product,
     required this.languageCode,
+    required this.shelfLabel,
     required this.inMenu,
     required this.onTap,
   });
 
   final DishCatalogProduct product;
   final String languageCode;
+  final String shelfLabel;
   final bool inMenu;
   final VoidCallback onTap;
 
@@ -289,9 +307,7 @@ class _DishTile extends StatelessWidget {
                       ),
                     ),
                     CustomText(
-                      sizes.isNotEmpty
-                          ? sizes
-                          : product.category.label(languageCode),
+                      sizes.isNotEmpty ? sizes : shelfLabel,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: t.labelSmall?.copyWith(

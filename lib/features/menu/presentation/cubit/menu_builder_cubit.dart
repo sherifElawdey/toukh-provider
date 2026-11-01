@@ -119,6 +119,47 @@ class MenuBuilderCubit extends Cubit<MenuBuilderState> {
     }
   }
 
+  /// Moves a category, showing it at once; a failed save puts it back.
+  Future<String?> moveCategory(int from, int to) async {
+    final uid = _uid;
+    if (uid == null) return AppStrings.Common.notSignedIn.tr;
+    final before = state.categories;
+    final next = [...before];
+    next.insert(to > from ? to - 1 : to, next.removeAt(from));
+    emit(state.copyWith(categories: next));
+    try {
+      await _menuRepository.reorderCategories(uid, next);
+      return null;
+    } catch (e) {
+      if (!isClosed) emit(state.copyWith(categories: before));
+      return e.toString();
+    }
+  }
+
+  /// Moves an item inside [category]; a failed save puts it back.
+  Future<String?> moveItem(String category, int from, int to) async {
+    final uid = _uid;
+    if (uid == null) return AppStrings.Common.notSignedIn.tr;
+    final before = state.items;
+    final inCategory = state.itemsInCategory(category);
+    inCategory.insert(to > from ? to - 1 : to, inCategory.removeAt(from));
+    emit(state.copyWith(items: [
+      ...before.where((e) => e.category != category),
+      ...inCategory,
+    ]));
+    try {
+      await _menuRepository.reorderItems(
+        uid,
+        category,
+        [for (final e in inCategory) e.id],
+      );
+      return null;
+    } catch (e) {
+      if (!isClosed) emit(state.copyWith(items: before));
+      return e.toString();
+    }
+  }
+
   Future<String?> renameCategory(String oldName, String newName) async {
     final uid = _uid;
     if (uid == null) return AppStrings.Common.notSignedIn.tr;

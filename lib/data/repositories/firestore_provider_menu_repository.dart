@@ -34,21 +34,24 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
       );
     }
 
-    void cancelItemSubs() {
-      for (final s in itemSubs.values) {
-        unawaited(s.cancel());
-      }
-      itemSubs.clear();
-      itemsByCategory.clear();
-    }
-
     menuSub = _menuRef(providerId).snapshots().listen(
       (catSnap) {
-        cancelItemSubs();
-        latestCategories = catSnap.docs
-            .map((d) => d.data()['displayName'] as String? ?? d.id)
-            .where((n) => n.trim().isNotEmpty)
-            .toList();
+        // Keep the listeners of categories that stay: reordering or renaming
+        // must not blank the menu while items load again.
+        final ids = catSnap.docs.map((d) => d.id).toSet();
+        for (final id in itemSubs.keys.toList()) {
+          if (ids.contains(id)) continue;
+          unawaited(itemSubs.remove(id)?.cancel());
+          itemsByCategory.remove(id);
+        }
+        latestCategories = [
+          for (final d in MenuOrder.sorted(
+            catSnap.docs,
+            order: (d) => MenuOrder.read(d.data()[MenuOrder.field]),
+            name: _categoryName,
+          ))
+            _categoryName(d),
+        ].where((n) => n.trim().isNotEmpty).toList();
 
         if (catSnap.docs.isEmpty) {
           controller.add(const ProviderMenuSnapshot(categories: [], items: []));
@@ -57,14 +60,15 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
 
         for (final catDoc in catSnap.docs) {
           final catId = catDoc.id;
+          if (itemSubs.containsKey(catId)) continue;
           itemsByCategory[catId] = const [];
           itemSubs[catId] = catDoc.reference
               .collection(ToukhFirestoreCollections.menuItems)
               .snapshots()
               .listen((itemsSnap) {
-            itemsByCategory[catId] = itemsSnap.docs
-                .map((d) => MenuItemEntity.fromFirestore(d.data()))
-                .toList();
+            itemsByCategory[catId] = MenuOrder.sortedItemMaps(
+              itemsSnap.docs.map((d) => d.data()),
+            ).map(MenuItemEntity.fromFirestore).toList();
             emitCombined();
           });
         }
@@ -75,10 +79,59 @@ class FirestoreProviderMenuRepository implements ProviderMenuRepository {
 
     controller.onCancel = () async {
       await menuSub?.cancel();
-      cancelItemSubs();
+      for (final s in itemSubs.values) {
+        await s.cancel();
+      }
     };
 
     return controller.stream;
+  }
+
+  static String _categoryName(QueryDocumentSnapshot<Map<String, dynamic>> d) =>
+      d.data()['displayName'] as String? ?? d.id;
+
+  /// Firestore batches allow 500 writes; keep headroom.
+  Future<void> _writeOrder(
+    List<(DocumentReference<Map<String, dynamic>>, int)> rows,
+  ) async {
+    for (var i = 0; i < rows.length; i += 450) {
+      final batch = _firestore.batch();
+      for (final (ref, order) in rows.skip(i).take(450)) {
+        batch.update(ref, {MenuOrder.field: order});
+      }
+      await batch.commit();
+    }
+  }
+
+  @override
+  Future<void> reorderCategories(
+    String providerId,
+    List<String> displayNames,
+  ) async {
+    final docs = await _menuRef(providerId).get();
+    final byName = {for (final d in docs.docs) _categoryName(d): d.reference};
+    await _writeOrder([
+      for (final (i, name) in displayNames.indexed)
+        if (byName[name] case final ref?) (ref, i),
+    ]);
+  }
+
+  @override
+  Future<void> reorderItems(
+    String providerId,
+    String category,
+    List<String> itemIds,
+  ) async {
+    final catRef = await _categoryRefByDisplayName(providerId, category);
+    if (catRef == null) return;
+    final docs = await catRef.collection(ToukhFirestoreCollections.menuItems).get();
+    final byId = {
+      for (final d in docs.docs) (d.data()['id'] as String?) ?? d.id: d.reference,
+    };
+    await _writeOrder([
+      for (final (i, id) in itemIds.indexed)
+        if (byId[id] case final ref?) (ref, i),
+    ]);
   }
 
   Future<DocumentReference<Map<String, dynamic>>> _resolveCategoryRef(

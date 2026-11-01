@@ -89,14 +89,23 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
           ),
         );
       } catch (e) {
-        if (mounted) {
-          AppSnack.show(
+        if (!mounted) return;
+        if (isPasswordResetUnavailable(e)) {
+          await offerPasswordRecoveryRequest(
             context,
-            message: otpOrFirebaseError(e),
-            state: AppSnackState.error,
-            icon: PhosphorIconsRegular.password,
+            app: ToukhAccountApp.provider,
+            phone: widget.args.phone,
+            errorMessage: otpOrFirebaseError,
+            onDone: () => context.go(AppRoutes.login),
           );
+          return;
         }
+        AppSnack.show(
+          context,
+          message: otpOrFirebaseError(e),
+          state: AppSnackState.error,
+          icon: PhosphorIconsRegular.password,
+        );
         return;
       }
       if (!mounted) return;
@@ -324,6 +333,15 @@ class _VerifyOtpScreenState extends State<VerifyOtpScreen> {
                                 : AppButtonStatus.enabled,
                             onTap: _onResendPressed,
                           ),
+                        if (widget.args.flow == VerifyOtpFlow.passwordReset) ...[
+                          SizedBox(height: AppSizes.spaceSm),
+                          ToukhPasswordRecoveryLink(
+                            app: ToukhAccountApp.provider,
+                            phone: widget.args.phone,
+                            errorMessage: otpOrFirebaseError,
+                            onDone: () => context.go(AppRoutes.login),
+                          ),
+                        ],
                       ],
                     ),
                   ),

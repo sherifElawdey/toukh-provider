@@ -757,6 +757,8 @@ class _HomeServiceRequestDetailBodyState
                   ),
                 ),
               ],
+              const SizedBox(height: AppSizes.spaceLg),
+              ToukhFeedbackLink(about: ToukhFeedbackContext.request, aboutId: request.id),
             ],
           ),
         );

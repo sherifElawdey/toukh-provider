@@ -820,6 +820,10 @@ class _Registration {
   String get homeCategoriesEmpty => 'registration.home_categories_empty';
   String get homeCategoriesLoadError => 'registration.home_categories_load_error';
   String get menuBuilderTitle => 'registration.menu_builder_title';
+  String get menuArrange => 'registration.menu_arrange';
+  String get menuArrangeHint => 'registration.menu_arrange_hint';
+  String get menuArrangeItems => 'registration.menu_arrange_items';
+  String get menuArrangeItemsHint => 'registration.menu_arrange_items_hint';
   String get portfolioTitle => 'registration.portfolio_title';
   String get portfolioHint => 'registration.portfolio_hint';
   String get portfolioAddPhoto => 'registration.portfolio_add_photo';
