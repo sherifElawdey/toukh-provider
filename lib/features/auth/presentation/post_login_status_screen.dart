@@ -38,11 +38,10 @@ class _PostLoginStatusScreenState extends State<PostLoginStatusScreen> {
     return BlocConsumer<AuthCubit, AuthState>(
       listenWhen: (previous, current) =>
           current is Unauthenticated ||
-          current is AuthFailure ||
           (current is Authenticated &&
               current.profile.status == ProviderAccountStatus.active),
       listener: (context, state) {
-        if (state is Unauthenticated || state is AuthFailure) {
+        if (state is Unauthenticated) {
           _logStatus('auth became ${state.runtimeType} -> navigate login');
           context.go(AppRoutes.login);
           return;

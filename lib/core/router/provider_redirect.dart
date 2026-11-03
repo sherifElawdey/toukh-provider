@@ -13,6 +13,7 @@ String? resolveProviderRedirect({
   required AuthState auth,
   required OnboardingGate onboardingGate,
   required SettingsState settings,
+  bool hasFirebaseUser = false,
 }) {
   String authLabel() {
     if (auth is AuthInitial) return 'AuthInitial';
@@ -97,6 +98,12 @@ String? resolveProviderRedirect({
     final next = loc == AppRoutes.splash ? null : AppRoutes.splash;
     logRedirect(next, 'auth initializing/loading');
     return next;
+  }
+
+  // A failed action is not a sign-out: stay put while Firebase has a user.
+  if (auth is AuthFailure && hasFirebaseUser && loc != AppRoutes.splash) {
+    logRedirect(null, 'action failed, session still valid');
+    return null;
   }
 
   if (auth is AuthFailure || auth is Unauthenticated) {

@@ -25,7 +25,12 @@ class FirestoreProviderProfileRepository implements ProviderProfileRepository {
 
   @override
   Stream<ProviderProfile?> watchProfile(String uid) {
-    return _providers.doc(uid).snapshots().map((snap) {
+    // An offline cache miss is "unknown", not "this account has no document".
+    return _providers
+        .doc(uid)
+        .snapshots()
+        .where((snap) => snap.exists || !snap.metadata.isFromCache)
+        .map((snap) {
       final data = snap.data();
       if (!snap.exists || data == null) return null;
       return ProviderProfile.fromFirestore(uid, data);

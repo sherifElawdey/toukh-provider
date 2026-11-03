@@ -21,7 +21,12 @@ class FirestoreDeliveryCompanyRepository implements DeliveryCompanyRepository {
 
   @override
   Stream<DeliveryCompany?> watchCompany(String uid) {
-    return _companies.doc(uid).snapshots().map((snap) {
+    // An offline cache miss is "unknown", not "this account has no document".
+    return _companies
+        .doc(uid)
+        .snapshots()
+        .where((snap) => snap.exists || !snap.metadata.isFromCache)
+        .map((snap) {
       final data = snap.data();
       if (!snap.exists || data == null) return null;
       return DeliveryCompany.fromFirestore(uid, data);

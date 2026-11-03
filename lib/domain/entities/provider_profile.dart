@@ -405,8 +405,13 @@ class ProviderProfile extends Equatable {
       serviceType == ServiceType.supermarket ||
       shopCategory == ShopCategory.supermarket;
 
+  /// Other shops in menu mode (request-based ones answer custom requests).
+  bool get isMenuOtherShop =>
+      serviceType == ServiceType.otherShops &&
+      orderMode == ProviderOrderMode.menu;
+
   /// Shops that sell from a menu instead of showing a gallery.
-  bool get hasMenu => isRestaurantShop || usesGroceryCatalog;
+  bool get hasMenu => isRestaurantShop || usesGroceryCatalog || isMenuOtherShop;
 
   bool get isPharmacy =>
       serviceType == ServiceType.pharmacy ||

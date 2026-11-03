@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuth;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
@@ -120,6 +121,7 @@ GoRouter createAppRouter({
       auth: authCubit.state,
       onboardingGate: onboardingCubit.state.gate,
       settings: settingsCubit.state,
+      hasFirebaseUser: FirebaseAuth.instance.currentUser != null,
     ),
     routes: [
       GoRoute(

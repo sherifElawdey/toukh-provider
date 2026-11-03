@@ -76,6 +76,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> _onFirebaseUserChanged(User? user) async {
+    ToukhAuthDiagnostics.log('auth_state_changed', uid: user?.uid);
     await _profileSub?.cancel();
     _profileSub = null;
     await _companySub?.cancel();
@@ -138,14 +139,22 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  Future<void> _bootstrapProfile(String uid) async {
+  Future<void> _bootstrapProfile(String uid, {bool retry = true}) async {
+    bool stillCurrent() =>
+        !isClosed && _authRepository.currentUser?.uid == uid;
     try {
-      final profile = await _profileRepository
-          .getProfile(uid)
-          .timeout(const Duration(seconds: 25));
-      _onProviderProfileChanged(profile);
+      final profile = await retryWhileTransient(
+        () => _profileRepository
+            .getProfile(uid)
+            .timeout(const Duration(seconds: 25)),
+        shouldRetry: () => retry && stillCurrent(),
+      );
+      if (stillCurrent()) _onProviderProfileChanged(profile);
     } catch (e, st) {
       debugPrint('AuthCubit: profile bootstrap failed: $e\n$st');
+      // Unreachable server: the account may well exist, so keep the session
+      // and the current state; the live watch delivers the profile later.
+      if (isTransientSessionError(e) || !stillCurrent()) return;
       _onProviderProfileChanged(null);
     }
   }
@@ -181,7 +190,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signIn({required String phone, required String password}) async {
-    _logAuth('signIn(phone=$phone) -> emit AuthLoading');
+    _logAuth('signIn -> emit AuthLoading');
     emit(const AuthLoading());
     try {
       await _authRepository.signInWithPhonePassword(
@@ -202,12 +211,10 @@ class AuthCubit extends Cubit<AuthState> {
   Future<AuthFailure?> registerProviderInitial(
     RegistrationSubmitData data,
   ) async {
-    _logAuth(
-      'registerProviderInitial(phone=${data.phone}) -> emit AuthLoading',
-    );
+    _logAuth('registerProviderInitial -> emit AuthLoading');
     emit(const AuthLoading());
     final uploaded = <UploadedMedia>[];
-    var authUserCreated = false;
+    ({User user, bool created})? login;
     _registeringAccount = true;
     AuthFailure? failure;
     try {
@@ -224,11 +231,11 @@ class AuthCubit extends Cubit<AuthState> {
         return failure;
       }
 
-      final user = await _createOrResumeAuthUser(
+      login = await _createOrResumeAuthUser(
         phone: data.phone,
         password: data.password,
       );
-      authUserCreated = true;
+      final user = login.user;
 
       final base = 'providers/${user.uid}';
       final idFront = await _media.uploadImage(
@@ -321,7 +328,7 @@ class AuthCubit extends Cubit<AuthState> {
       for (final u in uploaded) {
         await _media.deleteImage(u);
       }
-      if (authUserCreated) await _rollbackAuthUser();
+      if (login != null) await _rollbackAuthUser(created: login.created);
       failure = AuthFailure(
         message: e.code == AuthFailure.phoneAlreadyRegistered
             ? AppStrings.Auth.phoneAlreadyRegistered
@@ -334,7 +341,7 @@ class AuthCubit extends Cubit<AuthState> {
       for (final u in uploaded) {
         await _media.deleteImage(u);
       }
-      if (authUserCreated) await _rollbackAuthUser();
+      if (login != null) await _rollbackAuthUser(created: login.created);
       failure = AuthFailure(message: appFirebaseError(e));
       emit(failure);
       return failure;
@@ -346,8 +353,9 @@ class AuthCubit extends Cubit<AuthState> {
   /// Creates the Firebase login for a new account. When the phone already has
   /// a login but no `providers/` or `deliveryCompanies/` doc (an earlier
   /// sign-up that failed half-way) and the password matches, that login is
-  /// reused so the phone is not locked out forever.
-  Future<User> _createOrResumeAuthUser({
+  /// reused so the phone is not locked out forever. `created` is false for a
+  /// reused login: all apps share it, so only a new one may be rolled back.
+  Future<({User user, bool created})> _createOrResumeAuthUser({
     required String phone,
     required String password,
   }) async {
@@ -360,7 +368,7 @@ class AuthCubit extends Cubit<AuthState> {
       if (user == null) {
         throw StateError('Firebase did not return a user after registration.');
       }
-      return user;
+      return (user: user, created: true);
     } on FirebaseAuthException catch (e) {
       if (e.code != 'email-already-in-use') rethrow;
       final User? user;
@@ -383,33 +391,42 @@ class AuthCubit extends Cubit<AuthState> {
         }
       }
       if (hasProfile || hasCompany) {
+        ToukhAuthDiagnostics.log(
+          'sign_out',
+          uid: user.uid,
+          reason: 'phone_already_registered',
+        );
         await _authRepository.signOut();
         rethrow;
       }
       _logAuth('resuming orphan login uid=${user.uid} (no account doc)');
-      return user;
+      return (user: user, created: false);
     }
   }
 
   /// Deletes the login created by a sign-up that failed before its account
   /// doc was written, so the phone can register again.
-  Future<void> _rollbackAuthUser() async {
+  Future<void> _rollbackAuthUser({required bool created}) async {
     try {
-      await _authRepository.deleteAccount();
+      if (created) {
+        await _authRepository.deleteAccount();
+        return;
+      }
     } catch (e) {
       debugPrint('AuthCubit: registration rollback failed: $e');
-      await _authRepository.signOut();
     }
+    ToukhAuthDiagnostics.log('sign_out', reason: 'registration_rollback');
+    await _authRepository.signOut();
   }
 
   /// Creates the Firebase user and `deliveryCompanies/{uid}` (unverified).
   Future<void> registerDeliveryCompany(
     DeliveryCompanyRegistrationData data,
   ) async {
-    _logAuth('registerDeliveryCompany(phone=${data.phone}) -> AuthLoading');
+    _logAuth('registerDeliveryCompany -> AuthLoading');
     emit(const AuthLoading());
     _registeringAccount = true;
-    var authUserCreated = false;
+    ({User user, bool created})? login;
     try {
       final area = await getIt<GeofenceService>().findContaining(
         lat: data.lat,
@@ -424,11 +441,11 @@ class AuthCubit extends Cubit<AuthState> {
         return;
       }
 
-      final user = await _createOrResumeAuthUser(
+      login = await _createOrResumeAuthUser(
         phone: data.phone,
         password: data.password,
       );
-      authUserCreated = true;
+      final user = login.user;
 
       final city = data.city?.trim().isNotEmpty == true
           ? data.city!.trim()
@@ -457,10 +474,10 @@ class AuthCubit extends Cubit<AuthState> {
       _companyResolved = true;
       emit(AuthenticatedCompany(user: user, company: company));
     } on FirebaseAuthException catch (e) {
-      if (authUserCreated) await _rollbackAuthUser();
+      if (login != null) await _rollbackAuthUser(created: login.created);
       emit(AuthFailure(message: e.message ?? e.code));
     } catch (e) {
-      if (authUserCreated) await _rollbackAuthUser();
+      if (login != null) await _rollbackAuthUser(created: login.created);
       emit(AuthFailure(message: appFirebaseError(e)));
     } finally {
       _registeringAccount = false;
@@ -754,6 +771,7 @@ class AuthCubit extends Cubit<AuthState> {
         // Never block sign-out on FCM cleanup.
       }
     }
+    ToukhAuthDiagnostics.log('sign_out', uid: uid, reason: 'user_requested');
     await _authRepository.signOut();
   }
 
@@ -781,7 +799,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
       return;
     }
-    await _bootstrapProfile(user.uid);
+    await _bootstrapProfile(user.uid, retry: false);
   }
 
   Future<void> dismissFailure() async {
