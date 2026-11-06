@@ -83,6 +83,7 @@ class _Common {
   String get mediaGalleryRationaleBody => 'common.media_gallery_rationale_body';
   String get mediaCameraRationaleTitle => 'common.media_camera_rationale_title';
   String get mediaCameraRationaleBody => 'common.media_camera_rationale_body';
+  String get mediaCameraBlocked => 'common.media_camera_blocked';
   String get egpAmount => 'common.egp_amount';
   String get egp => 'common.egp';
   String get signInRequired => 'common.sign_in_required';
@@ -615,6 +616,11 @@ class _Settings {
   const _Settings();
   String get title => 'settings.title';
   String get appearance => 'settings.appearance';
+  String get alerts => 'settings.alerts';
+  String get highPriorityAlerts => 'settings.high_priority_alerts';
+  String get highPriorityAlertsHint => 'settings.high_priority_alerts_hint';
+  String get batteryHint => 'settings.battery_hint';
+  String get batteryAction => 'settings.battery_action';
   String get themeMode => 'settings.theme_mode';
   String get themeLight => 'settings.theme_light';
   String get themeDark => 'settings.theme_dark';
@@ -814,6 +820,11 @@ class _Registration {
   String get kindGrocery => 'registration.kind_grocery';
   String get kindPharmacy => 'registration.kind_pharmacy';
   String get kindOtherShops => 'registration.kind_other_shops';
+  String get kindMeatFrozen => 'registration.kind_meat_frozen';
+  String get supportPhoneTitle => 'registration.support_phone_title';
+  String get supportPhoneLabel => 'registration.support_phone_label';
+  String get supportPhoneHint => 'registration.support_phone_hint';
+  String get kindCleaning => 'registration.kind_cleaning';
   String get kindHomeBrands => 'registration.kind_home_brands';
   String get brandLogoTitle => 'registration.brand_logo_title';
   String get brandImageRequired => 'registration.brand_image_required';
@@ -1248,4 +1259,19 @@ class _ShopRequests {
   String get dashboardTitle => 'shop_requests.dashboard_title';
   String get dashboardSubtitle => 'shop_requests.dashboard_subtitle';
   String get viewOrder => 'shop_requests.view_order';
+  String get promptPending => 'shop_requests.prompt_pending';
+  String get promptQuoted => 'shop_requests.prompt_quoted';
+  String get promptAccepted => 'shop_requests.prompt_accepted';
+  String get promptDeclined => 'shop_requests.prompt_declined';
+  String get promptCancelled => 'shop_requests.prompt_cancelled';
+  String get priceList => 'shop_requests.price_list';
+  String get inStock => 'shop_requests.in_stock';
+  String get outOfStock => 'shop_requests.out_of_stock';
+  String get itemNote => 'shop_requests.item_note';
+  String get priceEgp => 'shop_requests.price_egp';
+  String get total => 'shop_requests.total';
+  String get itemsCount => 'shop_requests.items_count';
+  String get sendToCustomer => 'shop_requests.send_to_customer';
+  String get answerAll => 'shop_requests.answer_all';
+  String get needOne => 'shop_requests.need_one';
 }

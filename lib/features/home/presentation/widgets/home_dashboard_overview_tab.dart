@@ -213,9 +213,7 @@ class HomeDashboardOverviewTab extends StatelessWidget {
             final banner =
                 HomeDashboardPendingOrdersBanner(pendingCount: pendingCount);
             final profile = auth is Authenticated ? auth.profile : null;
-            if (profile == null ||
-                profile.serviceType != ServiceType.otherShops ||
-                profile.orderMode != ProviderOrderMode.customRequests) {
+            if (profile == null || !profile.takesSpecialRequests) {
               return banner;
             }
             return Column(

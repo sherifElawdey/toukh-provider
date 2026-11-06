@@ -11,29 +11,35 @@ class FirestoreAppSettingsRepository implements AppSettingsRepository {
       .collection(ToukhFirestoreCollections.appSettings)
       .doc(ToukhFirestoreDocs.appSettingsGlobal);
 
+  // The three watchers below read one doc and are called from build(), so
+  // they share a single listener instead of opening one per call.
+  late final _globalDoc = ToukhSharedStream<Map<String, dynamic>?>(
+    () => _global.snapshots().map((snap) => snap.data()),
+  );
+
   @override
   Stream<OrderAcceptanceSla> watchAcceptanceSla() {
-    return _global.snapshots().map(
-          (snap) => OrderAcceptanceSla.fromFirestore(
-            snap.data()?['orderAcceptanceSla'] as Map<String, dynamic>?,
+    return _globalDoc.stream.map(
+          (data) => OrderAcceptanceSla.fromFirestore(
+            data?['orderAcceptanceSla'] as Map<String, dynamic>?,
           ),
         );
   }
 
   @override
   Stream<DispatchSettings> watchDispatchSettings() {
-    return _global.snapshots().map(
-          (snap) => DispatchSettings.fromMap(
-            snap.data()?['dispatchSettings'] as Map<String, dynamic>?,
+    return _globalDoc.stream.map(
+          (data) => DispatchSettings.fromMap(
+            data?['dispatchSettings'] as Map<String, dynamic>?,
           ),
         );
   }
 
   @override
   Stream<WalletBalanceLimits> watchWalletBalanceLimits() {
-    return _global.snapshots().map(
-          (snap) => WalletBalanceLimits.fromMap(
-            snap.data()?[WalletBalanceLimits.firestoreKey] as Map<String, dynamic>?,
+    return _globalDoc.stream.map(
+          (data) => WalletBalanceLimits.fromMap(
+            data?[WalletBalanceLimits.firestoreKey] as Map<String, dynamic>?,
           ),
         );
   }

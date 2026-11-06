@@ -261,7 +261,7 @@ class CourierAvatar extends StatelessWidget {
         CircleAvatar(
           radius: radius,
           backgroundColor: scheme.surfaceContainerHighest,
-          backgroundImage: url != null ? NetworkImage(url) : null,
+          backgroundImage: url != null ? havitImageProvider(url) : null,
           child: url == null
               ? Icon(ToukhIcons.person, color: AppColors.secondColor)
               : null,

@@ -21,9 +21,10 @@ Stream<List<ShopRequest>> watchProviderShopRequests(String providerId) =>
               for (final d in s.docs) ShopRequest.fromFirestore(d.id, d.data()),
             ]..sort(ShopRequest.byRecent));
 
-/// Inbox for "other shops" stores in custom-request mode: reply to each
-/// request with a price (the customer then accepts and it becomes an order)
-/// or decline it.
+/// Special requests sent to this shop: review each list, mark every item in
+/// stock (with its price and an optional note) or not, and send it to the
+/// customer, who accepts it (it becomes an order) or declines it. The shop
+/// can also decline the whole request.
 class ShopRequestsScreen extends StatelessWidget {
   const ShopRequestsScreen({super.key, required this.providerId});
 
@@ -119,6 +120,7 @@ class _RequestCard extends StatelessWidget {
   }
 
   Future<void> _quote(BuildContext context) async {
+    if (request.items.isNotEmpty) return _priceList(context);
     final result = await showModalBottomSheet<(double, String)>(
       context: context,
       isScrollControlled: true,
@@ -130,6 +132,23 @@ class _RequestCard extends StatelessWidget {
       'requestId': request.id,
       'action': 'quote',
       'priceEgp': result.$1,
+      'note': result.$2,
+    }, AppStrings.ShopRequests.quoteSent);
+  }
+
+  Future<void> _priceList(BuildContext context) async {
+    final result = await showModalBottomSheet<(List<Map<String, dynamic>>, String)>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      showDragHandle: true,
+      builder: (_) => _ListPricingSheet(request: request),
+    );
+    if (result == null || !context.mounted) return;
+    await _call(context, {
+      'requestId': request.id,
+      'action': 'quote',
+      'items': result.$1,
       'note': result.$2,
     }, AppStrings.ShopRequests.quoteSent);
   }
@@ -222,10 +241,12 @@ class _RequestCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: CustomText(
-                    r.text.isEmpty ? AppStrings.ShopRequests.photoOnly : r.text,
-                    style: TextStyle(fontSize: AppSizes.fontBody, color: scheme.onSurface, height: 1.45),
-                  ),
+                  child: r.items.isEmpty
+                      ? CustomText(
+                          r.text.isEmpty ? AppStrings.ShopRequests.photoOnly : r.text,
+                          style: TextStyle(fontSize: AppSizes.fontBody, color: scheme.onSurface, height: 1.45),
+                        )
+                      : ShopRequestItemsList(request: r),
                 ),
                 if (r.imageUrl != null) ...[
                   SizedBox(width: AppSizes.spaceMd),
@@ -254,6 +275,8 @@ class _RequestCard extends StatelessWidget {
                 ),
               ),
             ),
+            SizedBox(height: AppSizes.spaceSm),
+            _StatusPrompt(text: _promptFor(r.status).tr, color: statusColor),
             if (r.providerNote != null && r.status != ShopRequestStatus.pending) ...[
               SizedBox(height: AppSizes.spaceSm),
               CustomText(
@@ -276,7 +299,9 @@ class _RequestCard extends StatelessWidget {
                     child: AppFilledButton(
                       text: r.status == ShopRequestStatus.quoted
                           ? AppStrings.ShopRequests.changePrice
-                          : AppStrings.ShopRequests.sendPrice,
+                          : r.items.isNotEmpty
+                              ? AppStrings.ShopRequests.priceList
+                              : AppStrings.ShopRequests.sendPrice,
                       onTap: () => _quote(context),
                     ),
                   ),
@@ -300,6 +325,323 @@ class _RequestCard extends StatelessWidget {
 String _money(double? v) {
   if (v == null) return '—';
   return v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(2);
+}
+
+/// What the shop should do (or wait for) at each step.
+String _promptFor(ShopRequestStatus status) => switch (status) {
+      ShopRequestStatus.pending => AppStrings.ShopRequests.promptPending,
+      ShopRequestStatus.quoted || ShopRequestStatus.accepting => AppStrings.ShopRequests.promptQuoted,
+      ShopRequestStatus.accepted => AppStrings.ShopRequests.promptAccepted,
+      ShopRequestStatus.declined => AppStrings.ShopRequests.promptDeclined,
+      ShopRequestStatus.cancelled => AppStrings.ShopRequests.promptCancelled,
+    };
+
+class _StatusPrompt extends StatelessWidget {
+  const _StatusPrompt({required this.text, required this.color});
+
+  final String text;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.spaceSm),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(PhosphorIconsRegular.info, size: 16, color: color),
+          SizedBox(width: AppSizes.spaceXs),
+          Expanded(
+            child: CustomText(
+              text,
+              style: TextStyle(fontSize: AppSizes.fontCaption, height: 1.4, color: Theme.of(context).colorScheme.onSurface),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The customer's list, with the shop's answer for each item once priced.
+class ShopRequestItemsList extends StatelessWidget {
+  const ShopRequestItemsList({super.key, required this.request});
+
+  final ShopRequest request;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final r = request;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (final item in r.items)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(
+                  item.available == null
+                      ? PhosphorIconsRegular.circle
+                      : item.available!
+                          ? PhosphorIconsFill.checkCircle
+                          : PhosphorIconsFill.xCircle,
+                  size: 16,
+                  color: item.available == null
+                      ? scheme.onSurfaceVariant
+                      : item.available!
+                          ? AppColors.success
+                          : AppColors.error,
+                ),
+                SizedBox(width: AppSizes.spaceXs),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CustomText(
+                        item.text,
+                        style: TextStyle(
+                          fontSize: AppSizes.fontLabel,
+                          color: scheme.onSurface,
+                          decoration: item.available == false ? TextDecoration.lineThrough : null,
+                        ),
+                      ),
+                      if (item.note != null)
+                        CustomText(
+                          item.note!,
+                          style: TextStyle(fontSize: AppSizes.fontCaption, color: scheme.onSurfaceVariant),
+                        ),
+                    ],
+                  ),
+                ),
+                if (item.available == true)
+                  CustomText(
+                    AppStrings.ShopRequests.priceEgp.trParams({'price': _money(item.priceEgp)}),
+                    style: const TextStyle(fontSize: AppSizes.fontLabel, fontWeight: FontWeight.w700),
+                  ),
+              ],
+            ),
+          ),
+        if (r.pricedPerItem) ...[
+          const Divider(height: AppSizes.spaceMd),
+          Row(
+            children: [
+              Expanded(
+                child: CustomText(
+                  AppStrings.ShopRequests.itemsCount.trParams({
+                    'available': '${r.availableCount}',
+                    'total': '${r.items.length}',
+                  }),
+                  style: TextStyle(fontSize: AppSizes.fontCaption, color: scheme.onSurfaceVariant),
+                ),
+              ),
+              CustomText(
+                AppStrings.ShopRequests.total.trParams({'price': _money(r.quotedPriceEgp)}),
+                style: const TextStyle(fontSize: AppSizes.fontBody, fontWeight: FontWeight.w800),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+/// Price the list item by item: in stock (price, optional note) or not.
+class _ListPricingSheet extends StatefulWidget {
+  const _ListPricingSheet({required this.request});
+
+  final ShopRequest request;
+
+  @override
+  State<_ListPricingSheet> createState() => _ListPricingSheetState();
+}
+
+class _ListPricingSheetState extends State<_ListPricingSheet> {
+  late final List<bool?> _available = [for (final i in widget.request.items) i.available];
+  late final List<TextEditingController> _prices = [
+    for (final i in widget.request.items)
+      TextEditingController(text: i.available == true ? _money(i.priceEgp) : ''),
+  ];
+  late final List<TextEditingController> _notes = [
+    for (final i in widget.request.items) TextEditingController(text: i.note ?? ''),
+  ];
+  late final _note = TextEditingController(text: widget.request.providerNote ?? '');
+  String? _error;
+
+  @override
+  void dispose() {
+    for (final c in [..._prices, ..._notes, _note]) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  double? _price(int i) {
+    final v = double.tryParse(toEnglishDigits(_prices[i].text.trim()).replaceAll(',', '.'));
+    return v == null || v <= 0 ? null : v;
+  }
+
+  double get _total {
+    var sum = 0.0;
+    for (var i = 0; i < _available.length; i++) {
+      if (_available[i] == true) sum += _price(i) ?? 0;
+    }
+    return sum;
+  }
+
+  void _submit() {
+    if (_available.any((a) => a == null)) {
+      setState(() => _error = AppStrings.ShopRequests.answerAll.tr);
+      return;
+    }
+    if (!_available.contains(true)) {
+      setState(() => _error = AppStrings.ShopRequests.needOne.tr);
+      return;
+    }
+    for (var i = 0; i < _available.length; i++) {
+      if (_available[i] == true && _price(i) == null) {
+        setState(() => _error = AppStrings.ShopRequests.invalidPrice.tr);
+        return;
+      }
+    }
+    final items = widget.request.items;
+    Navigator.pop(context, (
+      [
+        for (var i = 0; i < items.length; i++)
+          {
+            'id': items[i].id,
+            'available': _available[i],
+            if (_available[i] == true) 'priceEgp': _price(i),
+            'note': _notes[i].text.trim(),
+          },
+      ],
+      _note.text.trim(),
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final items = widget.request.items;
+    return Padding(
+      padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: AppSizes.screenPadding,
+            child: CustomText(
+              AppStrings.ShopRequests.priceList,
+              style: const TextStyle(fontSize: AppSizes.fontTitle, fontWeight: FontWeight.w800),
+            ),
+          ),
+          Flexible(
+            child: ListView.separated(
+              shrinkWrap: true,
+              padding: AppSizes.screenPadding.copyWith(top: AppSizes.spaceMd),
+              itemCount: items.length + 1,
+              separatorBuilder: (_, _) => const Divider(height: AppSizes.spaceLg),
+              itemBuilder: (context, i) {
+                if (i == items.length) {
+                  return TextField(
+                    controller: _note,
+                    maxLength: 500,
+                    maxLines: 3,
+                    minLines: 1,
+                    decoration: InputDecoration(labelText: AppStrings.ShopRequests.noteLabel.tr),
+                  );
+                }
+                final a = _available[i];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    CustomText(
+                      items[i].text,
+                      style: const TextStyle(fontSize: AppSizes.fontBody, fontWeight: FontWeight.w700),
+                    ),
+                    SizedBox(height: AppSizes.spaceSm),
+                    SegmentedButton<bool>(
+                      emptySelectionAllowed: true,
+                      segments: [
+                        ButtonSegment(
+                          value: true,
+                          icon: const Icon(PhosphorIconsRegular.checkCircle),
+                          label: Text(AppStrings.ShopRequests.inStock.tr),
+                        ),
+                        ButtonSegment(
+                          value: false,
+                          icon: const Icon(PhosphorIconsRegular.xCircle),
+                          label: Text(AppStrings.ShopRequests.outOfStock.tr),
+                        ),
+                      ],
+                      selected: {?a},
+                      onSelectionChanged: (v) => setState(() {
+                        _available[i] = v.isEmpty ? null : v.first;
+                        _error = null;
+                      }),
+                    ),
+                    if (a == true) ...[
+                      SizedBox(height: AppSizes.spaceSm),
+                      TextField(
+                        controller: _prices[i],
+                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                        inputFormatters: [
+                          const EnglishDigitsInputFormatter(),
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                        ],
+                        decoration: InputDecoration(labelText: AppStrings.ShopRequests.priceLabel.tr, isDense: true),
+                        onChanged: (_) => setState(() => _error = null),
+                      ),
+                    ],
+                    if (a != null) ...[
+                      SizedBox(height: AppSizes.spaceSm),
+                      TextField(
+                        controller: _notes[i],
+                        maxLength: 200,
+                        decoration: InputDecoration(labelText: AppStrings.ShopRequests.itemNote.tr, isDense: true),
+                      ),
+                    ],
+                  ],
+                );
+              },
+            ),
+          ),
+          SafeArea(
+            top: false,
+            child: Padding(
+              padding: AppSizes.screenPadding.copyWith(top: AppSizes.spaceSm, bottom: AppSizes.spaceMd),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (_error != null) ...[
+                    CustomText(
+                      _error!,
+                      style: TextStyle(color: scheme.error, fontWeight: FontWeight.w600, fontSize: AppSizes.fontCaption),
+                    ),
+                    SizedBox(height: AppSizes.spaceXs),
+                  ],
+                  CustomText(
+                    AppStrings.ShopRequests.total.trParams({'price': _money(_total)}),
+                    style: const TextStyle(fontSize: AppSizes.fontBody, fontWeight: FontWeight.w800),
+                  ),
+                  SizedBox(height: AppSizes.spaceSm),
+                  AppFilledButton(text: AppStrings.ShopRequests.sendToCustomer, onTap: _submit),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 class _QuoteSheet extends StatefulWidget {

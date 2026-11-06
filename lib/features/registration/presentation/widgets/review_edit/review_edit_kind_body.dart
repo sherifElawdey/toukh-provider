@@ -11,6 +11,8 @@ const List<ServiceType> kRegistrationKindOrder = [
   ServiceType.restaurant,
   ServiceType.supermarket,
   ServiceType.grocery,
+  ServiceType.meatFrozen,
+  ServiceType.cleaning,
   ServiceType.pharmacy,
   ServiceType.otherShops,
   ServiceType.homeService,
@@ -33,6 +35,10 @@ String reviewEditKindLabelKey(ServiceType t) {
       return AppStrings.Registration.kindPharmacy;
     case ServiceType.otherShops:
       return AppStrings.Registration.kindOtherShops;
+    case ServiceType.meatFrozen:
+      return AppStrings.Registration.kindMeatFrozen;
+    case ServiceType.cleaning:
+      return AppStrings.Registration.kindCleaning;
   }
 }
 
@@ -52,6 +58,10 @@ IconData reviewEditKindIcon(ServiceType t) {
       return PhosphorIconsRegular.firstAid;
     case ServiceType.otherShops:
       return PhosphorIconsRegular.storefront;
+    case ServiceType.meatFrozen:
+      return PhosphorIconsRegular.cow;
+    case ServiceType.cleaning:
+      return PhosphorIconsRegular.broom;
   }
 }
 

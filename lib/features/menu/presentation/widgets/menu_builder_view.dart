@@ -306,7 +306,12 @@ class MenuBuilderView extends StatelessWidget {
       allowNewCategory: true,
     );
     if (supermarket) {
-      openSupermarketCatalogPicker(context, onAddCustom: addCustom);
+      final auth = context.read<AuthCubit>().state;
+      openSupermarketCatalogPicker(
+        context,
+        onAddCustom: addCustom,
+        aisles: auth is Authenticated ? auth.profile.catalogAisles : null,
+      );
     } else {
       openCatalogPicker(context, onAddCustom: addCustom);
     }

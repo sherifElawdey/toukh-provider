@@ -30,6 +30,7 @@ class RegistrationSubmitData {
     this.serviceAreaId,
     required this.workingHours,
     this.deliveryConfig,
+    this.supportPhone,
     this.avgPrepMinutes,
     this.cuisineTags = const [],
     this.preServiceQuestions = const [],
@@ -60,6 +61,7 @@ class RegistrationSubmitData {
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
+  final String? supportPhone;
   final int? avgPrepMinutes;
   final List<String> cuisineTags;
   final List<PreServiceQuestion> preServiceQuestions;

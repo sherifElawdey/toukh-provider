@@ -42,6 +42,10 @@ class SettingsProfileHeaderCard extends StatelessWidget {
           return 'registration.shop_fruit_veg'.tr;
         case ShopCategory.restaurant:
           return 'registration.shop_restaurant'.tr;
+        case ShopCategory.meatFrozen:
+          return 'registration.shop_meat_frozen'.tr;
+        case ShopCategory.cleaning:
+          return 'registration.shop_cleaning'.tr;
       }
     }
     if (t == ServiceType.homeService && profile.serviceCategoryId != null) {
@@ -62,6 +66,10 @@ class SettingsProfileHeaderCard extends StatelessWidget {
         return 'registration.kind_pharmacy'.tr;
       case ServiceType.otherShops:
         return 'registration.kind_other_shops'.tr;
+      case ServiceType.meatFrozen:
+        return 'registration.kind_meat_frozen'.tr;
+      case ServiceType.cleaning:
+        return 'registration.kind_cleaning'.tr;
       case ServiceType.homeBrands:
         return 'registration.kind_home_brands'.tr;
     }

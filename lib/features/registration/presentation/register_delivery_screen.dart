@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/utils/phone_e164.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
@@ -29,6 +30,27 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
   final _outerCity = TextEditingController();
   final _prep = TextEditingController();
 
+  /// Optional support / delivery number shown with every order.
+  final _support = TextEditingController();
+  bool _seededSupport = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_seededSupport) return;
+    _seededSupport = true;
+    final ten = egyptTenDigitsFromStored(context.read<RegistrationCubit>().state.supportPhone);
+    if (ten != null) _support.text = egyptLocalElevenFromTen(ten);
+  }
+
+  /// E.164 of the entered number; '' when empty; null when invalid.
+  String? get _supportE164 {
+    final digits = _support.text.replaceAll(RegExp(r'\D'), '');
+    if (digits.isEmpty) return '';
+    final e164 = egyptMobileE164(digits);
+    return e164.isEmpty ? null : e164;
+  }
+
   bool _isRestaurant(RegistrationDraft d) =>
       d.kind == ServiceType.restaurant &&
       d.shopCategory == ShopCategory.restaurant;
@@ -39,6 +61,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
     _innerCity.dispose();
     _outerCity.dispose();
     _prep.dispose();
+    _support.dispose();
     super.dispose();
   }
 
@@ -90,9 +113,20 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
       );
       return;
     }
+    final support = _supportE164;
+    if (support == null) {
+      AppSnack.show(
+        context,
+        message: AppStrings.Auth.invalidPhone.tr,
+        state: AppSnackState.warning,
+        icon: PhosphorIconsRegular.phone,
+      );
+      return;
+    }
     cubit.setDelivery(
       deliveryConfig: _buildConfig(),
       avgPrepMinutes: _isRestaurant(draft) ? prep : null,
+      supportPhone: support.isEmpty ? null : support,
     );
     context.push(
       _isRestaurant(draft)
@@ -211,6 +245,18 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
                 ),
               ],
             ],
+          ),
+        ),
+        RegistrationSectionCard(
+          icon: PhosphorIconsDuotone.phoneCall,
+          title: AppStrings.Registration.supportPhoneTitle,
+          hint: AppStrings.Registration.supportPhoneHint,
+          child: AppPhoneField(
+            controller: _support,
+            label: AppStrings.Registration.supportPhoneLabel,
+            invalidTenDigitsMessage: AppStrings.Auth.invalidPhone,
+            validator: (_) => null,
+            textInputAction: TextInputAction.done,
           ),
         ),
         if (restaurant)

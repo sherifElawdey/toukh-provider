@@ -22,6 +22,10 @@ ShopCategory? shopCategoryForSubmit(ServiceType kind, ShopCategory? draft) {
       return ShopCategory.pharmacy;
     case ServiceType.grocery:
       return ShopCategory.fruitVeg;
+    case ServiceType.meatFrozen:
+      return ShopCategory.meatFrozen;
+    case ServiceType.cleaning:
+      return ShopCategory.cleaning;
     case ServiceType.homeService:
     case ServiceType.homeBrands:
     case ServiceType.otherShops:
@@ -52,6 +56,7 @@ class RegistrationDraft extends Equatable {
     this.serviceAreaId,
     this.workingHours = const {},
     this.deliveryConfig,
+    this.supportPhone,
     this.avgPrepMinutes,
     this.cuisineTags = const [],
     this.preServiceQuestions = const [],
@@ -86,6 +91,9 @@ class RegistrationDraft extends Equatable {
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
+
+  /// Optional support / delivery number (E.164).
+  final String? supportPhone;
   final int? avgPrepMinutes;
   final List<String> cuisineTags;
   final List<PreServiceQuestion> preServiceQuestions;
@@ -117,6 +125,8 @@ class RegistrationDraft extends Equatable {
     bool clearServiceAreaId = false,
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
+    String? supportPhone,
+    bool clearSupportPhone = false,
     int? avgPrepMinutes,
     List<String>? cuisineTags,
     List<PreServiceQuestion>? preServiceQuestions,
@@ -151,6 +161,8 @@ class RegistrationDraft extends Equatable {
           : (serviceAreaId ?? this.serviceAreaId),
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
+      supportPhone:
+          clearSupportPhone ? null : (supportPhone ?? this.supportPhone),
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
       cuisineTags: cuisineTags ?? this.cuisineTags,
       preServiceQuestions: preServiceQuestions ?? this.preServiceQuestions,
@@ -219,6 +231,7 @@ class RegistrationDraft extends Equatable {
       serviceAreaId: serviceAreaId,
       workingHours: workingHours,
       deliveryConfig: deliveryConfig,
+      supportPhone: supportPhone,
       avgPrepMinutes: avgPrepMinutes,
       cuisineTags: isRestaurant ? cuisineTags : const [],
       preServiceQuestions: k == ServiceType.homeService
@@ -250,6 +263,7 @@ class RegistrationDraft extends Equatable {
         serviceAreaId,
         workingHours,
         deliveryConfig,
+        supportPhone,
         avgPrepMinutes,
         cuisineTags,
         preServiceQuestions,
@@ -303,6 +317,18 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
         emit(state.copyWith(
           kind: kind,
           shopCategory: ShopCategory.fruitVeg,
+          clearServiceCategoryId: true,
+        ));
+      case ServiceType.meatFrozen:
+        emit(state.copyWith(
+          kind: kind,
+          shopCategory: ShopCategory.meatFrozen,
+          clearServiceCategoryId: true,
+        ));
+      case ServiceType.cleaning:
+        emit(state.copyWith(
+          kind: kind,
+          shopCategory: ShopCategory.cleaning,
           clearServiceCategoryId: true,
         ));
       case ServiceType.homeBrands:
@@ -390,10 +416,13 @@ class RegistrationCubit extends Cubit<RegistrationDraft> {
   void setDelivery({
     DeliveryConfig? deliveryConfig,
     int? avgPrepMinutes,
+    String? supportPhone,
   }) {
     emit(state.copyWith(
       deliveryConfig: deliveryConfig,
       avgPrepMinutes: avgPrepMinutes,
+      supportPhone: supportPhone,
+      clearSupportPhone: supportPhone == null,
     ));
   }
 

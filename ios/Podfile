@@ -45,6 +45,14 @@ post_install do |installer|
     target.build_configurations.each do |config|
 
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
+      # permission_handler only checks / asks for the permissions enabled here;
+      # others always read as denied on iOS (e.g. the camera never opens).
+      config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= [
+        '$(inherited)',
+        'PERMISSION_CAMERA=1',
+        'PERMISSION_PHOTOS=1',
+        'PERMISSION_NOTIFICATIONS=1',
+      ]
 
     end
 

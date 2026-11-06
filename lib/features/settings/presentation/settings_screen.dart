@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:toukh_provider/core/banners/provider_banner_strip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -130,10 +131,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.ordersHistory,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.ordersHistory),
                 ),
@@ -142,10 +142,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.wallet,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.wallet),
                 ),
@@ -154,10 +153,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.revenues,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.revenues),
                 ),
@@ -166,10 +164,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.reviews,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.reviews),
                 ),
@@ -178,25 +175,21 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: ToukhFeedbackStrings.title,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => openFeedbackList(context),
                 ),
-                if (auth is Authenticated &&
-                    auth.profile.serviceType == ServiceType.otherShops &&
-                    auth.profile.orderMode == ProviderOrderMode.customRequests)
+                if (auth is Authenticated && auth.profile.takesSpecialRequests)
                   SettingsTile(
                     icon: PhosphorIconsRegular.chatCircleText,
                     titleKey: AppStrings.ShopRequests.title,
                     trailing: Icon(
                       ToukhIcons.chevronRight,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.45),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.45),
                     ),
                     onTap: () => context.push(AppRoutes.shopRequests),
                   ),
@@ -207,10 +200,9 @@ class SettingsScreen extends StatelessWidget {
                     titleKey: AppStrings.Settings.gallery,
                     trailing: Icon(
                       ToukhIcons.chevronRight,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.45),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.45),
                     ),
                     onTap: () => context.push(AppRoutes.settingsGallery),
                   ),
@@ -221,14 +213,31 @@ class SettingsScreen extends StatelessWidget {
                     titleKey: AppStrings.Settings.manageDrivers,
                     trailing: Icon(
                       ToukhIcons.chevronRight,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onSurface
-                          .withValues(alpha: 0.45),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.45),
                     ),
                     onTap: () => context.push(AppRoutes.manageDrivers),
                   ),
                 SizedBox(height: AppSizes.spaceLg),
+                if (auth is Authenticated) ...[
+                  SettingsSectionTitle(labelKey: AppStrings.Settings.alerts),
+                  SizedBox(height: AppSizes.spaceSm),
+                  ToukhHighPriorityAlertTile(
+                    profileRef: FirebaseFirestore.instance
+                        .collection(ToukhFirestoreCollections.providers)
+                        .doc(
+                          auth.profile.uid.trim().isNotEmpty
+                              ? auth.profile.uid
+                              : auth.user.uid,
+                        ),
+                    titleKey: AppStrings.Settings.highPriorityAlerts,
+                    subtitleKey: AppStrings.Settings.highPriorityAlertsHint,
+                    batteryHintKey: AppStrings.Settings.batteryHint,
+                    batteryActionKey: AppStrings.Settings.batteryAction,
+                  ),
+                  SizedBox(height: AppSizes.spaceXl),
+                ],
                 SettingsSectionTitle(labelKey: AppStrings.Settings.appearance),
                 SizedBox(height: AppSizes.spaceSm),
                 ToukhSettingsThemeTile(
@@ -257,26 +266,22 @@ class SettingsScreen extends StatelessWidget {
                         style: TextStyle(
                           fontSize: AppSizes.fontBody,
                           fontWeight: FontWeight.w500,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withValues(alpha: 0.65),
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.65),
                         ),
                       ),
                       SizedBox(width: AppSizes.spaceXs),
                       Icon(
                         ToukhIcons.chevronDown,
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withValues(alpha: 0.65),
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.65),
                       ),
                     ],
                   ),
-                  onTap: () => showLanguageSelectionSheet(
-                    context,
-                    settings: settings,
-                  ),
+                  onTap: () =>
+                      showLanguageSelectionSheet(context, settings: settings),
                 ),
                 SizedBox(height: AppSizes.spaceXl),
                 SettingsSectionTitle(labelKey: AppStrings.Settings.aboutApp),
@@ -286,10 +291,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.aboutApp,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.aboutApp),
                 ),
@@ -301,10 +305,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.termsAndConditions,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.legalTerms),
                 ),
@@ -313,10 +316,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.privacyPolicy,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.legalPrivacy),
                 ),
@@ -325,10 +327,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.support,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => _openExternalUrl(context, LegalUrls.support),
                 ),
@@ -337,10 +338,9 @@ class SettingsScreen extends StatelessWidget {
                   titleKey: AppStrings.Settings.declaration,
                   trailing: Icon(
                     ToukhIcons.chevronRight,
-                    color: Theme.of(context)
-                        .colorScheme
-                        .onSurface
-                        .withValues(alpha: 0.45),
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.45),
                   ),
                   onTap: () => context.push(AppRoutes.legalDeclaration),
                 ),

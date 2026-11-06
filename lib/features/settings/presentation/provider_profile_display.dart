@@ -27,6 +27,10 @@ String providerKindLabelKey(ServiceType kind) {
       return AppStrings.Registration.kindPharmacy;
     case ServiceType.otherShops:
       return AppStrings.Registration.kindOtherShops;
+    case ServiceType.meatFrozen:
+      return AppStrings.Registration.kindMeatFrozen;
+    case ServiceType.cleaning:
+      return AppStrings.Registration.kindCleaning;
   }
 }
 
@@ -40,6 +44,10 @@ String shopCategoryLabel(ShopCategory category) {
       return 'registration.shop_fruit_veg'.tr;
     case ShopCategory.restaurant:
       return 'registration.shop_restaurant'.tr;
+    case ShopCategory.meatFrozen:
+      return 'registration.shop_meat_frozen'.tr;
+    case ShopCategory.cleaning:
+      return 'registration.shop_cleaning'.tr;
   }
 }
 

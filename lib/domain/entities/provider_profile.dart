@@ -38,6 +38,7 @@ class ProviderProfile extends Equatable {
     this.serviceAreaId,
     this.workingHours = const {},
     this.deliveryConfig,
+    this.supportPhone,
 
     /// Prep time for restaurants (minutes), independent of delivery toggle.
     this.avgPrepMinutes,
@@ -94,6 +95,10 @@ class ProviderProfile extends Equatable {
 
   final Map<Weekday, DaySchedule> workingHours;
   final DeliveryConfig? deliveryConfig;
+
+  /// Support / delivery number shown with every order (customers, couriers,
+  /// admins). Null: orders show [phone] instead.
+  final String? supportPhone;
   final int? avgPrepMinutes;
 
   /// Restaurant cuisine taxonomy wire ids (see [RestaurantCuisineTaxonomy]).
@@ -155,6 +160,8 @@ class ProviderProfile extends Equatable {
     String? serviceAreaId,
     Map<Weekday, DaySchedule>? workingHours,
     DeliveryConfig? deliveryConfig,
+    String? supportPhone,
+    bool clearSupportPhone = false,
     int? avgPrepMinutes,
     List<String>? cuisineTags,
     List<MenuItemEntity>? menuItems,
@@ -200,6 +207,8 @@ class ProviderProfile extends Equatable {
       serviceAreaId: serviceAreaId ?? this.serviceAreaId,
       workingHours: workingHours ?? this.workingHours,
       deliveryConfig: deliveryConfig ?? this.deliveryConfig,
+      supportPhone:
+          clearSupportPhone ? null : (supportPhone ?? this.supportPhone),
       avgPrepMinutes: avgPrepMinutes ?? this.avgPrepMinutes,
       cuisineTags: cuisineTags ?? this.cuisineTags,
       menuItems: menuItems ?? this.menuItems,
@@ -258,6 +267,8 @@ class ProviderProfile extends Equatable {
       'workingHours': wh,
       if (deliveryConfig != null)
         'deliveryConfig': deliveryConfig!.toFirestore(),
+      // Saved even when cleared, so orders fall back to the main phone.
+      'supportPhone': (supportPhone?.trim().isEmpty ?? true) ? null : supportPhone!.trim(),
       if (avgPrepMinutes != null) 'avgPrepMinutes': avgPrepMinutes,
       'cuisineTags': cuisineTags,
       // Menu items live under providers/{id}/Menu/{category}/items/{itemId}.
@@ -354,6 +365,9 @@ class ProviderProfile extends Equatable {
       deliveryConfig: DeliveryConfig.fromFirestore(
         data['deliveryConfig'] as Map<String, dynamic>?,
       ),
+      supportPhone: (data['supportPhone'] as String?)?.trim().isNotEmpty == true
+          ? (data['supportPhone'] as String).trim()
+          : null,
       menuItems: menuItems,
       portfolioImageUrls: (data['portfolioImageUrls'] as List<dynamic>?)
           ?.map((e) => e as String)
@@ -394,16 +408,27 @@ class ProviderProfile extends Equatable {
       serviceType == ServiceType.restaurant &&
       shopCategory == ShopCategory.restaurant;
 
-  /// Fruit & vegetable shops: build their menu from the admin grocery catalog.
+  /// Fruit & vegetable shops: build their menu from the admin grocery catalog
+  /// (supermarkets too, next to their packaged catalog).
   bool get usesGroceryCatalog =>
       serviceType == ServiceType.grocery ||
       shopCategory == ShopCategory.fruitVeg ||
-      usesSupermarketCatalog;
-
-  /// Supermarkets: also pick from the admin supermarket (packaged) catalog.
-  bool get usesSupermarketCatalog =>
       serviceType == ServiceType.supermarket ||
       shopCategory == ShopCategory.supermarket;
+
+  /// Supermarkets, meat & frozen and cleaning-supplies shops: also pick from
+  /// the admin supermarket (packaged) catalog.
+  bool get usesSupermarketCatalog =>
+      serviceType == ServiceType.supermarket ||
+      shopCategory == ShopCategory.supermarket ||
+      isSupermarketLike;
+
+  /// The two shelf categories that work like a supermarket.
+  bool get isSupermarketLike =>
+      serviceType == ServiceType.meatFrozen ||
+      serviceType == ServiceType.cleaning ||
+      shopCategory == ShopCategory.meatFrozen ||
+      shopCategory == ShopCategory.cleaning;
 
   /// Other shops in menu mode (request-based ones answer custom requests).
   bool get isMenuOtherShop =>
@@ -411,11 +436,31 @@ class ProviderProfile extends Equatable {
       orderMode == ProviderOrderMode.menu;
 
   /// Shops that sell from a menu instead of showing a gallery.
-  bool get hasMenu => isRestaurantShop || usesGroceryCatalog || isMenuOtherShop;
+  bool get hasMenu =>
+      isRestaurantShop || usesGroceryCatalog || isSupermarketLike || isMenuOtherShop;
+
+  /// Supermarket catalog aisles this shop picks from (null = all of them).
+  Set<SupermarketAisle>? get catalogAisles {
+    if (serviceType == ServiceType.meatFrozen || shopCategory == ShopCategory.meatFrozen) {
+      return {SupermarketAisle.meat, SupermarketAisle.frozen};
+    }
+    if (serviceType == ServiceType.cleaning || shopCategory == ShopCategory.cleaning) {
+      return {SupermarketAisle.cleaning, SupermarketAisle.household};
+    }
+    return null;
+  }
 
   bool get isPharmacy =>
       serviceType == ServiceType.pharmacy ||
       shopCategory == ShopCategory.pharmacy;
+
+  /// Customers can send a special request (a list to price) to every shop
+  /// but restaurants and pharmacies, next to its menu (as the server checks).
+  bool get takesSpecialRequests =>
+      serviceType != ServiceType.homeService &&
+      serviceType != ServiceType.restaurant &&
+      !isRestaurantShop &&
+      !isPharmacy;
 
   /// Display label for verification screens (matches delivery `DriverProfile`).
   String get displayName => name;
@@ -447,6 +492,7 @@ class ProviderProfile extends Equatable {
     serviceAreaId,
     workingHours,
     deliveryConfig,
+    supportPhone,
     avgPrepMinutes,
     cuisineTags,
     menuItems,

@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
@@ -93,7 +92,7 @@ class _TripRouteMapSheet extends StatelessWidget {
                 },
                 locateMe: () async {
                   try {
-                    final pos = await Geolocator.getCurrentPosition();
+                    final pos = await ToukhCurrentLocation.get();
                     return LatLng(pos.latitude, pos.longitude);
                   } catch (_) {
                     return null;

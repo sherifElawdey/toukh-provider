@@ -293,6 +293,7 @@ class AuthCubit extends Cubit<AuthState> {
         serviceAreaId: area.id,
         workingHours: data.workingHours,
         deliveryConfig: data.deliveryConfig,
+        supportPhone: data.supportPhone,
         avgPrepMinutes: data.avgPrepMinutes,
         cuisineTags: data.cuisineTags,
         preServiceQuestions: data.kind == ServiceType.homeService
@@ -731,6 +732,23 @@ class AuthCubit extends Cubit<AuthState> {
     }
     final updated = current.profile.copyWith(
       brandInfo: brandInfo.normalized(),
+      updatedAt: DateTime.now(),
+    );
+    await _profileRepository.upsertProfile(updated);
+    emit(Authenticated(user: current.user, profile: updated));
+  }
+
+  /// Support / delivery number shown with every order; null or empty clears
+  /// it (orders then show the main phone).
+  Future<void> updateSupportPhone(String? e164) async {
+    final current = state;
+    if (current is! Authenticated) {
+      throw StateError('Not signed in.');
+    }
+    final value = e164?.trim() ?? '';
+    final updated = current.profile.copyWith(
+      supportPhone: value.isEmpty ? null : value,
+      clearSupportPhone: value.isEmpty,
       updatedAt: DateTime.now(),
     );
     await _profileRepository.upsertProfile(updated);

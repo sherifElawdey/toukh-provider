@@ -4,7 +4,9 @@ enum ShopCategory {
   pharmacy,
   supermarket,
   fruitVeg,
-  restaurant;
+  restaurant,
+  meatFrozen,
+  cleaning;
 
   String get wireValue => name;
 

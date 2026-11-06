@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
@@ -36,6 +37,11 @@ class _LoginScreenState extends State<LoginScreen> {
       listenWhen: (p, c) =>
           c is AuthFailure || c is Authenticated || c is AuthenticatedCompany,
       listener: (context, state) async {
+        // Signed in: offer to save the phone and password (Google Password
+        // Manager / iCloud Keychain) so the next login fills them in.
+        if (state is Authenticated || state is AuthenticatedCompany) {
+          TextInput.finishAutofillContext();
+        }
         if (state is AuthFailure) {
           AppSnack.show(
             context,
@@ -92,76 +98,82 @@ class _LoginScreenState extends State<LoginScreen> {
                 maxWidth: 440,
                 child: Form(
                   key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      AuthBrandHeader(
-                        title: AppStrings.Auth.welcomeBack,
-                        subtitle: AppStrings.Auth.welcomeBackSubtitle,
-                        logoSize: wide ? 72 : null,
-                      ),
-                      SizedBox(height: AppSizes.space3xl),
-                      AppPhoneField(
-                        controller: _phone,
-                        label: AppStrings.Auth.phoneNumber,
-                        hint: AppStrings.Auth.phoneHint,
-                        invalidTenDigitsMessage: AppStrings.Auth.invalidPhone,
-                        textInputAction: TextInputAction.next,
-                      ),
-                      SizedBox(height: AppSizes.spaceBase),
-                      AppPasswordField(
-                        controller: _password,
-                        label: AppStrings.Auth.password,
-                        textInputAction: TextInputAction.done,
-                        validator: (v) => (v == null || v.length < 6)
-                            ? AppStrings.Auth.minPasswordLength
-                            : null,
-                      ),
-                      Align(
-                        alignment: AlignmentDirectional.centerEnd,
-                        child: AppTextButton(
-                          text: AppStrings.Auth.forgotPassword,
-                          size: AppButtonSize.small,
-                          alignment: MainAxisAlignment.end,
-                          underlineLabel: true,
-                          status: loading
-                              ? AppButtonStatus.disabled
-                              : AppButtonStatus.enabled,
+                  child: AutofillGroup(
+                    // Saving waits for a successful sign-in (finishAutofillContext).
+                    onDisposeAction: AutofillContextAction.cancel,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AuthBrandHeader(
+                          title: AppStrings.Auth.welcomeBack,
+                          subtitle: AppStrings.Auth.welcomeBackSubtitle,
+                          logoSize: wide ? 72 : null,
+                        ),
+                        SizedBox(height: AppSizes.space3xl),
+                        AppPhoneField(
+                          controller: _phone,
+                          // Password managers pair the saved password with a username.
+                          autofillHints: const [AutofillHints.username],
+                          label: AppStrings.Auth.phoneNumber,
+                          hint: AppStrings.Auth.phoneHint,
+                          invalidTenDigitsMessage: AppStrings.Auth.invalidPhone,
+                          textInputAction: TextInputAction.next,
+                        ),
+                        SizedBox(height: AppSizes.spaceBase),
+                        AppPasswordField(
+                          controller: _password,
+                          label: AppStrings.Auth.password,
+                          textInputAction: TextInputAction.done,
+                          validator: (v) => (v == null || v.length < 6)
+                              ? AppStrings.Auth.minPasswordLength
+                              : null,
+                        ),
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: AppTextButton(
+                            text: AppStrings.Auth.forgotPassword,
+                            size: AppButtonSize.small,
+                            alignment: MainAxisAlignment.end,
+                            underlineLabel: true,
+                            status: loading
+                                ? AppButtonStatus.disabled
+                                : AppButtonStatus.enabled,
 
-                          onTap: () => context.push(AppRoutes.forgotPassword),
+                            onTap: () => context.push(AppRoutes.forgotPassword),
+                          ),
                         ),
-                      ),
-                      SizedBox(height: AppSizes.spaceMd),
-                      AppFilledButton(
-                        text: AppStrings.Auth.signIn,
-                        status: loading
-                            ? AppButtonStatus.loading
-                            : AppButtonStatus.enabled,
-                        onTap: () {
-                          if (!_formKey.currentState!.validate()) {
-                            return;
-                          }
-                          final national = _phone.text.replaceAll(
-                            RegExp(r'\D'),
-                            '',
-                          );
-                          context.read<AuthCubit>().signIn(
-                            phone: egyptMobileE164(national),
-                            password: _password.text,
-                          );
-                        },
-                      ),
-                      SizedBox(height: AppSizes.spaceMd),
-                      Center(
-                        child: AppTextButton(
-                          text: AppStrings.Auth.createAccount,
+                        SizedBox(height: AppSizes.spaceMd),
+                        AppFilledButton(
+                          text: AppStrings.Auth.signIn,
                           status: loading
-                              ? AppButtonStatus.disabled
+                              ? AppButtonStatus.loading
                               : AppButtonStatus.enabled,
-                          onTap: () => context.push(AppRoutes.registerKind),
+                          onTap: () {
+                            if (!_formKey.currentState!.validate()) {
+                              return;
+                            }
+                            final national = _phone.text.replaceAll(
+                              RegExp(r'\D'),
+                              '',
+                            );
+                            context.read<AuthCubit>().signIn(
+                              phone: egyptMobileE164(national),
+                              password: _password.text,
+                            );
+                          },
                         ),
-                      ),
-                    ],
+                        SizedBox(height: AppSizes.spaceMd),
+                        Center(
+                          child: AppTextButton(
+                            text: AppStrings.Auth.createAccount,
+                            status: loading
+                                ? AppButtonStatus.disabled
+                                : AppButtonStatus.enabled,
+                            onTap: () => context.push(AppRoutes.registerKind),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

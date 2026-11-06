@@ -5,7 +5,13 @@ enum ServiceType {
   restaurant,
   homeBrands,
   pharmacy,
-  otherShops;
+  otherShops,
+
+  /// Meat, poultry & frozen goods: sells like a supermarket.
+  meatFrozen,
+
+  /// Cleaning supplies: sells like a supermarket.
+  cleaning;
 
   /// Client Other Shops list matches the literal `other_shops`, not `otherShops`.
   String get wireValue => this == ServiceType.otherShops ? 'other_shops' : name;

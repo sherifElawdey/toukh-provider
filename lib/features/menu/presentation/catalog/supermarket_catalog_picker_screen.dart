@@ -14,13 +14,19 @@ import 'package:toukh_provider/core/utils/egp_label.dart';
 
 /// Opens the supermarket catalog over the menu builder (shares its cubit).
 /// [onAddCustom] closes the picker and adds a product the catalog lacks.
-Future<void> openSupermarketCatalogPicker(BuildContext context, {VoidCallback? onAddCustom}) {
+/// [aisles] limits the catalog to a shop's own aisles (meat & frozen,
+/// cleaning supplies); null shows every aisle.
+Future<void> openSupermarketCatalogPicker(
+  BuildContext context, {
+  VoidCallback? onAddCustom,
+  Set<SupermarketAisle>? aisles,
+}) {
   final cubit = context.read<MenuBuilderCubit>();
   return Navigator.of(context).push(
     MaterialPageRoute<void>(
       builder: (_) => BlocProvider.value(
         value: cubit,
-        child: SupermarketCatalogPickerScreen(onAddCustom: onAddCustom),
+        child: SupermarketCatalogPickerScreen(onAddCustom: onAddCustom, aisles: aisles),
       ),
     ),
   );
@@ -29,9 +35,10 @@ Future<void> openSupermarketCatalogPicker(BuildContext context, {VoidCallback? o
 /// Supermarkets pick packaged products from the admin catalog, then set their
 /// own sale options, prices, terms and per-order limits.
 class SupermarketCatalogPickerScreen extends StatefulWidget {
-  const SupermarketCatalogPickerScreen({super.key, this.onAddCustom});
+  const SupermarketCatalogPickerScreen({super.key, this.onAddCustom, this.aisles});
 
   final VoidCallback? onAddCustom;
+  final Set<SupermarketAisle>? aisles;
 
   @override
   State<SupermarketCatalogPickerScreen> createState() => _SupermarketCatalogPickerScreenState();
@@ -105,7 +112,11 @@ class _SupermarketCatalogPickerScreenState extends State<SupermarketCatalogPicke
         builder: (context, snap) {
           if (snap.hasError) return Center(child: CustomText(AppStrings.Common.error));
           if (!snap.hasData) return const Center(child: AppLoadingMark());
-          final all = snap.data!;
+          final only = widget.aisles;
+          final all = [
+            for (final p in snap.data!)
+              if (only == null || only.contains(p.aisle)) p,
+          ];
           if (all.isEmpty) return _emptyCatalog();
           final aisles = SupermarketAisle.values.where((a) => all.any((p) => p.aisle == a)).toList();
 

@@ -42,16 +42,15 @@ android {
         multiDexEnabled = true
     }
     signingConfigs {
-
-        signingConfigs {
-            create("release") {
+        create("release") {
+            // Without key.properties (CI, new machine) debug builds still work.
+            if (keystorePropertiesFile.exists()) {
                 keyAlias = keystoreProperties["keyAlias"] as String
                 keyPassword = keystoreProperties["keyPassword"] as String
                 storeFile = file(keystoreProperties["storeFile"] as String)
                 storePassword = keystoreProperties["storePassword"] as String
             }
         }
-
     }
 
     buildTypes {

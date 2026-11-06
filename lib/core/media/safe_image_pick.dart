@@ -84,9 +84,31 @@ Future<bool> _ensureCameraAccess(
       return false;
     }
     status = await Permission.camera.request();
-    return status.isGranted;
+    if (status.isGranted) return true;
   }
 
+  // Blocked earlier (or by a device policy): say so instead of doing
+  // nothing, and offer the app's settings.
+  if (context.mounted) {
+    final open = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: CustomText(AppStrings.Common.mediaCameraRationaleTitle.tr),
+        content: CustomText(AppStrings.Common.mediaCameraBlocked.tr),
+        actions: [
+          AppTextButton(
+            text: AppStrings.Common.cancel.tr,
+            onTap: () => Navigator.pop(ctx, false),
+          ),
+          AppTextButton(
+            text: AppStrings.Permissions.openSettings.tr,
+            onTap: () => Navigator.pop(ctx, true),
+          ),
+        ],
+      ),
+    );
+    if (open == true) await openAppSettings();
+  }
   return false;
 }
 

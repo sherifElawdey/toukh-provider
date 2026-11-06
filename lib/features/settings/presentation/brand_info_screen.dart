@@ -51,6 +51,9 @@ class _BrandInfoScreenState extends State<BrandInfoScreen> {
   final _tiktok = TextEditingController();
   final _email = TextEditingController();
   final List<_PhoneDraft> _phones = [];
+
+  /// Support / delivery number shown with every order (optional).
+  final _support = TextEditingController();
   var _seeded = false;
   var _saving = false;
 
@@ -63,6 +66,8 @@ class _BrandInfoScreenState extends State<BrandInfoScreen> {
     final auth = context.read<AuthCubit>().state;
     if (auth is! Authenticated) return;
     _seed(auth.profile.brandInfo);
+    final ten = egyptTenDigitsFromStored(auth.profile.supportPhone);
+    if (ten != null) _support.text = egyptLocalElevenFromTen(ten);
     _seeded = true;
   }
 
@@ -88,6 +93,7 @@ class _BrandInfoScreenState extends State<BrandInfoScreen> {
     for (final phone in _phones) {
       phone.dispose();
     }
+    _support.dispose();
     _website.dispose();
     _facebook.dispose();
     _instagram.dispose();
@@ -134,9 +140,15 @@ class _BrandInfoScreenState extends State<BrandInfoScreen> {
       email: _email.text,
     );
 
+    final supportDigits = _support.text.replaceAll(RegExp(r'\D'), '');
+    final support = supportDigits.isEmpty ? '' : egyptMobileE164(supportDigits);
+    if (supportDigits.isNotEmpty && support.isEmpty) return;
+
     setState(() => _saving = true);
     try {
-      await context.read<AuthCubit>().updateBrandInfo(info);
+      final auth = context.read<AuthCubit>();
+      await auth.updateBrandInfo(info);
+      await auth.updateSupportPhone(support);
       if (!mounted) return;
       AppSnack.show(
         context,
@@ -188,6 +200,20 @@ class _BrandInfoScreenState extends State<BrandInfoScreen> {
             bottom: AppSizes.space2xl,
           ),
           children: [
+            AppPhoneField(
+              controller: _support,
+              label: AppStrings.Registration.supportPhoneLabel,
+              invalidTenDigitsMessage: AppStrings.Auth.invalidPhone,
+              validator: _phoneValidator,
+              textInputAction: TextInputAction.next,
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: AppSizes.spaceXs, bottom: AppSizes.spaceLg),
+              child: CustomText(
+                AppStrings.Registration.supportPhoneHint,
+                style: TextStyle(fontSize: AppSizes.fontCaption, color: scheme.onSurfaceVariant),
+              ),
+            ),
             for (final draft in _phones) ...[
               AppPhoneField(
                 controller: draft.controller,

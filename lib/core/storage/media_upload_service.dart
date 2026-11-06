@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:cloud_functions/cloud_functions.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:toukh_provider/core/media/picked_media.dart';
 import 'package:toukh_provider/core/storage/backblaze_b2_client.dart';
+import 'package:toukh_ui/toukh_ui.dart';
 
 /// Metadata returned after a successful image upload to Backblaze B2.
 class UploadedMedia {
@@ -45,6 +47,8 @@ class MediaUploadService {
       bytes: bytes,
       contentType: 'image/jpeg',
     );
+    // Same object path = same URL: drop this device's cached copy.
+    unawaited(HavitImageCache.forget(result.publicUrl));
     return UploadedMedia(
       url: result.publicUrl,
       fileName: result.fileName,
