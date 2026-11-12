@@ -9,6 +9,7 @@ import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
+import 'package:toukh_provider/features/drivers/presentation/driver_requests_badge.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/brand_info_banner.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_sheet.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/location_operations_section.dart';
@@ -206,16 +207,32 @@ class SettingsScreen extends StatelessWidget {
                     ),
                     onTap: () => context.push(AppRoutes.settingsGallery),
                   ),
-                if (auth is Authenticated &&
-                    auth.profile.serviceType == ServiceType.restaurant)
+                if (auth is Authenticated && auth.profile.isPharmacy)
                   SettingsTile(
-                    icon: ToukhIcons.delivery,
-                    titleKey: AppStrings.Settings.manageDrivers,
+                    icon: ToukhIcons.gallery,
+                    titleKey: AppStrings.Settings.pharmacyGalleryEntry,
                     trailing: Icon(
                       ToukhIcons.chevronRight,
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withValues(alpha: 0.45),
+                    ),
+                    onTap: () => context.push(AppRoutes.settingsPharmacyGallery),
+                  ),
+                // Any store can link its own couriers; home services can't.
+                if (auth is Authenticated &&
+                    auth.profile.serviceType != ServiceType.homeService)
+                  SettingsTile(
+                    icon: ToukhIcons.delivery,
+                    titleKey: AppStrings.Settings.manageDrivers,
+                    trailing: DriverRequestsBadge(
+                      providerId: auth.user.uid,
+                      child: Icon(
+                        ToukhIcons.chevronRight,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.45),
+                      ),
                     ),
                     onTap: () => context.push(AppRoutes.manageDrivers),
                   ),

@@ -43,6 +43,9 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
   late final Set<String> _approvedIds;
   late final double _deliveryFee;
   late final bool _offersDelivery;
+
+  /// Own delivery priced by Havit: the server adds the fee to the quote.
+  late final bool _appPricedDelivery;
   bool _submitting = false;
 
   @override
@@ -57,9 +60,10 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
     final auth = context.read<AuthCubit>().state;
     final dc = auth is Authenticated ? auth.profile.deliveryConfig : null;
     _offersDelivery = dc?.offersDelivery ?? false;
+    _appPricedDelivery = dc?.usesAppPricing ?? false;
     // Pharmacy own delivery fee only when the pharmacy offers delivery.
-    // Toukh courier fee is calculated when the customer accepts the quote.
-    _deliveryFee = _offersDelivery
+    // Havit-priced and courier fees are calculated on the server.
+    _deliveryFee = _offersDelivery && !_appPricedDelivery
         ? (dc?.isFree == true ? 0 : (dc?.priceEgp ?? 0))
         : 0;
     _subtotal.text = '0';
@@ -209,7 +213,14 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
               ),
             ),
             const SizedBox(height: AppSizes.spaceSm),
-            if (_offersDelivery)
+            if (_appPricedDelivery)
+              CustomText(
+                AppStrings.Orders.pharmacyQuoteAppFeeHint.tr,
+                style: t.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
+                ),
+              )
+            else if (_offersDelivery)
               CustomText(
                 AppStrings.Orders.pharmacyQuoteDeliveryFee.trParams({
                   'fee': _deliveryFee.toStringAsFixed(0),

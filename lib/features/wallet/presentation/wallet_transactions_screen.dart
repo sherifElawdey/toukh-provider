@@ -20,24 +20,24 @@ class WalletTransactionsScreen extends StatefulWidget {
 class _WalletTransactionsScreenState extends State<WalletTransactionsScreen> {
   final _scroll = ScrollController();
 
-  @override
-  void initState() {
-    super.initState();
-    _scroll.addListener(_onScroll);
-  }
+  /// Numbered pages on web, load-more at the last row on mobile.
+  late final _pager = ToukhWindowPager<ProviderWalletTransaction>(
+    onLoadMore: () => context.read<WalletHistoryCubit>().loadMore(),
+  )..addListener(_onPager);
+  int _page = 0;
 
-  void _onScroll() {
-    if (!_scroll.hasClients) return;
-    final max = _scroll.position.maxScrollExtent;
-    if (max <= 0) return;
-    if (_scroll.offset >= max - 200) {
-      context.read<WalletHistoryCubit>().loadMore();
+  void _onPager() {
+    if (!mounted) return;
+    if (_pager.page != _page) {
+      _page = _pager.page;
+      if (_scroll.hasClients) _scroll.jumpTo(0);
     }
+    setState(() {});
   }
 
   @override
   void dispose() {
-    _scroll.removeListener(_onScroll);
+    _pager.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -79,21 +79,27 @@ class _WalletTransactionsScreenState extends State<WalletTransactionsScreen> {
               ),
             );
           }
+          _pager.sync(
+            state.items,
+            hasMore: state.hasMore,
+            loading: state.loading,
+            loadingMore: state.loadingMore,
+            notify: false,
+          );
+          final rows = _pager.items;
           return ToukhRefresh(
             onRefresh: onRefresh,
             child: ListView.builder(
               controller: _scroll,
               physics: const AlwaysScrollableScrollPhysics(),
               padding: AppSizes.screenPadding,
-              itemCount: state.items.length + (state.loadingMore ? 1 : 0),
+              itemCount: rows.length + 1,
               itemBuilder: (context, i) {
-                if (i >= state.items.length) {
-                  return const Padding(
-                    padding: EdgeInsets.all(AppSizes.spaceLg),
-                    child: Center(child: AppLoadingMark()),
-                  );
+                if (i >= rows.length) {
+                  return ToukhPagedFooter(paging: _pager);
                 }
-                final tx = state.items[i];
+                _pager.onItemBuilt(i);
+                final tx = rows[i];
                 return _TxListRow(
                   transaction: tx,
                   onTap: () => showWalletEarningSheet(context, tx),

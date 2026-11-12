@@ -1,3 +1,4 @@
+import 'package:toukh_provider/domain/entities/driver_day_stats.dart';
 import 'package:toukh_provider/domain/entities/provider_driver_link_request.dart';
 import 'package:toukh_provider/domain/entities/provider_linked_driver.dart';
 
@@ -13,6 +14,9 @@ class ProviderDriversSnapshot {
 
 abstract class ProviderDriversRepository {
   Stream<ProviderDriversSnapshot> watchDrivers(String providerId);
+
+  /// Today's orders for this store per courier id (since local midnight).
+  Stream<Map<String, DriverDayStats>> watchTodayStats(String providerId);
 
   /// Accept / reject a courier's link request, or end an approved link.
   Future<void> respond({

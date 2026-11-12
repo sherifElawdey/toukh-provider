@@ -1,176 +1,295 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:toukh_provider/core/utils/english_price_input.dart';
 import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
-/// Fee inputs for a store's own delivery: fixed, per km, or by region
-/// (one fee within the city, another outside it).
-class DeliveryPricingFields extends StatelessWidget {
-  const DeliveryPricingFields({
-    super.key,
-    required this.mode,
-    required this.onModeChanged,
-    required this.price,
-    required this.innerCity,
-    required this.outerCity,
+/// A store's delivery choices. Stores never type in a fee: paid delivery is
+/// priced by Havit ([DeliveryPricingMode.app]).
+class DeliveryChoice {
+  const DeliveryChoice({
+    this.offers = false,
+    this.free = false,
+    this.ownAccount = false,
   });
 
-  final DeliveryPricingMode mode;
-  final ValueChanged<DeliveryPricingMode> onModeChanged;
-
-  /// Fixed fee, or the per-km rate.
-  final TextEditingController price;
-  final TextEditingController innerCity;
-  final TextEditingController outerCity;
-
-  static String get _km => kStoreCityRadiusKm.toStringAsFixed(0);
-
-  Widget _feeField(
-    TextEditingController controller, {
-    required String label,
-    String? note,
-    IconData? icon,
-  }) {
-    return TextField(
-      controller: controller,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-      inputFormatters: EnglishPriceInput.formatters,
-      decoration: InputDecoration(
-        labelText: label,
-        helperText: note,
-        helperMaxLines: 2,
-        prefixIcon: icon == null ? null : Icon(icon, size: 20),
-      ),
+  /// Reads saved configs, older ones included. A store that delivered from
+  /// its account without "offers delivery" was charged nothing, so it reads
+  /// as free own delivery.
+  factory DeliveryChoice.fromConfig(DeliveryConfig? c) {
+    if (c == null) return const DeliveryChoice();
+    final offers = c.offersDelivery || c.manageFromAccount;
+    return DeliveryChoice(
+      offers: offers,
+      free: offers && (c.isFree || !c.offersDelivery),
+      ownAccount: offers && c.manageFromAccount,
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        SegmentedButton<DeliveryPricingMode>(
-          showSelectedIcon: false,
-          segments: [
-            for (final (value, label) in [
-              (
-                DeliveryPricingMode.fixed,
-                AppStrings.Registration.deliveryModeFixed,
-              ),
-              (
-                DeliveryPricingMode.perKm,
-                AppStrings.Registration.deliveryModePerKm,
-              ),
-              (
-                DeliveryPricingMode.byRegion,
-                AppStrings.Registration.deliveryModeByRegion,
-              ),
-            ])
-              ButtonSegment(value: value, label: CustomText(label)),
-          ],
-          selected: {mode},
-          onSelectionChanged: (s) => onModeChanged(s.first),
-        ),
-        SizedBox(height: AppSizes.spaceMd),
-        if (mode == DeliveryPricingMode.byRegion) ...[
-          _feeField(
-            innerCity,
-            label: AppStrings.Registration.deliveryInnerCityLabel.tr,
-            note: AppStrings.Registration.deliveryInnerCityNote.trParams({
-              'km': _km,
-            }),
-            icon: PhosphorIconsRegular.buildings,
-          ),
-          SizedBox(height: AppSizes.spaceMd),
-          _feeField(
-            outerCity,
-            label: AppStrings.Registration.deliveryOuterCityLabel.tr,
-            note: AppStrings.Registration.deliveryOuterCityNote.trParams({
-              'km': _km,
-            }),
-            icon: PhosphorIconsRegular.path,
-          ),
-        ] else
-          _feeField(
-            price,
-            label: mode == DeliveryPricingMode.perKm
-                ? AppStrings.Registration.deliveryPricePerKmLabel.tr
-                : AppStrings.Registration.deliveryPriceLabel.tr,
-          ),
-      ],
+  /// Store delivers its orders (otherwise Havit couriers do).
+  final bool offers;
+
+  /// Customer pays no delivery fee; otherwise Havit pricing applies.
+  final bool free;
+
+  /// Store delivers from this account; otherwise it assigns couriers.
+  final bool ownAccount;
+
+  DeliveryChoice copyWith({bool? offers, bool? free, bool? ownAccount}) {
+    return DeliveryChoice(
+      offers: offers ?? this.offers,
+      free: free ?? this.free,
+      ownAccount: ownAccount ?? this.ownAccount,
     );
   }
-}
 
-/// Paid-delivery fees read from [DeliveryPricingFields]' controllers.
-class DeliveryPricingInput {
-  DeliveryPricingInput({
-    required this.mode,
-    required TextEditingController price,
-    required TextEditingController innerCity,
-    required TextEditingController outerCity,
-  }) : price = _parse(price),
-       innerCity = _parse(innerCity),
-       outerCity = _parse(outerCity);
-
-  final DeliveryPricingMode mode;
-  final double? price;
-  final double? innerCity;
-  final double? outerCity;
-
-  static double? _parse(TextEditingController c) =>
-      double.tryParse(c.text.trim().replaceAll(',', '.'));
-
-  bool get _byRegion => mode == DeliveryPricingMode.byRegion;
-
-  /// Translation key of what's missing, or null when the fees are usable.
-  String? get errorKey {
-    bool ok(double? v) => v != null && v > 0;
-    if (_byRegion) {
-      return ok(innerCity) && ok(outerCity)
-          ? null
-          : AppStrings.Registration.deliveryRegionRequired;
-    }
-    return ok(price) ? null : AppStrings.Registration.deliveryPriceRequired;
-  }
-
-  /// Paid [DeliveryConfig] with these fees. By region also stores the
-  /// in-city fee as `priceEgp`, so app versions that only know a single
-  /// price still show a sensible starting fee.
-  DeliveryConfig toConfig({
-    required bool manageFromAccount,
-    int? avgPrepMinutes,
-  }) {
+  DeliveryConfig toConfig({int? avgPrepMinutes}) {
     return DeliveryConfig(
-      offersDelivery: true,
-      isFree: false,
-      manageFromAccount: manageFromAccount,
-      pricingMode: mode,
-      priceEgp: _byRegion ? innerCity : price,
-      innerCityFeeEgp: _byRegion ? innerCity : null,
-      outerCityFeeEgp: _byRegion ? outerCity : null,
+      offersDelivery: offers,
+      isFree: offers && free,
+      manageFromAccount: offers && ownAccount,
+      pricingMode: offers && !free ? DeliveryPricingMode.app : null,
       avgPrepMinutes: avgPrepMinutes,
     );
   }
 }
 
-/// Text for a fee field, or empty when unset.
+/// Delivery setup: does the store deliver, and if so, is it free or priced
+/// by Havit, and does it deliver from this account or through couriers.
+class DeliveryOptionsFields extends StatelessWidget {
+  const DeliveryOptionsFields({
+    super.key,
+    required this.value,
+    required this.onChanged,
+  });
+
+  final DeliveryChoice value;
+  final ValueChanged<DeliveryChoice> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final noteStyle = TextStyle(
+      fontSize: AppSizes.fontCaption,
+      height: 1.45,
+      color: AppColors.muted(context),
+    );
+    final headingStyle = TextStyle(
+      fontSize: AppSizes.fontCaption,
+      fontWeight: FontWeight.w700,
+      color: AppColors.muted(context),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          activeThumbColor: AppColors.secondColor,
+          title: CustomText(
+            AppStrings.Registration.deliveryOffers,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+          value: value.offers,
+          onChanged: (v) => onChanged(value.copyWith(offers: v)),
+        ),
+        if (!value.offers)
+          _InfoNote(text: AppStrings.Registration.deliveryHavitFeeNote)
+        else ...[
+          SizedBox(height: AppSizes.spaceSm),
+          CustomText(AppStrings.Registration.deliveryFeeTitle, style: headingStyle),
+          SizedBox(height: AppSizes.spaceSm),
+          _OptionTile(
+            icon: PhosphorIconsDuotone.gift,
+            title: AppStrings.Registration.reviewDeliveryFree,
+            subtitle: AppStrings.Registration.deliveryFreeHint,
+            selected: value.free,
+            onTap: () => onChanged(value.copyWith(free: true)),
+          ),
+          SizedBox(height: AppSizes.spaceSm),
+          _OptionTile(
+            icon: PhosphorIconsDuotone.calculator,
+            title: AppStrings.Registration.deliveryAppPricing,
+            subtitle: AppStrings.Registration.deliveryAppPricingHint,
+            selected: !value.free,
+            onTap: () => onChanged(value.copyWith(free: false)),
+          ),
+          SizedBox(height: AppSizes.spaceLg),
+          CustomText(AppStrings.Registration.deliveryByTitle, style: headingStyle),
+          SizedBox(height: AppSizes.spaceSm),
+          _OptionTile(
+            icon: PhosphorIconsDuotone.storefront,
+            title: AppStrings.Registration.deliveryManageFromAccount,
+            subtitle: AppStrings.Registration.deliveryManageFromAccountHint,
+            selected: value.ownAccount,
+            onTap: () => onChanged(value.copyWith(ownAccount: true)),
+          ),
+          SizedBox(height: AppSizes.spaceSm),
+          _OptionTile(
+            icon: PhosphorIconsDuotone.moped,
+            title: AppStrings.Registration.deliveryByCouriers,
+            subtitle: AppStrings.Registration.deliveryByCouriersHint,
+            selected: !value.ownAccount,
+            onTap: () => onChanged(value.copyWith(ownAccount: false)),
+          ),
+          if (!value.free) ...[
+            SizedBox(height: AppSizes.spaceSm),
+            CustomText(AppStrings.Registration.deliveryAppPricingNote, style: noteStyle),
+          ],
+        ],
+      ],
+    );
+  }
+}
+
+class _InfoNote extends StatelessWidget {
+  const _InfoNote({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(top: AppSizes.spaceSm),
+      padding: const EdgeInsets.all(AppSizes.spaceMd),
+      decoration: BoxDecoration(
+        color: AppColors.tint(context, AppColors.secondColor),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(PhosphorIconsRegular.info, size: 18, color: AppColors.secondColor),
+          SizedBox(width: AppSizes.spaceSm),
+          Expanded(
+            child: CustomText(
+              text,
+              style: TextStyle(
+                fontSize: AppSizes.fontCaption,
+                height: 1.45,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One selectable answer in a single-choice group.
+class _OptionTile extends StatelessWidget {
+  const _OptionTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final accent = AppColors.secondColor;
+    final radius = BorderRadius.circular(AppSizes.radiusMd);
+    return Semantics(
+      selected: selected,
+      button: true,
+      child: Material(
+        color: selected ? AppColors.tint(context, accent) : Colors.transparent,
+        borderRadius: radius,
+        child: InkWell(
+          borderRadius: radius,
+          onTap: onTap,
+          child: Container(
+            padding: const EdgeInsets.all(AppSizes.spaceMd),
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              border: Border.all(
+                color: selected ? accent : scheme.outlineVariant,
+                width: selected ? 1.5 : 1,
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(icon, size: 22, color: selected ? accent : AppColors.muted(context)),
+                SizedBox(width: AppSizes.spaceMd),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      CustomText(
+                        title,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                      SizedBox(height: AppSizes.spaceXs),
+                      CustomText(
+                        subtitle,
+                        style: TextStyle(
+                          fontSize: AppSizes.fontCaption,
+                          height: 1.45,
+                          color: AppColors.muted(context),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: AppSizes.spaceSm),
+                Icon(
+                  selected
+                      ? PhosphorIconsFill.checkCircle
+                      : PhosphorIconsRegular.circle,
+                  size: 20,
+                  color: selected ? accent : scheme.outline,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Text for a fee, or empty when unset.
 String deliveryFeeText(double? v) {
   if (v == null || v <= 0) return '';
   return v == v.roundToDouble() ? v.toInt().toString() : v.toString();
 }
 
-/// "Paid delivery: 15 EGP within the city, 30 EGP outside".
-String byRegionDeliverySummary(DeliveryConfig c) {
-  String fee(double? v) {
-    final t = deliveryFeeText(v);
-    return t.isEmpty ? '—' : t;
+/// One line describing a saved delivery config, older fee-based ones
+/// included (until the store saves its delivery choices again).
+String deliveryConfigSummary(DeliveryConfig c) {
+  final choice = DeliveryChoice.fromConfig(c);
+  if (!choice.offers) return AppStrings.Registration.reviewDeliveryNone.tr;
+  final by = choice.ownAccount
+      ? AppStrings.Registration.deliveryManageFromAccount.tr
+      : AppStrings.Registration.deliveryByCouriers.tr;
+  final String fee;
+  if (choice.free) {
+    fee = AppStrings.Registration.reviewDeliveryFree.tr;
+  } else if (c.pricingMode == null || c.pricingMode == DeliveryPricingMode.app) {
+    fee = AppStrings.Registration.deliveryAppPricing.tr;
+  } else if (c.pricingMode == DeliveryPricingMode.byRegion) {
+    String f(double? v) => deliveryFeeText(v).isEmpty ? '—' : deliveryFeeText(v);
+    fee = AppStrings.Registration.reviewDeliveryByRegion.trParams({
+      'inner': f(c.innerCityFeeEgp),
+      'outer': f(c.outerCityFeeEgp),
+    });
+  } else {
+    final price = deliveryFeeText(c.priceEgp);
+    fee = AppStrings.Registration.reviewDeliveryPaid.trParams({
+      'price': price.isEmpty ? '—' : price,
+      'mode': c.pricingMode == DeliveryPricingMode.perKm
+          ? AppStrings.Registration.deliveryModePerKm.tr
+          : AppStrings.Registration.deliveryModeFixed.tr,
+    });
   }
-
-  return AppStrings.Registration.reviewDeliveryByRegion.trParams({
-    'inner': fee(c.innerCityFeeEgp),
-    'outer': fee(c.outerCityFeeEgp),
-  });
+  return '$fee · $by';
 }

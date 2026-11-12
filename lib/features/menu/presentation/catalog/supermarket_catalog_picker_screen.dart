@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
+import 'package:toukh_provider/domain/repositories/cleaning_catalog_repository.dart';
 import 'package:toukh_provider/domain/repositories/supermarket_catalog_repository.dart';
 import 'package:toukh_provider/features/menu/presentation/catalog/catalog_menu_actions.dart';
 import 'package:toukh_provider/features/menu/presentation/catalog/supermarket_item_sheet.dart';
@@ -14,40 +15,101 @@ import 'package:toukh_provider/core/utils/egp_label.dart';
 
 /// Opens the supermarket catalog over the menu builder (shares its cubit).
 /// [onAddCustom] closes the picker and adds a product the catalog lacks.
-/// [aisles] limits the catalog to a shop's own aisles (meat & frozen,
-/// cleaning supplies); null shows every aisle.
+/// [aisles] limits the catalog to a shop's own aisles (meat & frozen);
+/// null shows every aisle.
 Future<void> openSupermarketCatalogPicker(
   BuildContext context, {
   VoidCallback? onAddCustom,
   Set<SupermarketAisle>? aisles,
+}) {
+  return _openPackagedCatalogPicker(
+    context,
+    catalogKind: MenuCatalogKinds.supermarket,
+    titleKey: AppStrings.Catalog.supermarketTitle,
+    searchHintKey: AppStrings.Catalog.supermarketSearch,
+    onAddCustom: onAddCustom,
+    watch: () => getIt<SupermarketCatalogRepository>().watchActive().map(
+          (all) => [
+            for (final p in all)
+              if (aisles == null || aisles.contains(p.aisle)) p,
+          ],
+        ),
+  );
+}
+
+/// Opens the cleaning products catalog over the menu builder (shares its
+/// cubit). [onAddCustom] closes the picker and adds a product the catalog
+/// lacks, with the shop's own photo.
+Future<void> openCleaningCatalogPicker(
+  BuildContext context, {
+  VoidCallback? onAddCustom,
+}) {
+  return _openPackagedCatalogPicker(
+    context,
+    catalogKind: MenuCatalogKinds.cleaning,
+    titleKey: AppStrings.Catalog.cleaningTitle,
+    searchHintKey: AppStrings.Catalog.cleaningSearch,
+    onAddCustom: onAddCustom,
+    watch: () => getIt<CleaningCatalogRepository>().watchActive(),
+  );
+}
+
+Future<void> _openPackagedCatalogPicker(
+  BuildContext context, {
+  required String catalogKind,
+  required String titleKey,
+  required String searchHintKey,
+  required Stream<List<PackagedCatalogProduct>> Function() watch,
+  VoidCallback? onAddCustom,
 }) {
   final cubit = context.read<MenuBuilderCubit>();
   return Navigator.of(context).push(
     MaterialPageRoute<void>(
       builder: (_) => BlocProvider.value(
         value: cubit,
-        child: SupermarketCatalogPickerScreen(onAddCustom: onAddCustom, aisles: aisles),
+        child: PackagedCatalogPickerScreen(
+          catalogKind: catalogKind,
+          titleKey: titleKey,
+          searchHintKey: searchHintKey,
+          watch: watch,
+          onAddCustom: onAddCustom,
+        ),
       ),
     ),
   );
 }
 
-/// Supermarkets pick packaged products from the admin catalog, then set their
-/// own sale options, prices, terms and per-order limits.
-class SupermarketCatalogPickerScreen extends StatefulWidget {
-  const SupermarketCatalogPickerScreen({super.key, this.onAddCustom, this.aisles});
+/// Shops pick packaged products (supermarket or cleaning catalog), then set
+/// their own sale options, prices, terms and per-order limits.
+class PackagedCatalogPickerScreen extends StatefulWidget {
+  const PackagedCatalogPickerScreen({
+    super.key,
+    required this.catalogKind,
+    required this.titleKey,
+    required this.searchHintKey,
+    required this.watch,
+    this.onAddCustom,
+  });
 
+  /// [MenuCatalogKinds] of the products, to find the ones already on the menu.
+  final String catalogKind;
+  final String titleKey;
+  final String searchHintKey;
+
+  /// Active catalog products, sorted by section; called once.
+  final Stream<List<PackagedCatalogProduct>> Function() watch;
   final VoidCallback? onAddCustom;
-  final Set<SupermarketAisle>? aisles;
 
   @override
-  State<SupermarketCatalogPickerScreen> createState() => _SupermarketCatalogPickerScreenState();
+  State<PackagedCatalogPickerScreen> createState() => _PackagedCatalogPickerScreenState();
 }
 
-class _SupermarketCatalogPickerScreenState extends State<SupermarketCatalogPickerScreen> {
+class _PackagedCatalogPickerScreenState extends State<PackagedCatalogPickerScreen> {
   final _search = TextEditingController();
-  late final _catalog = getIt<SupermarketCatalogRepository>().watchActive();
-  SupermarketAisle? _aisle;
+  late final _catalog = widget.watch();
+
+  /// [PackagedCatalogProduct.sectionIndex] of the selected filter chip.
+  int? _section;
   bool _inMenuOnly = false;
 
   String get _lang => Get.locale?.languageCode ?? 'ar';
@@ -58,9 +120,9 @@ class _SupermarketCatalogPickerScreenState extends State<SupermarketCatalogPicke
     super.dispose();
   }
 
-  Future<void> _open(SupermarketCatalogProduct product, MenuItemEntity? existing) async {
+  Future<void> _open(PackagedCatalogProduct product, MenuItemEntity? existing) async {
     final cubit = context.read<MenuBuilderCubit>();
-    final result = await showSupermarketItemSheet(
+    final result = await showPackagedItemSheet(
       context,
       product: product,
       menuCategories: cubit.state.categories,
@@ -104,30 +166,29 @@ class _SupermarketCatalogPickerScreenState extends State<SupermarketCatalogPicke
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: CustomText(AppStrings.Catalog.supermarketTitle),
+        title: CustomText(widget.titleKey),
         leading: IconButton(icon: Icon(ToukhIcons.back), onPressed: () => Navigator.of(context).maybePop()),
       ),
-      body: StreamBuilder<List<SupermarketCatalogProduct>>(
+      body: StreamBuilder<List<PackagedCatalogProduct>>(
         stream: _catalog,
         builder: (context, snap) {
           if (snap.hasError) return Center(child: CustomText(AppStrings.Common.error));
           if (!snap.hasData) return const Center(child: AppLoadingMark());
-          final only = widget.aisles;
-          final all = [
-            for (final p in snap.data!)
-              if (only == null || only.contains(p.aisle)) p,
-          ];
+          final all = snap.data!;
           if (all.isEmpty) return _emptyCatalog();
-          final aisles = SupermarketAisle.values.where((a) => all.any((p) => p.aisle == a)).toList();
+          final sections = <int, String>{
+            for (final p in [...all]..sort((a, b) => a.sectionIndex.compareTo(b.sectionIndex)))
+              p.sectionIndex: p.sectionLabel(_lang),
+          };
 
           return BlocBuilder<MenuBuilderCubit, MenuBuilderState>(
             builder: (context, menu) {
               final byCatalogId = {
                 for (final item in menu.items)
-                  if (item.isFromSupermarketCatalog) item.catalogProductId!: item,
+                  if (item.isFromPackagedCatalog(widget.catalogKind)) item.catalogProductId!: item,
               };
               final shown = all
-                  .where((p) => _aisle == null || p.aisle == _aisle)
+                  .where((p) => _section == null || p.sectionIndex == _section)
                   .where((p) => !_inMenuOnly || byCatalogId.containsKey(p.id))
                   .where((p) => p.matches(_search.text))
                   .toList();
@@ -141,7 +202,7 @@ class _SupermarketCatalogPickerScreenState extends State<SupermarketCatalogPicke
                       onChanged: (_) => setState(() {}),
                       textInputAction: TextInputAction.search,
                       decoration: InputDecoration(
-                        hintText: AppStrings.Catalog.supermarketSearch.tr,
+                        hintText: widget.searchHintKey.tr,
                         prefixIcon: Icon(ToukhIcons.search),
                         isDense: true,
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppSizes.radiusLg)),
@@ -166,14 +227,14 @@ class _SupermarketCatalogPickerScreenState extends State<SupermarketCatalogPicke
                         ),
                         _Chip(
                           label: AppStrings.Catalog.all.tr,
-                          selected: _aisle == null,
-                          onTap: () => setState(() => _aisle = null),
+                          selected: _section == null,
+                          onTap: () => setState(() => _section = null),
                         ),
-                        for (final a in aisles)
+                        for (final MapEntry(key: index, value: label) in sections.entries)
                           _Chip(
-                            label: a.label(_lang),
-                            selected: _aisle == a,
-                            onTap: () => setState(() => _aisle = a),
+                            label: label,
+                            selected: _section == index,
+                            onTap: () => setState(() => _section = index),
                           ),
                       ],
                     ),
@@ -236,7 +297,7 @@ class _ProductTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final SupermarketCatalogProduct product;
+  final PackagedCatalogProduct product;
   final String languageCode;
   final MenuItemEntity? inMenu;
   final VoidCallback onTap;

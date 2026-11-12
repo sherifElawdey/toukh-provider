@@ -297,7 +297,7 @@ class MenuBuilderView extends StatelessWidget {
   /// link falls back to the manual item sheet.
   void _openCatalog(
     BuildContext context, {
-    required bool supermarket,
+    required _ShopCatalog catalog,
     String? category,
   }) {
     void addCustom() => _showItemSheet(
@@ -305,15 +305,18 @@ class MenuBuilderView extends StatelessWidget {
       initialCategory: category ?? _defaultSection(context),
       allowNewCategory: true,
     );
-    if (supermarket) {
-      final auth = context.read<AuthCubit>().state;
-      openSupermarketCatalogPicker(
-        context,
-        onAddCustom: addCustom,
-        aisles: auth is Authenticated ? auth.profile.catalogAisles : null,
-      );
-    } else {
-      openCatalogPicker(context, onAddCustom: addCustom);
+    switch (catalog) {
+      case _ShopCatalog.supermarket:
+        final auth = context.read<AuthCubit>().state;
+        openSupermarketCatalogPicker(
+          context,
+          onAddCustom: addCustom,
+          aisles: auth is Authenticated ? auth.profile.catalogAisles : null,
+        );
+      case _ShopCatalog.cleaning:
+        openCleaningCatalogPicker(context, onAddCustom: addCustom);
+      case _ShopCatalog.produce:
+        openCatalogPicker(context, onAddCustom: addCustom);
     }
   }
 
@@ -438,6 +441,8 @@ class MenuBuilderView extends StatelessWidget {
         authState is Authenticated && authState.profile.usesSupermarketCatalog;
     final usesCatalog =
         authState is Authenticated && authState.profile.usesGroceryCatalog;
+    final isCleaning =
+        authState is Authenticated && authState.profile.usesCleaningCatalog;
 
     return BlocBuilder<MenuBuilderCubit, MenuBuilderState>(
       builder: (context, state) {
@@ -483,8 +488,24 @@ class MenuBuilderView extends StatelessWidget {
                             child: _CatalogTile(
                               titleKey: AppStrings.Catalog.addFromSupermarketCatalog,
                               hintKey: AppStrings.Catalog.addFromSupermarketCatalogHint,
-                              onTap: () =>
-                                  _openCatalog(context, supermarket: true),
+                              onTap: () => _openCatalog(
+                                context,
+                                catalog: _ShopCatalog.supermarket,
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (isCleaning)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
+                            child: _CatalogTile(
+                              titleKey: AppStrings.Catalog.addFromCleaningCatalog,
+                              hintKey: AppStrings.Catalog.addFromCleaningCatalogHint,
+                              onTap: () => _openCatalog(
+                                context,
+                                catalog: _ShopCatalog.cleaning,
+                              ),
                             ),
                           ),
                         ),
@@ -495,8 +516,10 @@ class MenuBuilderView extends StatelessWidget {
                             child: _CatalogTile(
                               titleKey: AppStrings.Catalog.addFromCatalog,
                               hintKey: AppStrings.Catalog.addFromCatalogHint,
-                              onTap: () =>
-                                  _openCatalog(context, supermarket: false),
+                              onTap: () => _openCatalog(
+                                context,
+                                catalog: _ShopCatalog.produce,
+                              ),
                             ),
                           ),
                         ),
@@ -554,10 +577,14 @@ class MenuBuilderView extends StatelessWidget {
                                     category: cat,
                                     itemCount: state.countForCategory(cat),
                                     items: state.itemsInCategory(cat),
-                                    onAddItem: () => usesCatalog
+                                    onAddItem: () => usesCatalog || isCleaning
                                         ? _openCatalog(
                                             context,
-                                            supermarket: isSupermarket,
+                                            catalog: isCleaning
+                                                ? _ShopCatalog.cleaning
+                                                : isSupermarket
+                                                ? _ShopCatalog.supermarket
+                                                : _ShopCatalog.produce,
                                             category: cat,
                                           )
                                         : _showItemSheet(
@@ -634,6 +661,9 @@ class _MenuQrTile extends StatelessWidget {
     );
   }
 }
+
+/// Master catalog a shop adds menu items from.
+enum _ShopCatalog { produce, supermarket, cleaning }
 
 class _CatalogTile extends StatelessWidget {
   const _CatalogTile({

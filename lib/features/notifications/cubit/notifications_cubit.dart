@@ -14,12 +14,22 @@ class NotificationsState extends Equatable {
     this.items = const [],
     this.errorMessage,
     this.showUnreadOnly = false,
+    this.hasMore = false,
+    this.loadingMore = false,
+    this.unreadCount = 0,
   });
 
   final bool loading;
   final List<ToukhNotification> items;
   final String? errorMessage;
   final bool showUnreadOnly;
+
+  /// Older notifications exist beyond the loaded window.
+  final bool hasMore;
+  final bool loadingMore;
+
+  /// Unread total across the whole inbox (not just the loaded window).
+  final int unreadCount;
 
   List<ToukhNotification> get newestFirst =>
       List<ToukhNotification>.from(items)
@@ -44,6 +54,9 @@ class NotificationsState extends Equatable {
     List<ToukhNotification>? items,
     String? errorMessage,
     bool? showUnreadOnly,
+    bool? hasMore,
+    bool? loadingMore,
+    int? unreadCount,
     bool clearError = false,
   }) {
     return NotificationsState(
@@ -51,6 +64,9 @@ class NotificationsState extends Equatable {
       items: items ?? this.items,
       errorMessage: clearError ? null : (errorMessage ?? this.errorMessage),
       showUnreadOnly: showUnreadOnly ?? this.showUnreadOnly,
+      hasMore: hasMore ?? this.hasMore,
+      loadingMore: loadingMore ?? this.loadingMore,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 
@@ -64,11 +80,30 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final NotificationInboxRepository _repository;
 
   StreamSubscription<List<ToukhNotification>>? _sub;
+  StreamSubscription<int>? _unreadSub;
   String? _uid;
+
+  /// Rows per load-more step; the live window grows by this much.
+  static const _chunk = ToukhPageSizes.mobile;
+  int _window = _chunk;
+
+  void _watchUnread(String? uid) {
+    _unreadSub?.cancel();
+    _unreadSub = null;
+    if (uid == null) return;
+    _unreadSub = _repository.watchUnreadCount(uid).listen(
+      (n) {
+        if (!isClosed) emit(state.copyWith(unreadCount: n));
+      },
+      onError: (_) {},
+    );
+  }
 
   void bindUser(String? uid) {
     if (_uid == uid) return;
     _uid = uid;
+    _window = _chunk;
+    _watchUnread(uid);
     _sub?.cancel();
     if (uid == null) {
       emit(const NotificationsState(loading: false, items: []));
@@ -89,13 +124,15 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     emit(state.copyWith(loading: true, clearError: true));
     var seeded = false;
     final seen = <String>{};
-    _sub = _repository.watchInbox(uid).listen(
+    _sub = _repository.watchInbox(uid, limit: _window).listen(
       (items) {
         emit(
           NotificationsState(
             loading: false,
             items: items,
             showUnreadOnly: state.showUnreadOnly,
+            hasMore: items.length >= _window,
+            unreadCount: state.unreadCount,
           ),
         );
         if (!kIsWeb) return;
@@ -113,8 +150,18 @@ class NotificationsCubit extends Cubit<NotificationsState> {
           ToukhWebAlert.present(notification);
         }
       },
-      onError: (e) => emit(state.copyWith(loading: false, errorMessage: appFirebaseError(e))),
+      onError: (e) => emit(state.copyWith(loading: false, loadingMore: false, errorMessage: appFirebaseError(e))),
     );
+  }
+
+  /// Grows the live window by one chunk (last row reached / next page).
+  Future<void> loadMore() async {
+    final uid = _uid;
+    if (uid == null || !state.hasMore || state.loadingMore) return;
+    _window += _chunk;
+    emit(state.copyWith(loadingMore: true));
+    await _sub?.cancel();
+    _subscribe(uid);
   }
 
   void toggleUnreadOnly() {
@@ -151,6 +198,7 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   @override
   Future<void> close() {
     _sub?.cancel();
+    _unreadSub?.cancel();
     return super.close();
   }
 }

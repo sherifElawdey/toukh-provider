@@ -21,12 +21,13 @@ class WalletScreen extends StatelessWidget {
     await Future<void>.delayed(const Duration(milliseconds: 450));
   }
 
-  void _showPayoutComingSoon(BuildContext context) {
-    AppSnack.show(
+  void _withdraw(BuildContext context) {
+    final cubit = context.read<WalletCubit>();
+    showToukhWalletWithdrawal(
       context,
-      message: AppStrings.Wallet.requestPayoutComingSoon.tr,
-      state: AppSnackState.alert,
-      icon: ToukhIcons.wallet,
+      service: getIt<ToukhWalletWithdrawalService>(),
+      uid: cubit.providerId,
+      balanceEgp: cubit.state.balance,
     );
   }
 
@@ -61,6 +62,10 @@ class WalletScreen extends StatelessWidget {
               ),
               ToukhTopUpRequestsSection(
                 service: getIt<ToukhWalletTopUpService>(),
+                uid: context.read<WalletCubit>().providerId,
+              ),
+              ToukhWithdrawalRequestsSection(
+                service: getIt<ToukhWalletWithdrawalService>(),
                 uid: context.read<WalletCubit>().providerId,
               ),
               const SizedBox(height: AppSizes.spaceXl),
@@ -113,7 +118,7 @@ class WalletScreen extends StatelessWidget {
             vertical: AppSizes.spaceSm,
           ),
           child: AppFilledButton(
-            text: AppStrings.Wallet.requestPayout.tr,
+            text: ToukhWithdrawalStrings.action.tr,
             icon: PhosphorIconsRegular.bank,
             color: Theme.of(context).colorScheme.primary,
             foregroundColor: AppColors.surface,
@@ -121,7 +126,7 @@ class WalletScreen extends StatelessWidget {
               vertical: AppSizes.spaceMd,
               horizontal: AppSizes.spaceLg,
             ),
-            onTap: () => _showPayoutComingSoon(context),
+            onTap: () => _withdraw(context),
           ),
         ),
       ),

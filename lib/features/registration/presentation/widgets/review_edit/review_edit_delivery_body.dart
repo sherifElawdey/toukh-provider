@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
-import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -17,13 +16,7 @@ class ReviewEditDeliveryBody extends StatefulWidget {
 }
 
 class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
-  late bool _offers;
-  late bool _manageFromAccount;
-  late bool _free;
-  late DeliveryPricingMode _mode;
-  late final TextEditingController _price;
-  late final TextEditingController _innerCity;
-  late final TextEditingController _outerCity;
+  late DeliveryChoice _delivery;
   late final TextEditingController _prep;
 
   bool _isRestaurant(RegistrationDraft d) =>
@@ -34,18 +27,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
   void initState() {
     super.initState();
     final d = context.read<RegistrationCubit>().state;
-    final c = d.deliveryConfig;
-    _offers = c?.offersDelivery ?? false;
-    _manageFromAccount = c?.manageFromAccount ?? false;
-    _free = c?.isFree ?? false;
-    _mode = c?.pricingMode ?? DeliveryPricingMode.fixed;
-    _price = TextEditingController(text: deliveryFeeText(c?.priceEgp));
-    _innerCity = TextEditingController(
-      text: deliveryFeeText(c?.innerCityFeeEgp),
-    );
-    _outerCity = TextEditingController(
-      text: deliveryFeeText(c?.outerCityFeeEgp),
-    );
+    _delivery = DeliveryChoice.fromConfig(d.deliveryConfig);
     _prep = TextEditingController(
       text: d.avgPrepMinutes != null && d.avgPrepMinutes! > 0
           ? '${d.avgPrepMinutes}'
@@ -55,51 +37,13 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
 
   @override
   void dispose() {
-    _price.dispose();
-    _innerCity.dispose();
-    _outerCity.dispose();
     _prep.dispose();
     super.dispose();
-  }
-
-  DeliveryPricingInput get _fees => DeliveryPricingInput(
-    mode: _mode,
-    price: _price,
-    innerCity: _innerCity,
-    outerCity: _outerCity,
-  );
-
-  DeliveryConfig _buildConfig(RegistrationDraft draft) {
-    final prep = int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), ''));
-    if (_offers && !_free) {
-      return _fees.toConfig(
-        manageFromAccount: _manageFromAccount,
-        avgPrepMinutes: prep,
-      );
-    }
-    return DeliveryConfig(
-      offersDelivery: _offers,
-      isFree: _free,
-      manageFromAccount: _manageFromAccount,
-      avgPrepMinutes: prep,
-    );
   }
 
   bool save(BuildContext context) {
     final cubit = context.read<RegistrationCubit>();
     final draft = cubit.state;
-    if (_offers && !_free) {
-      final error = _fees.errorKey;
-      if (error != null) {
-        AppSnack.show(
-          context,
-          message: error.tr,
-          state: AppSnackState.warning,
-          icon: PhosphorIconsRegular.creditCard,
-        );
-        return false;
-      }
-    }
     final prep = int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), ''));
     if (_isRestaurant(draft) && (prep == null || prep <= 0)) {
       AppSnack.show(
@@ -111,7 +55,7 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
       return false;
     }
     cubit.setDelivery(
-      deliveryConfig: _buildConfig(draft),
+      deliveryConfig: _delivery.toConfig(avgPrepMinutes: prep),
       avgPrepMinutes: _isRestaurant(draft) ? prep : null,
     );
     return true;
@@ -125,34 +69,10 @@ class ReviewEditDeliveryBodyState extends State<ReviewEditDeliveryBody> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        SwitchListTile(
-          title: CustomText(AppStrings.Registration.deliveryOffers),
-          value: _offers,
-          onChanged: (v) => setState(() => _offers = v),
+        DeliveryOptionsFields(
+          value: _delivery,
+          onChanged: (v) => setState(() => _delivery = v),
         ),
-        SwitchListTile(
-          title: CustomText(AppStrings.Registration.deliveryManageFromAccount),
-          subtitle: CustomText(
-            AppStrings.Registration.deliveryManageFromAccountHint,
-          ),
-          value: _manageFromAccount,
-          onChanged: (v) => setState(() => _manageFromAccount = v),
-        ),
-        if (_offers) ...[
-          SwitchListTile(
-            title: CustomText(AppStrings.Registration.reviewDeliveryFree),
-            value: _free,
-            onChanged: (v) => setState(() => _free = v),
-          ),
-          if (!_free)
-            DeliveryPricingFields(
-              mode: _mode,
-              onModeChanged: (m) => setState(() => _mode = m),
-              price: _price,
-              innerCity: _innerCity,
-              outerCity: _outerCity,
-            ),
-        ],
         if (restaurant) ...[
           SizedBox(height: AppSizes.spaceLg),
           TextField(

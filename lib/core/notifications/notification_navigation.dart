@@ -31,7 +31,15 @@ Future<void> handleProviderNotificationTap(ToukhNotification notification) async
 
   final orderId = notification.orderId ?? notification.payload['orderId']?.toString();
   final requestId = notification.payload['requestId']?.toString();
-  final route = notification.rootRoute.isNotEmpty
+  // Custom requests are listed with the incoming orders; an accepted one
+  // ("shop_request_accepted") routes to its order detail.
+  final isShopRequestList =
+      notification.rootRoute == ToukhNotificationRoutes.providerShopRequests ||
+          ((notification.type ?? '').startsWith('shop_request_') &&
+              (orderId == null || orderId.isEmpty));
+  final route = isShopRequestList
+      ? AppRoutes.orders
+      : notification.rootRoute.isNotEmpty
       ? notification.rootRoute
       : (requestId != null && requestId.isNotEmpty
           ? ToukhNotificationRoutes.providerHomeServiceRequestDetail(requestId)
@@ -42,8 +50,7 @@ Future<void> handleProviderNotificationTap(ToukhNotification notification) async
   final router = NotificationRouterHolder.router;
   if (router == null) return;
 
-  final isHsrDetail = route.startsWith('/home-service-request/') ||
-      route == ToukhNotificationRoutes.providerShopRequests;
+  final isHsrDetail = route.startsWith('/home-service-request/');
   final isOrderDetail = route.startsWith('${AppRoutes.orders}/') &&
       route != AppRoutes.orders;
 

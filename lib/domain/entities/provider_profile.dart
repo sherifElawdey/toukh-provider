@@ -416,12 +416,18 @@ class ProviderProfile extends Equatable {
       serviceType == ServiceType.supermarket ||
       shopCategory == ShopCategory.supermarket;
 
-  /// Supermarkets, meat & frozen and cleaning-supplies shops: also pick from
-  /// the admin supermarket (packaged) catalog.
+  /// Supermarkets and meat & frozen shops: pick from the admin supermarket
+  /// (packaged) catalog.
   bool get usesSupermarketCatalog =>
       serviceType == ServiceType.supermarket ||
       shopCategory == ShopCategory.supermarket ||
-      isSupermarketLike;
+      serviceType == ServiceType.meatFrozen ||
+      shopCategory == ShopCategory.meatFrozen;
+
+  /// Cleaning-supplies shops: pick from the admin cleaning catalog.
+  bool get usesCleaningCatalog =>
+      serviceType == ServiceType.cleaning ||
+      shopCategory == ShopCategory.cleaning;
 
   /// The two shelf categories that work like a supermarket.
   bool get isSupermarketLike =>
@@ -440,12 +446,21 @@ class ProviderProfile extends Equatable {
       isRestaurantShop || usesGroceryCatalog || isSupermarketLike || isMenuOtherShop;
 
   /// Supermarket catalog aisles this shop picks from (null = all of them).
+  /// Meat & frozen shops (the neighbourhood "تلاجة") also sell cheese, dairy,
+  /// sauces, pickles, spreads and baked goods, so they get every food aisle.
   Set<SupermarketAisle>? get catalogAisles {
     if (serviceType == ServiceType.meatFrozen || shopCategory == ShopCategory.meatFrozen) {
-      return {SupermarketAisle.meat, SupermarketAisle.frozen};
-    }
-    if (serviceType == ServiceType.cleaning || shopCategory == ShopCategory.cleaning) {
-      return {SupermarketAisle.cleaning, SupermarketAisle.household};
+      return {
+        SupermarketAisle.meat,
+        SupermarketAisle.frozen,
+        SupermarketAisle.cheese,
+        SupermarketAisle.dairy,
+        SupermarketAisle.canned,
+        SupermarketAisle.snacks,
+        SupermarketAisle.grains,
+        SupermarketAisle.bakery,
+        SupermarketAisle.oil,
+      };
     }
     return null;
   }

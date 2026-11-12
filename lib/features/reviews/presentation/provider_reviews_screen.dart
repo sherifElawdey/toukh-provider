@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:toukh_provider/domain/entities/provider_review_summary.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/features/home/presentation/widgets/home_dashboard_empty_placeholder.dart';
@@ -73,26 +74,9 @@ class ProviderReviewsScreen extends StatelessWidget {
             );
           }
 
-          return ToukhRefresh(
+          return _ReviewsList(
+            state: state,
             onRefresh: () => _refresh(context),
-            child: ListView.separated(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: AppSizes.screenPadding,
-              itemCount: state.reviews.length + 1,
-              separatorBuilder: (_, i) => SizedBox(
-                height: i == 0 ? AppSizes.spaceMd : 10,
-              ),
-              itemBuilder: (context, i) {
-                if (i == 0) {
-                  return _ReviewsSummaryHeader(
-                    averageRating: state.averageRating,
-                    reviewCount: state.reviewCount,
-                  );
-                }
-                final review = state.reviews[i - 1];
-                return ProviderReviewTile(review: review);
-              },
-            ),
           );
         },
       ),
@@ -175,6 +159,69 @@ class _ReviewsSummaryHeader extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Reviews with numbered pages (web) / load-more at the last row (mobile)
+/// over the cubit's live window.
+class _ReviewsList extends StatefulWidget {
+  const _ReviewsList({required this.state, required this.onRefresh});
+
+  final ProviderReviewsState state;
+  final Future<void> Function() onRefresh;
+
+  @override
+  State<_ReviewsList> createState() => _ReviewsListState();
+}
+
+class _ReviewsListState extends State<_ReviewsList> {
+  late final _pager = ToukhWindowPager<ProviderReviewSummary>(
+    onLoadMore: () => context.read<ProviderReviewsCubit>().loadMore(),
+  )..addListener(_onPager);
+
+  void _onPager() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _pager.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = widget.state;
+    _pager.sync(
+      state.reviews,
+      hasMore: state.hasMore,
+      loading: state.loading,
+      loadingMore: state.loadingMore,
+      notify: false,
+    );
+    final rows = _pager.items;
+    return ToukhRefresh(
+      onRefresh: widget.onRefresh,
+      child: ListView.separated(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: AppSizes.screenPadding,
+        itemCount: rows.length + 2,
+        separatorBuilder: (_, i) => SizedBox(
+          height: i == 0 ? AppSizes.spaceMd : 10,
+        ),
+        itemBuilder: (context, i) {
+          if (i == 0) {
+            return _ReviewsSummaryHeader(
+              averageRating: state.averageRating,
+              reviewCount: state.reviewCount,
+            );
+          }
+          if (i > rows.length) return ToukhPagedFooter(paging: _pager);
+          _pager.onItemBuilt(i - 1);
+          return ProviderReviewTile(review: rows[i - 1]);
+        },
       ),
     );
   }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/domain/entities/menu_item.dart';
+import 'package:toukh_provider/domain/repositories/cleaning_catalog_repository.dart';
 import 'package:toukh_provider/domain/repositories/grocery_catalog_repository.dart';
 import 'package:toukh_provider/domain/repositories/supermarket_catalog_repository.dart';
 import 'package:toukh_provider/features/menu/presentation/catalog/catalog_item_sheet.dart';
@@ -52,13 +53,14 @@ Future<void> applyCatalogItemResult(
 Future<void> editCatalogMenuItem(BuildContext context, MenuItemEntity item) async {
   final cubit = context.read<MenuBuilderCubit>();
   final id = item.catalogProductId!;
-  final supermarket = item.isFromSupermarketCatalog;
   final Object? product;
   try {
-    product = await context.withAppLoading(
-      () => supermarket
-          ? getIt<SupermarketCatalogRepository>().getById(id)
-          : getIt<GroceryCatalogRepository>().getById(id),
+    product = await context.withAppLoading<Object?>(
+      () => switch (item.catalog) {
+        MenuCatalogKinds.supermarket => getIt<SupermarketCatalogRepository>().getById(id),
+        MenuCatalogKinds.cleaning => getIt<CleaningCatalogRepository>().getById(id),
+        _ => getIt<GroceryCatalogRepository>().getById(id),
+      },
     );
   } catch (e) {
     if (!context.mounted) return;
@@ -76,9 +78,9 @@ Future<void> editCatalogMenuItem(BuildContext context, MenuItemEntity item) asyn
   final CatalogItemSheetResult? result;
   final String name;
   switch (product) {
-    case SupermarketCatalogProduct p:
+    case PackagedCatalogProduct p:
       name = p.localizedName(lang);
-      result = await showSupermarketItemSheet(
+      result = await showPackagedItemSheet(
         context,
         product: p,
         menuCategories: cubit.state.categories,

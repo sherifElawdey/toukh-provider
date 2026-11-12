@@ -60,6 +60,7 @@ abstract final class AppRoutes {
   static const accountDetails = '/settings/account';
   static const brandInfo = '/settings/brand';
   static const settingsGallery = '/settings/gallery';
+  static const settingsPharmacyGallery = '/settings/pharmacy-gallery';
   static const aboutApp = '/settings/about';
 
   static const wallet = '/wallet';
@@ -118,6 +119,7 @@ abstract final class AppRoutes {
         matchedLocation == manageDrivers ||
         matchedLocation == ordersHistory ||
         matchedLocation == settingsGallery ||
+        matchedLocation == settingsPharmacyGallery ||
         matchedLocation.startsWith('/home-service-request/')) {
       return true;
     }

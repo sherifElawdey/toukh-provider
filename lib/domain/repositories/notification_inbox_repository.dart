@@ -1,7 +1,12 @@
 import 'package:toukh_ui/toukh_ui.dart';
 
 abstract class NotificationInboxRepository {
-  Stream<List<ToukhNotification>> watchInbox(String uid);
+  /// Newest [limit] notifications, live.
+  Stream<List<ToukhNotification>> watchInbox(String uid, {int limit = 100});
+
+  /// Live unread count (capped at [cap]) for badges, independent of the
+  /// loaded page window.
+  Stream<int> watchUnreadCount(String uid, {int cap = 99});
 
   Future<void> markOpened({
     required String uid,

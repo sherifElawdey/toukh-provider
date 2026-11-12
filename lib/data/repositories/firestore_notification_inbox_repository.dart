@@ -18,12 +18,21 @@ class FirestoreNotificationInboxRepository implements NotificationInboxRepositor
   }
 
   @override
-  Stream<List<ToukhNotification>> watchInbox(String uid) {
+  Stream<List<ToukhNotification>> watchInbox(String uid, {int limit = 100}) {
     return _inbox(uid)
         .orderBy('createdAt', descending: true)
-        .limit(100)
+        .limit(limit)
         .snapshots()
         .map((snap) => snap.docs.map(_fromDoc).toList());
+  }
+
+  @override
+  Stream<int> watchUnreadCount(String uid, {int cap = 99}) {
+    return _inbox(uid)
+        .where('opened', isEqualTo: false)
+        .limit(cap)
+        .snapshots()
+        .map((snap) => snap.size);
   }
 
   @override

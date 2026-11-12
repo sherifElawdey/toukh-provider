@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/order_detail/order_detail_section_title.dart';
+import 'package:toukh_provider/core/utils/egp_label.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -67,6 +68,22 @@ class OrderDetailItemsCard extends StatelessWidget {
             );
           },
         ),
+        // Own delivery with a Havit delivery discount: the customer pays
+        // less, Havit credits the rest to the store's wallet on delivery.
+        if (slice.fulfillmentMode == FulfillmentMode.store &&
+            slice.deliveryDiscountEgp > 0) ...[
+          const SizedBox(height: AppSizes.spaceSm),
+          CustomText(
+            AppStrings.Orders.detailHavitDeliveryDiscount.trParams({
+              'collect': egpLabel(delivery.toStringAsFixed(0)),
+              'bonus': egpLabel(slice.deliveryDiscountEgp.toStringAsFixed(0)),
+            }),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: AppColors.success,
+                  fontWeight: FontWeight.w600,
+                ),
+          ),
+        ],
         if (slice.fulfillmentMode == FulfillmentMode.courier) ...[
           const SizedBox(height: AppSizes.spaceSm),
           CustomText(

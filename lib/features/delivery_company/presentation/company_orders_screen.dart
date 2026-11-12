@@ -120,12 +120,25 @@ class CompanyOrdersScreen extends StatelessWidget {
                   padding: AppSizes.screenPadding.copyWith(
                     bottom: AppSizes.space3xl,
                   ),
-                  sliver: SliverList.separated(
-                    itemCount: orders.length,
-                    separatorBuilder: (_, _) =>
-                        const SizedBox(height: AppSizes.spaceSm),
-                    itemBuilder: (context, i) =>
-                        CompanyOrderTile(order: orders[i]),
+                  sliver: ToukhRowsPager(
+                    key: ValueKey(state.days),
+                    rows: orders,
+                    builder: (context, pager) => SliverMainAxisGroup(
+                      slivers: [
+                        SliverList.separated(
+                          itemCount: pager.items.length,
+                          separatorBuilder: (_, _) =>
+                              const SizedBox(height: AppSizes.spaceSm),
+                          itemBuilder: (context, i) {
+                            pager.onItemBuilt(i);
+                            return CompanyOrderTile(order: pager.items[i]);
+                          },
+                        ),
+                        SliverToBoxAdapter(
+                          child: ToukhPagedFooter(paging: pager),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
             ],

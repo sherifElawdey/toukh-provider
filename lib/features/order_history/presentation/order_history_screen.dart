@@ -18,24 +18,25 @@ class OrderHistoryScreen extends StatefulWidget {
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   final _scroll = ScrollController();
 
-  @override
-  void initState() {
-    super.initState();
-    _scroll.addListener(_onScroll);
-  }
+  /// Numbered pages on web, load-more at the last row on mobile; rows come
+  /// from the cubit's Firestore cursor either way.
+  late final _pager = ToukhWindowPager<ProviderMasterOrderRow>(
+    onLoadMore: () => context.read<OrderHistoryCubit>().loadMore(),
+  )..addListener(_onPager);
+  int _page = 0;
 
-  void _onScroll() {
-    if (!_scroll.hasClients) return;
-    final max = _scroll.position.maxScrollExtent;
-    if (max <= 0) return;
-    if (_scroll.offset >= max - 200) {
-      context.read<OrderHistoryCubit>().loadMore();
+  void _onPager() {
+    if (!mounted) return;
+    if (_pager.page != _page) {
+      _page = _pager.page;
+      if (_scroll.hasClients) _scroll.jumpTo(0);
     }
+    setState(() {});
   }
 
   @override
   void dispose() {
-    _scroll.removeListener(_onScroll);
+    _pager.dispose();
     _scroll.dispose();
     super.dispose();
   }
@@ -89,6 +90,14 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             );
           }
 
+          _pager.sync(
+            state.items,
+            hasMore: state.hasMore,
+            loading: state.loading,
+            loadingMore: state.loadingMore,
+            notify: false,
+          );
+          final rows = _pager.items;
           final content = ListView.builder(
             controller: _scroll,
             physics: const AlwaysScrollableScrollPhysics(),
@@ -96,9 +105,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               top: AppSizes.spaceMd,
               bottom: AppSizes.space2xl,
             ),
-            itemCount: state.items.isEmpty
-                ? 3
-                : state.items.length + 2 + (state.loadingMore ? 1 : 0),
+            itemCount: rows.isEmpty ? 3 : rows.length + 3,
             itemBuilder: (context, index) {
               if (index == 0) {
                 return OrderHistoryStatsHeader(
@@ -116,7 +123,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 );
               }
 
-              if (state.items.isEmpty) {
+              if (rows.isEmpty) {
                 return Padding(
                   padding: const EdgeInsets.only(top: AppSizes.spaceXl),
                   child: Center(
@@ -131,20 +138,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
               }
 
               final listIndex = index - 2;
-              if (listIndex >= state.items.length) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(vertical: AppSizes.spaceLg),
-                  child: Center(
-                    child: SizedBox(
-                      width: 24,
-                      height: 24,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
+              if (listIndex >= rows.length) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: AppSizes.spaceLg),
+                  child: ToukhPagedFooter(paging: _pager, padding: EdgeInsets.zero),
                 );
               }
 
-              return OrderHistoryListTile(row: state.items[listIndex]);
+              _pager.onItemBuilt(listIndex);
+              return OrderHistoryListTile(row: rows[listIndex]);
             },
           );
           return ToukhRefresh(onRefresh: onRefresh, child: content);

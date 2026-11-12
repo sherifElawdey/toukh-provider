@@ -9,6 +9,9 @@ enum ProviderWalletTxKind {
   adjustment,
   appFee,
   customerServiceFee,
+
+  /// Havit paid the part of the store's own delivery fee it discounted.
+  deliveryDiscount,
 }
 
 enum ProviderWalletTxSource { order, manual, homeService }
@@ -82,6 +85,8 @@ class ProviderWalletTransaction extends Equatable {
         return ProviderWalletTxKind.appFee;
       case 'customer_service_fee':
         return ProviderWalletTxKind.customerServiceFee;
+      case 'delivery_discount':
+        return ProviderWalletTxKind.deliveryDiscount;
       case 'order_earning':
       default:
         return ProviderWalletTxKind.orderEarning;

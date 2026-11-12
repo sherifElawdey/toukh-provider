@@ -552,6 +552,7 @@ class _Orders {
   String get detailSubtotal => 'orders.detail_subtotal';
   String get detailItemsTotal => 'orders.detail_items_total';
   String get detailDeliveryFee => 'orders.detail_delivery_fee';
+  String get detailHavitDeliveryDiscount => 'orders.detail_havit_delivery_discount';
   String get detailZoneInside => 'orders.detail_zone_inside';
   String get detailZoneOutside => 'orders.detail_zone_outside';
   String get detailServiceFee => 'orders.detail_service_fee';
@@ -588,6 +589,7 @@ class _Orders {
   String get pharmacyQuoteDeliveryFee => 'orders.pharmacy_quote_delivery_fee';
   String get pharmacyQuoteCourierFeeHint =>
       'orders.pharmacy_quote_courier_fee_hint';
+  String get pharmacyQuoteAppFeeHint => 'orders.pharmacy_quote_app_fee_hint';
   String get pharmacyAcceptOrder => 'orders.pharmacy_accept_order';
   String get pharmacyQuoteSubtotalRequired => 'orders.pharmacy_quote_subtotal_required';
   String get pharmacyQuoteSelectItems => 'orders.pharmacy_quote_select_items';
@@ -641,6 +643,23 @@ class _Settings {
   String get manageDrivers => 'settings.manage_drivers';
   String get gallery => 'settings.gallery';
   String get gallerySubtitle => 'settings.gallery_subtitle';
+  String get pharmacyGalleryEntry => 'settings.pharmacy_gallery_entry';
+  String get pharmacyGalleryEntrySubtitle => 'settings.pharmacy_gallery_entry_subtitle';
+  String get pharmacyGalleryTitle => 'settings.pharmacy_gallery_title';
+  String get pharmacyGalleryHint => 'settings.pharmacy_gallery_hint';
+  String get pharmacyGalleryCount => 'settings.pharmacy_gallery_count';
+  String get pharmacyGalleryEmpty => 'settings.pharmacy_gallery_empty';
+  String get pharmacyGalleryAdd => 'settings.pharmacy_gallery_add';
+  String get pharmacyGalleryOfferBadge => 'settings.pharmacy_gallery_offer_badge';
+  String get pharmacyGalleryMarkOffer => 'settings.pharmacy_gallery_mark_offer';
+  String get pharmacyGalleryMarkOfferHint => 'settings.pharmacy_gallery_mark_offer_hint';
+  String get pharmacyGalleryCaption => 'settings.pharmacy_gallery_caption';
+  String get pharmacyGalleryCaptionHint => 'settings.pharmacy_gallery_caption_hint';
+  String get pharmacyGalleryDelete => 'settings.pharmacy_gallery_delete';
+  String get pharmacyGalleryDeleteTitle => 'settings.pharmacy_gallery_delete_title';
+  String get pharmacyGalleryDeleteBody => 'settings.pharmacy_gallery_delete_body';
+  String get pharmacyGalleryUploadFailed => 'settings.pharmacy_gallery_upload_failed';
+  String get pharmacyGallerySaveFailed => 'settings.pharmacy_gallery_save_failed';
   String get copyProviderId => 'settings.copy_provider_id';
   String get copyProviderIdHint => 'settings.copy_provider_id_hint';
   String get legal => 'settings.legal';
@@ -760,8 +779,6 @@ class _Registration {
   String get secPrepTitle => 'registration.sec_prep_title';
   String get secPrepHint => 'registration.sec_prep_hint';
   String get deliveryHavitFeeNote => 'registration.delivery_havit_fee_note';
-  String get deliveryOwnPriceNote => 'registration.delivery_own_price_note';
-  String get deliveryPricePerKmLabel => 'registration.delivery_price_per_km_label';
   String get reviewSubtitle => 'registration.review_subtitle';
   String get cuisineIllustrationHint => 'registration.cuisine_illustration_hint';
   String get shopCategoryTitle => 'registration.shop_category_title';
@@ -788,8 +805,14 @@ class _Registration {
       'registration.delivery_manage_from_account';
   String get deliveryManageFromAccountHint =>
       'registration.delivery_manage_from_account_hint';
-  String get deliveryPriceLabel => 'registration.delivery_price_label';
-  String get deliveryPriceRequired => 'registration.delivery_price_required';
+  String get deliveryFeeTitle => 'registration.delivery_fee_title';
+  String get deliveryFreeHint => 'registration.delivery_free_hint';
+  String get deliveryAppPricing => 'registration.delivery_app_pricing';
+  String get deliveryAppPricingHint => 'registration.delivery_app_pricing_hint';
+  String get deliveryAppPricingNote => 'registration.delivery_app_pricing_note';
+  String get deliveryByTitle => 'registration.delivery_by_title';
+  String get deliveryByCouriers => 'registration.delivery_by_couriers';
+  String get deliveryByCouriersHint => 'registration.delivery_by_couriers_hint';
   String get reviewBusinessType => 'registration.review_business_type';
   String get reviewDeliveryNone => 'registration.review_delivery_none';
   String get reviewDeliveryFree => 'registration.review_delivery_free';
@@ -800,11 +823,6 @@ class _Registration {
   String get deliveryModeFixed => 'registration.delivery_mode_fixed';
   String get deliveryModePerKm => 'registration.delivery_mode_per_km';
   String get deliveryModeByRegion => 'registration.delivery_mode_by_region';
-  String get deliveryInnerCityLabel => 'registration.delivery_inner_city_label';
-  String get deliveryInnerCityNote => 'registration.delivery_inner_city_note';
-  String get deliveryOuterCityLabel => 'registration.delivery_outer_city_label';
-  String get deliveryOuterCityNote => 'registration.delivery_outer_city_note';
-  String get deliveryRegionRequired => 'registration.delivery_region_required';
   String get reviewDeliveryByRegion => 'registration.review_delivery_by_region';
   String get reviewTitle => 'registration.review_title';
   String get reviewEditSave => 'registration.review_edit_save';
@@ -957,6 +975,7 @@ class _Wallet {
   String get kindAdjustment => 'wallet.kind_adjustment';
   String get kindAppFee => 'wallet.kind_app_fee';
   String get kindCustomerServiceFee => 'wallet.kind_customer_service_fee';
+  String get kindDeliveryDiscount => 'wallet.kind_delivery_discount';
 }
 
 class _Revenues {
@@ -1002,6 +1021,10 @@ class _Catalog {
   String get addFromSupermarketCatalogHint => 'catalog.add_from_supermarket_catalog_hint';
   String get supermarketTitle => 'catalog.supermarket_title';
   String get supermarketSearch => 'catalog.supermarket_search';
+  String get addFromCleaningCatalog => 'catalog.add_from_cleaning_catalog';
+  String get addFromCleaningCatalogHint => 'catalog.add_from_cleaning_catalog_hint';
+  String get cleaningTitle => 'catalog.cleaning_title';
+  String get cleaningSearch => 'catalog.cleaning_search';
   String get saleOptionsTitle => 'catalog.sale_options_title';
   String get saleOptionsHint => 'catalog.sale_options_hint';
   String get saleUnit => 'catalog.sale_unit';
@@ -1050,6 +1073,22 @@ class _Drivers {
   String get vehicleMotorcycle => 'drivers.vehicle_motorcycle';
   String get vehicleBicycle => 'drivers.vehicle_bicycle';
   String get vehicleTukTuk => 'drivers.vehicle_tuk_tuk';
+  String get inviteCode => 'drivers.invite_code';
+  String get inviteHint => 'drivers.invite_hint';
+  String get copyCode => 'drivers.copy_code';
+  String get codeCopied => 'drivers.code_copied';
+  String get tabDrivers => 'drivers.tab_drivers';
+  String get tabRequests => 'drivers.tab_requests';
+  String get todayActivity => 'drivers.today_activity';
+  String get statDrivers => 'drivers.stat_drivers';
+  String get statOnline => 'drivers.stat_online';
+  String get statOrdersToday => 'drivers.stat_orders_today';
+  String get statDelivered => 'drivers.stat_delivered';
+  String get statActive => 'drivers.stat_active';
+  String get statCancelled => 'drivers.stat_cancelled';
+  String get ordersToday => 'drivers.orders_today';
+  String get onDelivery => 'drivers.on_delivery';
+  String get requestedOn => 'drivers.requested_on';
 }
 
 class _Company {
@@ -1235,6 +1274,7 @@ class _FirebaseErrors {
 class _ShopRequests {
   const _ShopRequests();
   String get title => 'shop_requests.title';
+  String get kindLabel => 'shop_requests.kind_label';
   String get tabNew => 'shop_requests.tab_new';
   String get tabQuoted => 'shop_requests.tab_quoted';
   String get tabClosed => 'shop_requests.tab_closed';

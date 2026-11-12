@@ -318,19 +318,28 @@ class _HomeServiceRequestsTabView extends StatelessWidget {
 
         return ToukhRefresh(
           onRefresh: () => _refresh(context),
-          child: ListView.separated(
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: AppSizes.screenPadding.copyWith(
-              top: AppSizes.spaceSm,
-              bottom: AppSizes.space2xl,
-            ),
-            itemCount: list.length,
-            separatorBuilder: (_, _) =>
-                const SizedBox(height: AppSizes.spaceMd),
-            itemBuilder: (context, i) {
-              return ProviderHomeServiceRequestCard(
-                request: list[i],
-                tab: tab,
+          child: ToukhRowsPager(
+            key: ValueKey(tab),
+            rows: list,
+            builder: (context, pager) {
+              final rows = pager.items;
+              return ListView.separated(
+                physics: const AlwaysScrollableScrollPhysics(),
+                padding: AppSizes.screenPadding.copyWith(
+                  top: AppSizes.spaceSm,
+                  bottom: AppSizes.space2xl,
+                ),
+                itemCount: rows.length + 1,
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppSizes.spaceMd),
+                itemBuilder: (context, i) {
+                  if (i == rows.length) return ToukhPagedFooter(paging: pager);
+                  pager.onItemBuilt(i);
+                  return ProviderHomeServiceRequestCard(
+                    request: rows[i],
+                    tab: tab,
+                  );
+                },
               );
             },
           ),

@@ -7,10 +7,11 @@ import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 /// Sale options (piece / pack of N / carton …) with prices, per-order limit,
-/// sales terms, availability and menu section for one supermarket product.
-Future<CatalogItemSheetResult?> showSupermarketItemSheet(
+/// sales terms, availability and menu section for one packaged product
+/// (supermarket or cleaning catalog).
+Future<CatalogItemSheetResult?> showPackagedItemSheet(
   BuildContext context, {
-  required SupermarketCatalogProduct product,
+  required PackagedCatalogProduct product,
   required List<String> menuCategories,
   MenuItemEntity? existing,
 }) {
@@ -22,7 +23,7 @@ Future<CatalogItemSheetResult?> showSupermarketItemSheet(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppSizes.radiusXl)),
     ),
-    builder: (_) => _SupermarketItemSheet(
+    builder: (_) => _PackagedItemSheet(
       product: product,
       menuCategories: menuCategories,
       existing: existing,
@@ -48,22 +49,22 @@ class _SaleOption {
   }
 }
 
-class _SupermarketItemSheet extends StatefulWidget {
-  const _SupermarketItemSheet({
+class _PackagedItemSheet extends StatefulWidget {
+  const _PackagedItemSheet({
     required this.product,
     required this.menuCategories,
     this.existing,
   });
 
-  final SupermarketCatalogProduct product;
+  final PackagedCatalogProduct product;
   final List<String> menuCategories;
   final MenuItemEntity? existing;
 
   @override
-  State<_SupermarketItemSheet> createState() => _SupermarketItemSheetState();
+  State<_PackagedItemSheet> createState() => _PackagedItemSheetState();
 }
 
-class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
+class _PackagedItemSheetState extends State<_PackagedItemSheet> {
   final _options = <_SaleOption>[];
   late final TextEditingController _maxQty;
   late final TextEditingController _terms;
@@ -78,7 +79,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
     super.initState();
     final e = widget.existing;
     _available = e?.isAvailable ?? true;
-    _section = e?.category ?? widget.product.aisle.label(_lang);
+    _section = e?.category ?? widget.product.sectionLabel(_lang);
     _maxQty = TextEditingController(text: e?.maxOrderQty == null ? '' : '${e!.maxOrderQty}');
     _terms = TextEditingController(text: e?.salesTerms ?? '');
     for (final s in e?.sizes ?? const <MenuItemSize>[]) {
@@ -143,7 +144,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
       context,
       CatalogItemSaved(
         MenuItemEntity(
-          id: e?.id ?? 'sm_${p.id}',
+          id: e?.id ?? '${p.menuItemIdPrefix}${p.id}',
           name: p.localizedName(_lang),
           nameAr: p.nameAr,
           nameEn: p.nameEn,
@@ -156,7 +157,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
           discountPercent: e?.discountPercent,
           offerPriceEgp: e?.offerPriceEgp,
           catalogProductId: p.id,
-          catalog: MenuCatalogKinds.supermarket,
+          catalog: p.catalogKind,
           maxOrderQty: maxQty,
           salesTerms: terms.isEmpty ? null : terms,
         ),
@@ -178,7 +179,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
     final t = Theme.of(context).textTheme;
     final p = widget.product;
     final subtitle = p.subtitle(_lang);
-    final sections = {...widget.menuCategories, p.aisle.label(_lang), _section}.toList();
+    final sections = {...widget.menuCategories, p.sectionLabel(_lang), _section}.toList();
 
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
@@ -213,7 +214,7 @@ class _SupermarketItemSheetState extends State<_SupermarketItemSheet> {
                         style: t.titleMedium?.copyWith(fontWeight: FontWeight.w800),
                       ),
                       CustomText(
-                        subtitle.isEmpty ? p.aisle.label(_lang) : subtitle,
+                        subtitle.isEmpty ? p.sectionLabel(_lang) : subtitle,
                         style: t.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
                       ),
                     ],

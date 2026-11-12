@@ -17,15 +17,23 @@ class FirestoreProviderReviewsRepository implements ProviderReviewsRepository {
       _firestore.collection(AppConstants.providersCollection).doc(providerId).collection(_reviews);
 
   @override
-  Stream<List<ProviderReviewSummary>> watchReviews(String providerId) {
+  Stream<List<ProviderReviewSummary>> watchReviews(String providerId, {int? limit}) {
     return _reviewsCol(providerId)
         .orderBy('createdAt', descending: true)
-        .limit(_reviewLimit)
+        .limit(limit ?? _reviewLimit)
         .snapshots()
         .map(
           (snap) => snap.docs
               .map((d) => ProviderReviewMapper.fromFirestore(d.id, d.data()))
               .toList(),
         );
+  }
+
+  @override
+  Future<({int count, double average})> fetchSummary(String providerId) async {
+    final agg = await _reviewsCol(providerId)
+        .aggregate(count(), average('rating'))
+        .get();
+    return (count: agg.count ?? 0, average: agg.getAverage('rating') ?? 0);
   }
 }

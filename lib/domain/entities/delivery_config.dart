@@ -2,11 +2,19 @@ import 'package:equatable/equatable.dart';
 import 'package:toukh_ui/toukh_ui.dart' show kStoreCityRadiusKm;
 
 enum DeliveryPricingMode {
+  /// Legacy: a fee the store typed in. Read only; new configs use [app].
   fixed,
+
+  /// Legacy: store's own rate per km. Read only.
   perKm,
 
-  /// One fee within the city (under [kStoreCityRadiusKm]), another outside.
-  byRegion;
+  /// Legacy: one fee within the city (under [kStoreCityRadiusKm]), another
+  /// outside. Read only.
+  byRegion,
+
+  /// Fee comes from Havit's delivery pricing (admin settings), the same as
+  /// a Havit courier order. Stores never type in their own fee.
+  app;
 
   String get wireValue => name;
 
@@ -33,6 +41,10 @@ class DeliveryConfig extends Equatable {
 
   final bool offersDelivery;
   final bool isFree;
+
+  /// Paid store delivery priced by Havit ([DeliveryPricingMode.app]).
+  bool get usesAppPricing =>
+      offersDelivery && !isFree && pricingMode == DeliveryPricingMode.app;
 
   /// Provider delivers the order from this account. No driver is requested.
   final bool manageFromAccount;

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/core/utils/phone_e164.dart';
-import 'package:toukh_provider/domain/entities/delivery_config.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/domain/entities/shop_category.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
@@ -21,13 +20,7 @@ class RegisterDeliveryScreen extends StatefulWidget {
 }
 
 class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
-  bool _offers = false;
-  bool _manageFromAccount = false;
-  bool _free = false;
-  DeliveryPricingMode _mode = DeliveryPricingMode.fixed;
-  final _price = TextEditingController();
-  final _innerCity = TextEditingController();
-  final _outerCity = TextEditingController();
+  DeliveryChoice _delivery = const DeliveryChoice();
   final _prep = TextEditingController();
 
   /// Optional support / delivery number shown with every order.
@@ -39,7 +32,9 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
     super.didChangeDependencies();
     if (_seededSupport) return;
     _seededSupport = true;
-    final ten = egyptTenDigitsFromStored(context.read<RegistrationCubit>().state.supportPhone);
+    final draft = context.read<RegistrationCubit>().state;
+    _delivery = DeliveryChoice.fromConfig(draft.deliveryConfig);
+    final ten = egyptTenDigitsFromStored(draft.supportPhone);
     if (ten != null) _support.text = egyptLocalElevenFromTen(ten);
   }
 
@@ -57,52 +52,14 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
 
   @override
   void dispose() {
-    _price.dispose();
-    _innerCity.dispose();
-    _outerCity.dispose();
     _prep.dispose();
     _support.dispose();
     super.dispose();
   }
 
-  DeliveryPricingInput get _fees => DeliveryPricingInput(
-    mode: _mode,
-    price: _price,
-    innerCity: _innerCity,
-    outerCity: _outerCity,
-  );
-
-  DeliveryConfig _buildConfig() {
-    final prep = int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), ''));
-    if (_offers && !_free) {
-      return _fees.toConfig(
-        manageFromAccount: _manageFromAccount,
-        avgPrepMinutes: prep,
-      );
-    }
-    return DeliveryConfig(
-      offersDelivery: _offers,
-      isFree: _free,
-      manageFromAccount: _manageFromAccount,
-      avgPrepMinutes: prep,
-    );
-  }
-
   void _next() {
     final cubit = context.read<RegistrationCubit>();
     final draft = cubit.state;
-    if (_offers && !_free) {
-      final error = _fees.errorKey;
-      if (error != null) {
-        AppSnack.show(
-          context,
-          message: error.tr,
-          state: AppSnackState.warning,
-          icon: PhosphorIconsRegular.creditCard,
-        );
-        return;
-      }
-    }
     final prep = int.tryParse(_prep.text.replaceAll(RegExp(r'\D'), ''));
     if (_isRestaurant(draft) && (prep == null || prep <= 0)) {
       AppSnack.show(
@@ -124,7 +81,7 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
       return;
     }
     cubit.setDelivery(
-      deliveryConfig: _buildConfig(),
+      deliveryConfig: _delivery.toConfig(avgPrepMinutes: prep),
       avgPrepMinutes: _isRestaurant(draft) ? prep : null,
       supportPhone: support.isEmpty ? null : support,
     );
@@ -146,32 +103,6 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final restaurant = _isRestaurant(draft);
-    final scheme = Theme.of(context).colorScheme;
-    final noteStyle = TextStyle(
-      fontSize: AppSizes.fontCaption,
-      height: 1.45,
-      color: AppColors.muted(context),
-    );
-    Widget toggle({
-      required String title,
-      String? subtitle,
-      required bool value,
-      required ValueChanged<bool> onChanged,
-    }) {
-      return SwitchListTile(
-        contentPadding: EdgeInsets.zero,
-        activeThumbColor: AppColors.secondColor,
-        title: CustomText(
-          title,
-          style: const TextStyle(fontWeight: FontWeight.w700),
-        ),
-        subtitle: subtitle == null
-            ? null
-            : CustomText(subtitle, style: noteStyle),
-        value: value,
-        onChanged: onChanged,
-      );
-    }
 
     return RegistrationStepScaffold(
       stage: RegistrationStage.place,
@@ -184,67 +115,9 @@ class _RegisterDeliveryScreenState extends State<RegisterDeliveryScreen> {
           icon: PhosphorIconsDuotone.moped,
           title: AppStrings.Registration.secOwnDeliveryTitle,
           hint: AppStrings.Registration.secOwnDeliveryHint,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              toggle(
-                title: AppStrings.Registration.deliveryOffers,
-                value: _offers,
-                onChanged: (v) => setState(() => _offers = v),
-              ),
-              toggle(
-                title: AppStrings.Registration.deliveryManageFromAccount,
-                subtitle: AppStrings.Registration.deliveryManageFromAccountHint,
-                value: _manageFromAccount,
-                onChanged: (v) => setState(() => _manageFromAccount = v),
-              ),
-              toggle(
-                title: AppStrings.Registration.reviewDeliveryFree,
-                value: _free,
-                onChanged: (v) => setState(() => _free = v),
-              ),
-              if (!_offers)
-                Container(
-                  margin: const EdgeInsets.only(top: AppSizes.spaceSm),
-                  padding: const EdgeInsets.all(AppSizes.spaceMd),
-                  decoration: BoxDecoration(
-                    color: AppColors.tint(context, AppColors.secondColor),
-                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        PhosphorIconsRegular.info,
-                        size: 18,
-                        color: AppColors.secondColor,
-                      ),
-                      SizedBox(width: AppSizes.spaceSm),
-                      Expanded(
-                        child: CustomText(
-                          AppStrings.Registration.deliveryHavitFeeNote,
-                          style: noteStyle.copyWith(color: scheme.onSurface),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              if (_offers && !_free) ...[
-                SizedBox(height: AppSizes.spaceMd),
-                CustomText(
-                  AppStrings.Registration.deliveryOwnPriceNote,
-                  style: noteStyle,
-                ),
-                SizedBox(height: AppSizes.spaceSm),
-                DeliveryPricingFields(
-                  mode: _mode,
-                  onModeChanged: (m) => setState(() => _mode = m),
-                  price: _price,
-                  innerCity: _innerCity,
-                  outerCity: _outerCity,
-                ),
-              ],
-            ],
+          child: DeliveryOptionsFields(
+            value: _delivery,
+            onChanged: (v) => setState(() => _delivery = v),
           ),
         ),
         RegistrationSectionCard(

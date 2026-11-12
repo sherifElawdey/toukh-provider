@@ -58,9 +58,7 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
         unawaited(_syncFcmForProvider(uid));
         if (state.profile.status == ProviderAccountStatus.active) {
           notificationsCubit.bindUser(state.user.uid);
-          final unread = notificationsCubit.state.items
-              .where((n) => !n.opened)
-              .length;
+          final unread = notificationsCubit.state.unreadCount;
           badgeCubit.setNotificationCount(unread);
         } else {
           notificationsCubit.bindUser(null);
@@ -139,7 +137,7 @@ class _ToukhProviderAppState extends State<ToukhProviderApp>
       ],
       child: BlocListener<NotificationsCubit, NotificationsState>(
         listener: (context, state) {
-          final unread = state.items.where((n) => !n.opened).length;
+          final unread = state.unreadCount;
           getIt<ProviderNotificationBadgeCubit>().setNotificationCount(unread);
         },
         child: BlocConsumer<SettingsCubit, SettingsState>(

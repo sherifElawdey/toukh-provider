@@ -11,15 +11,33 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
-/// Live custom requests sent to this store (newest first).
+const _openStatuses = ['pending', 'quoted', 'accepting'];
+const _closedStatuses = ['declined', 'accepted', 'cancelled'];
+
+/// Live **open** requests sent to this store (newest first). Open requests
+/// are a small working set, so they stay complete and real-time.
 Stream<List<ShopRequest>> watchProviderShopRequests(String providerId) =>
     getIt<FirebaseFirestore>()
         .collection(shopRequestsCollection)
         .where('providerId', isEqualTo: providerId)
+        .where('status', whereIn: _openStatuses)
         .snapshots()
         .map((s) => [
               for (final d in s.docs) ShopRequest.fromFirestore(d.id, d.data()),
             ]..sort(ShopRequest.byRecent));
+
+/// Closed requests grow without bound: paginated on the server (pages on
+/// web, load-more on mobile), newest first.
+ToukhPagedQuery<ShopRequest> pageClosedShopRequests(String providerId) =>
+    ToukhPagedQuery(
+      query: getIt<FirebaseFirestore>()
+          .collection(shopRequestsCollection)
+          .where('providerId', isEqualTo: providerId)
+          .where('status', whereIn: _closedStatuses)
+          .orderBy('createdAt', descending: true),
+      map: (d) => ShopRequest.fromFirestore(d.id, d.data()),
+      live: true,
+    );
 
 /// Special requests sent to this shop: review each list, mark every item in
 /// stock (with its price and an optional note) or not, and send it to the
@@ -65,7 +83,25 @@ class ShopRequestsScreen extends StatelessWidget {
                 _RequestList(
                   items: only((s) => s == ShopRequestStatus.quoted || s == ShopRequestStatus.accepting),
                 ),
-                _RequestList(items: only((s) => !s.isOpen)),
+                ToukhPagingOwner<ShopRequest>(
+                  create: () => pageClosedShopRequests(providerId),
+                  builder: (context, paging) => ToukhPagedListView<ShopRequest>(
+                    paging: paging,
+                    padding: AppSizes.screenPadding.copyWith(
+                      top: AppSizes.spaceMd,
+                      bottom: AppSizes.space2xl,
+                    ),
+                    separatorBuilder: (_, _) => SizedBox(height: AppSizes.spaceMd),
+                    empty: Center(
+                      child: ToukhSectionEmptyState(
+                        category: ToukhServiceCategory.otherShops,
+                        message: AppStrings.ShopRequests.empty.tr,
+                      ),
+                    ),
+                    loadingBuilder: (_) => const Center(child: AppLoadingMark()),
+                    itemBuilder: (context, r, _) => ShopRequestCard(request: r),
+                  ),
+                ),
               ],
             );
           },
@@ -94,15 +130,20 @@ class _RequestList extends StatelessWidget {
       padding: AppSizes.screenPadding.copyWith(top: AppSizes.spaceMd, bottom: AppSizes.space2xl),
       itemCount: items.length,
       separatorBuilder: (_, _) => SizedBox(height: AppSizes.spaceMd),
-      itemBuilder: (context, i) => _RequestCard(request: items[i]),
+      itemBuilder: (context, i) => ShopRequestCard(request: items[i]),
     );
   }
 }
 
-class _RequestCard extends StatelessWidget {
-  const _RequestCard({required this.request});
+/// One special request with the shop's actions (price the list, decline).
+/// Also shown with the incoming orders on the Orders tab.
+class ShopRequestCard extends StatelessWidget {
+  const ShopRequestCard({super.key, required this.request, this.showKindLabel = false});
 
   final ShopRequest request;
+
+  /// Tags the card as a custom request (when listed among normal orders).
+  final bool showKindLabel;
 
   Future<void> _call(BuildContext context, Map<String, dynamic> data, String successKey) async {
     try {
@@ -221,6 +262,23 @@ class _RequestCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            if (showKindLabel) ...[
+              Row(
+                children: [
+                  Icon(PhosphorIconsRegular.notePencil, size: 16, color: AppColors.appColor),
+                  SizedBox(width: AppSizes.spaceXs),
+                  CustomText(
+                    AppStrings.ShopRequests.kindLabel,
+                    style: TextStyle(
+                      fontSize: AppSizes.fontCaption,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.appColor,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: AppSizes.spaceXs),
+            ],
             Row(
               children: [
                 Expanded(

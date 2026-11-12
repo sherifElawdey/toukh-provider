@@ -8,7 +8,9 @@ String formatWalletMoney(double value) {
 }
 
 String walletEarningLabel(ProviderWalletTransaction transaction) {
-  if (transaction.detail != null && transaction.detail!.trim().isNotEmpty) {
+  if (transaction.kind != ProviderWalletTxKind.deliveryDiscount &&
+      transaction.detail != null &&
+      transaction.detail!.trim().isNotEmpty) {
     return transaction.detail!.trim();
   }
   switch (transaction.kind) {
@@ -24,5 +26,7 @@ String walletEarningLabel(ProviderWalletTransaction transaction) {
       return AppStrings.Wallet.kindAppFee.tr;
     case ProviderWalletTxKind.customerServiceFee:
       return AppStrings.Wallet.kindCustomerServiceFee.tr;
+    case ProviderWalletTxKind.deliveryDiscount:
+      return AppStrings.Wallet.kindDeliveryDiscount.tr;
   }
 }

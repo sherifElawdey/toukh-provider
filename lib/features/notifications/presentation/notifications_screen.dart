@@ -161,6 +161,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           return ToukhNotificationInboxView(
             items: state.newestFirst,
             loading: state.loading,
+            hasMore: state.hasMore,
+            loadingMore: state.loadingMore,
+            onLoadMore: context.read<NotificationsCubit>().loadMore,
             showUnreadOnly: state.showUnreadOnly,
             errorMessage: state.errorMessage,
             emptyTitle: AppStrings.Notifications.inboxEmptyTitle.tr,

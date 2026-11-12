@@ -49,6 +49,8 @@ import 'package:toukh_provider/data/repositories/firestore_dish_catalog_reposito
 import 'package:toukh_provider/data/repositories/firestore_grocery_catalog_repository.dart';
 import 'package:toukh_provider/domain/repositories/supermarket_catalog_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_supermarket_catalog_repository.dart';
+import 'package:toukh_provider/domain/repositories/cleaning_catalog_repository.dart';
+import 'package:toukh_provider/data/repositories/firestore_cleaning_catalog_repository.dart';
 import 'package:toukh_provider/domain/services/order_qr_service.dart';
 import 'package:toukh_provider/domain/services/driver_matching_service.dart';
 import 'package:toukh_provider/domain/repositories/notification_inbox_repository.dart';
@@ -101,6 +103,13 @@ Future<void> configureDependencies() async {
       functions: getIt<FirebaseFunctions>(),
     ),
   );
+  getIt.registerLazySingleton<ToukhWalletWithdrawalService>(
+    () => ToukhWalletWithdrawalService(
+      app: ToukhTopUpApp.provider,
+      firestore: getIt<FirebaseFirestore>(),
+      functions: getIt<FirebaseFunctions>(),
+    ),
+  );
 
   getIt.registerLazySingleton<AuthRepository>(
     () => FirebaseAuthRepository(getIt<FirebaseAuth>()),
@@ -136,6 +145,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<SupermarketCatalogRepository>(
     () => FirestoreSupermarketCatalogRepository(getIt<FirebaseFirestore>()),
+  );
+  getIt.registerLazySingleton<CleaningCatalogRepository>(
+    () => FirestoreCleaningCatalogRepository(getIt<FirebaseFirestore>()),
   );
   getIt.registerLazySingleton<FirestoreProviderDashboardRepository>(
     () => FirestoreProviderDashboardRepository(getIt<FirebaseFirestore>()),

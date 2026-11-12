@@ -13,6 +13,7 @@ import 'package:toukh_provider/features/orders/presentation/widgets/provider_ord
 import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_location.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/request_delivery_sheet.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/store_driver_pick_sheet.dart';
+import 'package:toukh_provider/features/shop_requests/presentation/shop_requests_screen.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -28,6 +29,22 @@ class OrdersTabView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Open custom requests sit with the incoming orders until the customer
+    // accepts the price (then they come back as a normal order in progress).
+    if (tab != ProviderOrdersTab.incoming) {
+      return _buildOrders(context, const []);
+    }
+    final auth = context.watch<AuthCubit>().state;
+    final providerId = auth is Authenticated ? auth.user.uid : '';
+    if (providerId.isEmpty) return _buildOrders(context, const []);
+    return _OpenShopRequests(
+      key: ValueKey(providerId),
+      providerId: providerId,
+      builder: _buildOrders,
+    );
+  }
+
+  Widget _buildOrders(BuildContext context, List<ShopRequest> requests) {
     return BlocBuilder<ProviderOrdersCubit, ProviderOrdersState>(
       builder: (context, state) {
         final sla = context.watch<OrderAcceptanceSlaCubit>().state;
@@ -45,7 +62,7 @@ class OrdersTabView extends StatelessWidget {
           return const OrdersListShimmer();
         }
 
-        if (rows.isEmpty) {
+        if (rows.isEmpty && requests.isEmpty) {
           return ToukhRefresh(
             onRefresh: () => _refresh(context),
             child: ListView(
@@ -67,12 +84,27 @@ class OrdersTabView extends StatelessWidget {
           children: [
             ToukhRefresh(
               onRefresh: () => _refresh(context),
-              child: ListView.builder(
+              child: ToukhRowsPager(
+                key: ValueKey(tab),
+                rows: rows,
+                builder: (context, pager) => ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: AppSizes.screenPadding,
-                itemCount: rows.length,
-                itemBuilder: (context, index) {
-                  final row = rows[index];
+                itemCount: requests.length + pager.items.length + 1,
+                itemBuilder: (context, i) {
+                  if (i < requests.length) {
+                    return Padding(
+                      key: ValueKey('shopreq_${requests[i].id}'),
+                      padding: const EdgeInsets.only(bottom: AppSizes.spaceMd),
+                      child: ShopRequestCard(request: requests[i], showKindLabel: true),
+                    );
+                  }
+                  final index = i - requests.length;
+                  if (index == pager.items.length) {
+                    return ToukhPagedFooter(paging: pager);
+                  }
+                  pager.onItemBuilt(index);
+                  final row = pager.items[index];
                   final busy = state.actionInFlightId == row.id;
                   final isPharmacyRequest = row.master.isPharmacyRequest;
                   final pendingPharmacy = isPharmacyRequest &&
@@ -108,6 +140,7 @@ class OrdersTabView extends StatelessWidget {
                     onFinish: () => _finishWithCode(context, row.id),
                   );
                 },
+              ),
               ),
             ),
             if (actionBusy)
@@ -224,5 +257,36 @@ class OrdersTabView extends StatelessWidget {
           orderId,
           completionCode: code,
         );
+  }
+}
+
+/// Live open custom requests for [providerId], subscribed once per provider.
+class _OpenShopRequests extends StatefulWidget {
+  const _OpenShopRequests({
+    super.key,
+    required this.providerId,
+    required this.builder,
+  });
+
+  final String providerId;
+  final Widget Function(BuildContext context, List<ShopRequest> requests)
+      builder;
+
+  @override
+  State<_OpenShopRequests> createState() => _OpenShopRequestsState();
+}
+
+class _OpenShopRequestsState extends State<_OpenShopRequests> {
+  late final Stream<List<ShopRequest>> _stream =
+      watchProviderShopRequests(widget.providerId);
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<ShopRequest>>(
+      stream: _stream,
+      // Errors (e.g. a shop that never gets requests) just hide the section.
+      builder: (context, snap) =>
+          widget.builder(context, snap.data ?? const []),
+    );
   }
 }

@@ -57,6 +57,7 @@ import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart'
 import 'package:toukh_provider/features/orders/presentation/order_detail_screen.dart';
 import 'package:toukh_provider/features/orders/presentation/orders_screen.dart';
 import 'package:toukh_provider/features/pending/presentation/pending_approval_screen.dart';
+import 'package:toukh_provider/features/portfolio/presentation/pharmacy_gallery_screen.dart';
 import 'package:toukh_provider/features/portfolio/presentation/portfolio_screen.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/register_category_screen.dart';
@@ -312,6 +313,11 @@ GoRouter createAppRouter({
         path: AppRoutes.settingsGallery,
         parentNavigatorKey: providerRootNavigatorKey,
         builder: (context, state) => const PortfolioScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settingsPharmacyGallery,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) => const PharmacyGalleryScreen(),
       ),
       GoRoute(
         path: AppRoutes.notifications,

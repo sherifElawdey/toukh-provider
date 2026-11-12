@@ -69,7 +69,8 @@ class MenuItemEntity extends Equatable {
   final double? discountPercent;
   final double? offerPriceEgp;
 
-  /// `groceryCatalog/{id}` this item was picked from. Customers always see the
+  /// Master catalog product ([catalog] says which) this item was picked
+  /// from. Customers always see the
   /// catalog's names and image, and the item hides when the catalog product is
   /// switched off or deleted.
   final String? catalogProductId;
@@ -96,7 +97,15 @@ class MenuItemEntity extends Equatable {
   bool get isFromSupermarketCatalog =>
       isFromCatalog && catalog == MenuCatalogKinds.supermarket;
 
-  bool get isFromProduceCatalog => isFromCatalog && !isFromSupermarketCatalog;
+  bool get isFromCleaningCatalog =>
+      isFromCatalog && catalog == MenuCatalogKinds.cleaning;
+
+  /// Picked from a packaged catalog of [catalogKind] ([MenuCatalogKinds]).
+  bool isFromPackagedCatalog(String catalogKind) =>
+      isFromCatalog && catalog == catalogKind;
+
+  bool get isFromProduceCatalog =>
+      isFromCatalog && !isFromSupermarketCatalog && !isFromCleaningCatalog;
 
   MenuItemEntity copyWith({
     String? name,

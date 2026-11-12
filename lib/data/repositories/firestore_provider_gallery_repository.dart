@@ -34,6 +34,8 @@ class FirestoreProviderGalleryRepository implements ProviderGalleryRepository {
           fileId: data['fileId'] as String? ?? '',
           fileName: data['fileName'] as String? ?? '',
           createdAt: createdAt,
+          isOffer: data['isOffer'] == true,
+          caption: (data['caption'] as String?)?.trim(),
         );
       }).where((i) => i.url.isNotEmpty).toList();
     });
@@ -65,6 +67,21 @@ class FirestoreProviderGalleryRepository implements ProviderGalleryRepository {
       }
       rethrow;
     }
+  }
+
+  @override
+  Future<void> updateImage({
+    required String providerId,
+    required String itemId,
+    required bool isOffer,
+    String? caption,
+  }) {
+    final text = caption?.trim() ?? '';
+    return _galleryRef(providerId).doc(itemId).update({
+      'isOffer': isOffer,
+      'caption': text.isEmpty ? FieldValue.delete() : text,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   @override
