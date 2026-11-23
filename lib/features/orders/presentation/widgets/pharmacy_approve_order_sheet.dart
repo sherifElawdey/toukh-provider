@@ -37,7 +37,8 @@ class _PharmacyApproveOrderSheet extends StatefulWidget {
       _PharmacyApproveOrderSheetState();
 }
 
-class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> {
+class _PharmacyApproveOrderSheetState
+    extends State<_PharmacyApproveOrderSheet> {
   final _note = TextEditingController();
   final _subtotal = TextEditingController();
   late final Set<String> _approvedIds;
@@ -47,6 +48,7 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
   /// Own delivery priced by Havit: the server adds the fee to the quote.
   late final bool _appPricedDelivery;
   bool _submitting = false;
+  bool _closed = false;
 
   @override
   void initState() {
@@ -93,6 +95,21 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
     );
   }
 
+  /// The quote is on the order: it left "pending" in the live orders list.
+  /// The call can still fail or time out after the server saved it (e.g.
+  /// while it notifies the customer), so this, not the call, closes the sheet.
+  bool _quoteSaved(ProviderOrdersCubit cubit) {
+    final row = cubit.orderById(widget.row.id);
+    return row != null &&
+        row.slice.providerState != ProviderSubState.pending.wireValue;
+  }
+
+  void _close() {
+    if (_closed || !mounted) return;
+    _closed = true;
+    Navigator.of(context).pop(true);
+  }
+
   Future<void> _submit() async {
     final subtotal = double.tryParse(_subtotal.text.replaceAll(',', '').trim());
     if (subtotal == null || subtotal < 0) {
@@ -107,142 +124,155 @@ class _PharmacyApproveOrderSheetState extends State<_PharmacyApproveOrderSheet> 
     setState(() => _submitting = true);
     final cubit = context.read<ProviderOrdersCubit>();
     await cubit.approvePharmacyRequest(
-          orderId: widget.row.id,
-          pharmacistNote: _note.text.trim(),
-          approvedItemIds: _approvedIds.toList(),
-          quotedSubtotalEgp: subtotal,
-          quotedDeliveryFeeEgp: _deliveryFee,
-        );
-    if (!mounted) return;
+      orderId: widget.row.id,
+      pharmacistNote: _note.text.trim(),
+      approvedItemIds: _approvedIds.toList(),
+      quotedSubtotalEgp: subtotal,
+      quotedDeliveryFeeEgp: _deliveryFee,
+    );
+    if (!mounted || _closed) return;
     final err = cubit.state.errorMessage;
-    if (err != null) {
+    if (err != null && !_quoteSaved(cubit)) {
       _showSnack(err);
       setState(() => _submitting = false);
       return;
     }
-    Navigator.pop(context, true);
-    setState(() => _submitting = false);
+    _close();
   }
 
   @override
   Widget build(BuildContext context) {
-    final bottom = MediaQuery.viewInsetsOf(context).bottom +
+    final bottom =
+        MediaQuery.viewInsetsOf(context).bottom +
         MediaQuery.paddingOf(context).bottom;
     final t = Theme.of(context).textTheme;
 
-    return Padding(
-      padding: EdgeInsets.fromLTRB(
-        AppSizes.spaceBase,
-        AppSizes.spaceSm,
-        AppSizes.spaceBase,
-        bottom + AppSizes.spaceBase,
-      ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            CustomText(
-              AppStrings.Orders.pharmacyApproveTitle.tr,
-              style: t.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-            ),
-            const SizedBox(height: AppSizes.spaceMd),
-            if (_prescriptionUrl != null && _prescriptionUrl!.isNotEmpty) ...[
-              TappableNetworkImage(
-                imageUrl: _prescriptionUrl!,
-                height: 160,
-                width: double.infinity,
-                borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+    return BlocListener<ProviderOrdersCubit, ProviderOrdersState>(
+      listenWhen: (previous, current) => _submitting && !_closed,
+      listener: (context, _) {
+        if (_quoteSaved(context.read<ProviderOrdersCubit>())) _close();
+      },
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(
+          AppSizes.spaceBase,
+          AppSizes.spaceSm,
+          AppSizes.spaceBase,
+          bottom + AppSizes.spaceBase,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              CustomText(
+                AppStrings.Orders.pharmacyApproveTitle.tr,
+                style: t.titleMedium?.copyWith(fontWeight: FontWeight.w800),
               ),
               const SizedBox(height: AppSizes.spaceMd),
-            ],
-            if (_isItemOrder)
-              ..._items.map((item) {
-                final id = item.requestItemId ?? item.itemId ?? item.name;
-                final checked = _approvedIds.contains(id);
-                return CheckboxListTile(
-                  value: checked,
-                  onChanged: (v) {
-                    setState(() {
-                      if (v == true) {
-                        _approvedIds.add(id);
-                      } else {
-                        _approvedIds.remove(id);
-                      }
-                    });
-                  },
-                  title: CustomText(item.name),
-                  subtitle: CustomText(item.displayQuantity),
-                  secondary: item.imageUrl != null
-                      ? TappableNetworkImage(
-                          imageUrl: item.imageUrl!,
-                          width: 40,
-                          height: 40,
-                          borderRadius:
-                              BorderRadius.circular(AppSizes.radiusSm),
-                        )
-                      : null,
-                  contentPadding: EdgeInsets.zero,
-                );
-              }),
-            const SizedBox(height: AppSizes.spaceSm),
-            CustomText(
-              AppStrings.Orders.pharmacyPharmacistNote.tr,
-              style: t.labelLarge?.copyWith(fontWeight: FontWeight.w700),
-            ),
-            const SizedBox(height: AppSizes.spaceXs),
-            TextField(
-              controller: _note,
-              maxLines: 4,
-              decoration: InputDecoration(
-                hintText: AppStrings.Orders.pharmacyPharmacistNoteHint.tr,
-                border: OutlineInputBorder(
+              if (_prescriptionUrl != null && _prescriptionUrl!.isNotEmpty) ...[
+                TappableNetworkImage(
+                  imageUrl: _prescriptionUrl!,
+                  height: 160,
+                  width: double.infinity,
                   borderRadius: BorderRadius.circular(AppSizes.radiusMd),
                 ),
-              ),
-            ),
-            const SizedBox(height: AppSizes.spaceMd),
-            TextField(
-              controller: _subtotal,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: EnglishPriceInput.formatters,
-              decoration: InputDecoration(
-                labelText: AppStrings.Orders.pharmacyQuoteSubtotal.tr,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(AppSizes.radiusMd),
-                ),
-              ),
-            ),
-            const SizedBox(height: AppSizes.spaceSm),
-            if (_appPricedDelivery)
-              CustomText(
-                AppStrings.Orders.pharmacyQuoteAppFeeHint.tr,
-                style: t.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
-                ),
-              )
-            else if (_offersDelivery)
-              CustomText(
-                AppStrings.Orders.pharmacyQuoteDeliveryFee.trParams({
-                  'fee': _deliveryFee.toStringAsFixed(0),
+                const SizedBox(height: AppSizes.spaceMd),
+              ],
+              if (_isItemOrder)
+                ..._items.map((item) {
+                  final id = item.requestItemId ?? item.itemId ?? item.name;
+                  final checked = _approvedIds.contains(id);
+                  return CheckboxListTile(
+                    value: checked,
+                    onChanged: (v) {
+                      setState(() {
+                        if (v == true) {
+                          _approvedIds.add(id);
+                        } else {
+                          _approvedIds.remove(id);
+                        }
+                      });
+                    },
+                    title: CustomText(item.name),
+                    subtitle: CustomText(item.displayQuantity),
+                    secondary: item.imageUrl != null
+                        ? TappableNetworkImage(
+                            imageUrl: item.imageUrl!,
+                            width: 40,
+                            height: 40,
+                            borderRadius: BorderRadius.circular(
+                              AppSizes.radiusSm,
+                            ),
+                          )
+                        : null,
+                    contentPadding: EdgeInsets.zero,
+                  );
                 }),
-                style: t.bodySmall,
-              )
-            else
+              const SizedBox(height: AppSizes.spaceSm),
               CustomText(
-                AppStrings.Orders.pharmacyQuoteCourierFeeHint.tr,
-                style: t.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.65),
+                AppStrings.Orders.pharmacyPharmacistNote.tr,
+                style: t.labelLarge?.copyWith(fontWeight: FontWeight.w700),
+              ),
+              const SizedBox(height: AppSizes.spaceXs),
+              TextField(
+                controller: _note,
+                maxLines: 4,
+                decoration: InputDecoration(
+                  hintText: AppStrings.Orders.pharmacyPharmacistNoteHint.tr,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                  ),
                 ),
               ),
-            const SizedBox(height: AppSizes.spaceLg),
-            AppFilledButton(
-              text: AppStrings.Orders.pharmacyAcceptOrder.tr,
-              status: _submitting
-                  ? AppButtonStatus.loading
-                  : AppButtonStatus.enabled,
-              onTap: _submitting ? null : _submit,
-            ),
-          ],
+              const SizedBox(height: AppSizes.spaceMd),
+              TextField(
+                controller: _subtotal,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: EnglishPriceInput.formatters,
+                decoration: InputDecoration(
+                  labelText: AppStrings.Orders.pharmacyQuoteSubtotal.tr,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AppSizes.radiusMd),
+                  ),
+                ),
+              ),
+              const SizedBox(height: AppSizes.spaceSm),
+              if (_appPricedDelivery)
+                CustomText(
+                  AppStrings.Orders.pharmacyQuoteAppFeeHint.tr,
+                  style: t.bodySmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.65),
+                  ),
+                )
+              else if (_offersDelivery)
+                CustomText(
+                  AppStrings.Orders.pharmacyQuoteDeliveryFee.trParams({
+                    'fee': _deliveryFee.toStringAsFixed(0),
+                  }),
+                  style: t.bodySmall,
+                )
+              else
+                CustomText(
+                  AppStrings.Orders.pharmacyQuoteCourierFeeHint.tr,
+                  style: t.bodySmall?.copyWith(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.65),
+                  ),
+                ),
+              const SizedBox(height: AppSizes.spaceLg),
+              AppFilledButton(
+                text: AppStrings.Orders.pharmacyAcceptOrder.tr,
+                status: _submitting
+                    ? AppButtonStatus.loading
+                    : AppButtonStatus.enabled,
+                onTap: _submitting ? null : _submit,
+              ),
+            ],
+          ),
         ),
       ),
     );

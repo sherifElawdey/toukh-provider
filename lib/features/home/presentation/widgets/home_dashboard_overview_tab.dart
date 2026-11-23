@@ -20,6 +20,7 @@ import 'package:toukh_provider/features/shop_requests/presentation/shop_requests
 import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
+import 'package:toukh_provider/features/store_courier/presentation/request_courier_home_card.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
 class HomeDashboardOverviewTab extends StatelessWidget {
@@ -77,6 +78,7 @@ class HomeDashboardOverviewTab extends StatelessWidget {
       ),
       const HomePermissionsBanner(),
       const SizedBox(height: AppSizes.spaceMd),
+      const _RequestCourierEntry(),
       _pendingBanner(),
       _revenueCard(),
       const SizedBox(height: AppSizes.spaceMd),
@@ -105,6 +107,7 @@ class HomeDashboardOverviewTab extends StatelessWidget {
         padding: EdgeInsets.only(bottom: AppSizes.spaceMd),
       ),
       const HomePermissionsBanner(),
+      const _RequestCourierEntry(),
       const SizedBox(height: AppSizes.spaceXl),
       Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -280,6 +283,24 @@ class HomeDashboardOverviewTab extends StatelessWidget {
       buckets: state.chartBuckets,
       onPeriodChanged: (p) =>
           context.read<HomeDashboardCubit>().setChartPeriod(p),
+    );
+  }
+}
+
+/// "Request a courier" for stores (home services don't deliver orders).
+class _RequestCourierEntry extends StatelessWidget {
+  const _RequestCourierEntry();
+
+  @override
+  Widget build(BuildContext context) {
+    final auth = context.watch<AuthCubit>().state;
+    if (auth is! Authenticated ||
+        auth.profile.serviceType == ServiceType.homeService) {
+      return const SizedBox.shrink();
+    }
+    return const Padding(
+      padding: EdgeInsets.only(bottom: AppSizes.spaceMd),
+      child: RequestCourierHomeCard(),
     );
   }
 }

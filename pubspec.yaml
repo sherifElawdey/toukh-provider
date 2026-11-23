@@ -4,7 +4,7 @@ name: toukh_provider
 
 publish_to: 'none'
 
-version: 1.0.41+41
+version: 1.0.43+43
 
 environment:
   sdk: ^3.11.4
@@ -55,6 +55,7 @@ dependencies:
   uuid: ^4.5.1
   fl_chart: ^0.70.2
   shimmer: ^3.0.0
+  gal: ^3.0.1
 
 dev_dependencies:
   flutter_test:

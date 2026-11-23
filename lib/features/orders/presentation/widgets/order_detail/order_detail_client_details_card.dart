@@ -5,14 +5,11 @@ import 'package:toukh_provider/features/orders/presentation/widgets/order_detail
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:toukh_provider/di/service_locator.dart';
-import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 
 /// Shared client contact + address payload for order detail screens.
 class ClientDetailsViewData {
   const ClientDetailsViewData({
     required this.name,
-    this.phone,
     this.photoUrl,
     this.addressTitle,
     this.addressFormatted,
@@ -21,11 +18,9 @@ class ClientDetailsViewData {
     this.canView = true,
     this.hiddenMessage,
     this.nameOnly = false,
-    this.whatsAppMessage,
   });
 
   final String name;
-  final String? phone;
   final String? photoUrl;
   final String? addressTitle;
   final String? addressFormatted;
@@ -35,16 +30,10 @@ class ClientDetailsViewData {
   final String? hiddenMessage;
   final bool nameOnly;
 
-  /// Prefilled WhatsApp text (order status + what happens next).
-  final String Function()? whatsAppMessage;
-
   bool get hasCoords => lat != 0 || lng != 0;
 
   factory ClientDetailsViewData.fromOrderRow(ProviderMasterOrderRow row) {
     final address = providerDisplayDeliveryAddress(row.master, row.slice);
-    final phone = row.slice.customerPhone?.trim().isNotEmpty == true
-        ? row.slice.customerPhone!.trim()
-        : row.master.customerPhone?.trim();
 
     return ClientDetailsViewData(
       name: providerDisplayCustomerName(
@@ -52,7 +41,6 @@ class ClientDetailsViewData {
         row.slice,
         genericLabel: AppStrings.Orders.detailCustomer.tr,
       ),
-      phone: phone,
       photoUrl: providerDisplayCustomerPhotoUrl(row.master, row.slice),
       addressTitle: address.label?.trim(),
       addressFormatted: address.formattedAddress?.trim(),
@@ -60,42 +48,13 @@ class ClientDetailsViewData {
       lng: address.lng,
       canView: row.canViewCustomerContact,
       hiddenMessage: AppStrings.Orders.pharmacyCustomerContactHidden.tr,
-      whatsAppMessage: () => customerWhatsAppMessage(row),
     );
   }
 }
 
-/// "Hello …, this is [store] about your order #…": status + next step.
-String customerWhatsAppMessage(ProviderMasterOrderRow row) {
-  final auth = getIt<AuthCubit>().state;
-  final store = row.slice.providerName?.trim().isNotEmpty == true
-      ? row.slice.providerName!.trim()
-      : (auth is Authenticated ? auth.profile.name : '');
-  final name = row.slice.customerName?.trim().isNotEmpty == true
-      ? row.slice.customerName!.trim()
-      : (row.master.customerName?.trim() ?? '');
-  final action = switch (row.slice.statusWire) {
-    'pending' || 'placed' => AppStrings.Orders.waActionPending,
-    'accepted' || 'preparing' => AppStrings.Orders.waActionPreparing,
-    'ready_for_pickup' => AppStrings.Orders.waActionReady,
-    'picked_up' || 'out_for_delivery' => AppStrings.Orders.waActionOnTheWay,
-    'delivered' || 'completed' => AppStrings.Orders.waActionDelivered,
-    'cancelled' => AppStrings.Orders.waActionCancelled,
-    _ => AppStrings.Orders.waActionDefault,
-  };
-  final statusKey = row.isAwaitingStoreDriverAccept
-      ? AppStrings.Orders.awaitingDriverApproval
-      : ToukhStatusKeys.provider(row.slice.statusWire);
-  return ToukhContactLinks.arabic(AppStrings.Orders.waCustomerMessage, {
-    'name': name,
-    'store': store,
-    'order': ToukhContactLinks.orderRef(row.master.id),
-    'status': ToukhContactLinks.arabic(statusKey),
-    'action': ToukhContactLinks.arabic(action),
-  });
-}
-
 /// Shared client details card used by all provider order-detail screens.
+/// Shows only the customer's name and address; providers never get the
+/// customer's phone number or a way to call / message them.
 class ClientDetailsCard extends StatelessWidget {
   const ClientDetailsCard({super.key, required this.data});
 
@@ -185,7 +144,6 @@ class _ClientDetailsBody extends StatelessWidget {
     final scheme = Theme.of(context).colorScheme;
     final photoUrl = data.photoUrl?.trim();
     final hasPhoto = photoUrl != null && photoUrl.isNotEmpty;
-    final phone = data.phone?.trim();
     final addressTitle = data.addressTitle?.trim();
     final addressLine = data.addressFormatted?.trim();
 
@@ -220,41 +178,9 @@ class _ClientDetailsBody extends StatelessWidget {
                           fontWeight: FontWeight.w800,
                         ),
                   ),
-                  if (phone != null && phone.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Icon(
-                          ToukhIcons.phone,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: AppSizes.spaceSm),
-                        Expanded(
-                          child: CustomText(
-                            ToukhContactLinks.localPhone(phone),
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium
-                                ?.copyWith(
-                                  color: scheme.onSurface
-                                      .withValues(alpha: 0.75),
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
                 ],
               ),
             ),
-            if (phone != null && phone.isNotEmpty)
-              ToukhContactActions(
-                phone: phone,
-                whatsAppMessage: data.whatsAppMessage,
-                callTooltip: AppStrings.Orders.callCustomer.tr,
-                whatsAppTooltip: AppStrings.Orders.whatsAppCustomer.tr,
-              ),
           ],
         ),
         const SizedBox(height: AppSizes.spaceMd),

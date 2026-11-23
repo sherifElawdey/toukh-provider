@@ -1,4 +1,5 @@
 import 'package:flutter/scheduler.dart';
+import 'package:go_router/go_router.dart';
 import 'package:toukh_provider/core/notifications/notification_router_holder.dart';
 import 'package:toukh_provider/core/router/app_routes.dart';
 import 'package:toukh_provider/di/service_locator.dart';
@@ -72,6 +73,31 @@ Future<void> handleProviderNotificationTap(ToukhNotification notification) async
       });
     }
   } else {
-    router.go(route);
+    _openPage(router, route);
+  }
+}
+
+/// Bottom-bar tabs open in place; other pages open over Home so Back
+/// returns there. A route this app does not have (e.g. a customer-app page)
+/// opens the inbox.
+void _openPage(GoRouter router, String route) {
+  final uri = Uri.tryParse(route);
+  var known = false;
+  try {
+    known = uri != null && router.configuration.findMatch(uri).isNotEmpty;
+  } catch (_) {
+    known = false;
+  }
+  final target = known ? route : AppRoutes.notifications;
+  const tabs = {AppRoutes.home, AppRoutes.orders, AppRoutes.menu, AppRoutes.settings};
+  if (tabs.contains(Uri.parse(target).path)) {
+    router.go(target);
+  } else if (router.canPop()) {
+    router.push(target);
+  } else {
+    router.go(AppRoutes.home);
+    SchedulerBinding.instance.addPostFrameCallback((_) {
+      NotificationRouterHolder.router?.push(target);
+    });
   }
 }

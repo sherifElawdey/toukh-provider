@@ -1,0 +1,12 @@
+{
+  "name": "havit-desktop-alerts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "HAVIT Desktop Alerts Chrome extension (no build step; this file only runs tests and packaging).",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "e2e": "node test/e2e/run.cjs",
+    "package": "sh tools/package.sh"
+  }
+}

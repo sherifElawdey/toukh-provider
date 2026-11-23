@@ -1,6 +1,6 @@
+import 'package:toukh_provider/features/store_courier/data/store_courier_repository.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -11,7 +11,6 @@ import 'package:toukh_provider/core/settings/order_acceptance_sla_cubit.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/core/storage/backblaze_b2_client.dart';
 import 'package:toukh_provider/core/storage/media_upload_service.dart';
-import 'package:toukh_provider/core/config/twilio_environment.dart';
 import 'package:toukh_provider/data/repositories/firestore_app_settings_repository.dart';
 import 'package:toukh_provider/data/repositories/firebase_auth_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_delivery_company_repository.dart';
@@ -30,8 +29,7 @@ import 'package:toukh_provider/data/services/home_service_visit_reminder_coordin
 import 'package:toukh_provider/data/repositories/firestore_provider_home_service_requests_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_gallery_repository.dart';
 import 'package:toukh_provider/data/repositories/firestore_provider_menu_repository.dart';
-import 'package:toukh_provider/data/services/release_misconfigured_otp_repository.dart';
-import 'package:toukh_provider/data/services/twilio_verify_otp_repository.dart';
+import 'package:toukh_provider/data/services/zadx_otp_repository.dart';
 import 'package:toukh_provider/domain/repositories/app_settings_repository.dart';
 import 'package:toukh_provider/domain/repositories/auth_repository.dart';
 import 'package:toukh_provider/domain/repositories/delivery_company_repository.dart';
@@ -88,6 +86,9 @@ Future<void> configureDependencies() async {
   );
   getIt.registerLazySingleton<FirebaseMessaging>(
     () => FirebaseMessaging.instance,
+  );
+  getIt.registerLazySingleton<StoreCourierRepository>(
+    () => StoreCourierRepository(getIt<FirebaseFunctions>()),
   );
   getIt.registerLazySingleton<ToukhBannerService>(
     () => ToukhBannerService(
@@ -200,23 +201,13 @@ Future<void> configureDependencies() async {
   getIt.registerLazySingleton<PasswordResetService>(
     () => PasswordResetService(getIt<FirebaseFunctions>()),
   );
-  getIt.registerLazySingleton<OtpRepository>(() {
-    final twilioConfig = twilioVerifyConfigFromEnvironment();
-    if (twilioConfig.isComplete) {
-      debugPrint(
-        '[toukh_provider] Twilio Verify configured — real OTP (WhatsApp/SMS).',
-      );
-      return TwilioVerifyOtpRepository(
-        TwilioVerifyClient(config: twilioConfig),
-      );
-    }
-    debugPrint(
-      '[toukh_provider] Twilio Verify credentials missing. '
-      'Fill lib/core/config/twilio_local_secrets.dart '
-      '(or run bash tool/setup_dart_defines.sh). OTP will fail.',
-    );
-    return ReleaseMisconfiguredOtpRepository();
-  });
+  // Codes are made on the server and sent by SMS through ZADX
+  // (functions/accounts/otp.js); no gateway secrets ship in the app.
+  getIt.registerLazySingleton<OtpRepository>(
+    () => ZadxOtpRepository(
+      ServerOtpClient(functions: getIt<FirebaseFunctions>()),
+    ),
+  );
 
   getIt.registerLazySingleton<RegistrationOtpArgsHolder>(
     RegistrationOtpArgsHolder.new,

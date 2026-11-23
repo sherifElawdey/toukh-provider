@@ -6,6 +6,7 @@ import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/home_service_requests_screen.dart';
 import 'package:toukh_provider/features/orders/cubit/provider_orders_cubit.dart';
 import 'package:toukh_ui/toukh_ui.dart';
+import 'package:toukh_provider/features/orders/presentation/widgets/orders_delivery_settings_row.dart';
 import 'package:toukh_provider/features/orders/presentation/widgets/orders_tab_view.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 
@@ -81,6 +82,14 @@ class _MasterOrdersScreen extends StatelessWidget {
                   ],
                 ),
               ),
+              if (context.watch<AuthCubit>().state
+                  case final Authenticated auth)
+                Padding(
+                  padding: AppSizes.screenHorizontal.copyWith(
+                    bottom: AppSizes.spaceSm,
+                  ),
+                  child: OrdersDeliverySettingsRow(profile: auth.profile),
+                ),
               if (state.errorMessage != null)
                 Padding(
                   padding: AppSizes.screenHorizontal,

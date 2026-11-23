@@ -8,10 +8,15 @@ import 'package:share_plus/share_plus.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
+/// QR sheet for a public website link. Defaults to the menu wording;
+/// [titleKey] / [hintKey] / [fileName] switch it to e.g. the profile QR.
 Future<void> showMenuQrSheet(
   BuildContext context, {
   required String url,
   required String name,
+  String? titleKey,
+  String? hintKey,
+  String fileName = 'havit-menu-qr.png',
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -25,15 +30,36 @@ Future<void> showMenuQrSheet(
         top: Radius.circular(AppSizes.radiusXl),
       ),
     ),
-    builder: (ctx) => MenuQrSheet(url: url, name: name),
+    builder: (ctx) => MenuQrSheet(
+      url: url,
+      name: name,
+      titleKey: titleKey,
+      hintKey: hintKey,
+      fileName: fileName,
+    ),
   );
 }
 
 class MenuQrSheet extends StatefulWidget {
-  const MenuQrSheet({required this.url, required this.name, super.key});
+  const MenuQrSheet({
+    required this.url,
+    required this.name,
+    this.titleKey,
+    this.hintKey,
+    this.fileName = 'havit-menu-qr.png',
+    super.key,
+  });
 
   final String url;
   final String name;
+
+  /// Translation keys; `null` → menu QR wording.
+  final String? titleKey;
+  final String? hintKey;
+  final String fileName;
+
+  String get title => titleKey ?? AppStrings.Registration.menuQr;
+  String get hint => hintKey ?? AppStrings.Registration.menuQrHint;
 
   @override
   State<MenuQrSheet> createState() => _MenuQrSheetState();
@@ -46,10 +72,10 @@ class _MenuQrSheetState extends State<MenuQrSheet> {
     if (_sharing) return;
     setState(() => _sharing = true);
     try {
-      final bytes = await _menuQrCardPng(
+      final bytes = await menuQrCardPng(
         url: widget.url,
         name: widget.name,
-        caption: AppStrings.Registration.menuQrHint.tr,
+        caption: widget.hint.tr,
         textDirection: Directionality.of(context),
       );
       if (!mounted) return;
@@ -71,12 +97,12 @@ class _MenuQrSheetState extends State<MenuQrSheet> {
           XFile.fromData(
             bytes,
             mimeType: 'image/png',
-            name: 'havit-menu-qr.png',
+            name: widget.fileName,
           ),
         ],
         text: widget.url,
         sharePositionOrigin: origin,
-        fileNameOverrides: const ['havit-menu-qr.png'],
+        fileNameOverrides: [widget.fileName],
       );
     } catch (e) {
       if (!mounted) return;
@@ -109,14 +135,14 @@ class _MenuQrSheetState extends State<MenuQrSheet> {
           ),
           const SizedBox(height: AppSizes.spaceMd),
           CustomText(
-            AppStrings.Registration.menuQr,
+            widget.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
           ),
           const SizedBox(height: AppSizes.spaceSm),
           CustomText(
-            AppStrings.Registration.menuQrHint,
+            widget.hint,
             textAlign: TextAlign.center,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: scheme.onSurface.withValues(alpha: 0.7),
@@ -160,7 +186,7 @@ class _MenuQrSheetState extends State<MenuQrSheet> {
 
 /// Shareable card: store name, QR and caption on white, sized for chats and
 /// stories (4:5).
-Future<Uint8List?> _menuQrCardPng({
+Future<Uint8List?> menuQrCardPng({
   required String url,
   required String name,
   required String caption,

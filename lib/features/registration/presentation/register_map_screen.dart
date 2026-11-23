@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,6 +12,7 @@ import 'package:toukh_provider/features/registration/cubit/registration_cubit.da
 import 'package:toukh_provider/features/registration/presentation/map_pin_lat_lng.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_nav_footer.dart';
 import 'package:toukh_provider/features/registration/presentation/widgets/registration_step_layout.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/store_location_gate.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:get/get.dart';
@@ -30,15 +30,23 @@ class RegisterMapScreen extends StatefulWidget {
   State<RegisterMapScreen> createState() => _RegisterMapScreenState();
 }
 
-class _RegisterMapScreenState extends State<RegisterMapScreen> {
+class _RegisterMapScreenState extends State<RegisterMapScreen>
+    with WidgetsBindingObserver {
   final _mapKey = GlobalKey();
   final _pinKey = GlobalKey();
   GoogleMapController? _map;
 
-  /// Where the map opens. Null until resolved, so the map is never built at
-  /// [_fallbackTarget] only to jump to the device location a moment later.
+  /// Where the map opens: the saved pin, else the device position. Null
+  /// until known; there is no made-up starting point, and the map (and Next)
+  /// wait for it.
   LatLng? _start;
-  LatLng _target = _fallbackTarget;
+  late LatLng _target;
+
+  /// Why the first fix failed (null while locating or once found).
+  ToukhLocationFailure? _failure;
+
+  /// Height of the bottom card; the pin sits in the middle of the map above.
+  double _cardHeight = 0;
   String _address = '';
   bool _locating = true;
   bool _hasLocationPermission = false;
@@ -51,92 +59,133 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   LatLng? _lastHandledCenter;
   int _lookupGen = 0;
 
-  static const _fallbackTarget = LatLng(30.0444, 31.2357);
   static const _locationTimeout = Duration(seconds: 12);
-  static const _freshFixAge = Duration(minutes: 2);
   static const _minMoveDegrees = 0.00008;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) => _resolveStart());
   }
 
-  /// A saved pin stays put. Otherwise the map opens on the device location,
-  /// and only falls back to Cairo when no location is available.
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  /// Back from the system settings (permission or GPS): try again.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed &&
+        _start == null &&
+        _failure != null &&
+        !_locationBusy &&
+        mounted) {
+      _locateStart(request: false);
+    }
+  }
+
+  /// A saved pin stays put. Otherwise the map waits for the device position.
   Future<void> _resolveStart() async {
     if (!mounted) return;
     final draft = context.read<RegistrationCubit>().state;
     final lat = draft.lat;
     final lng = draft.lng;
-    LatLng start;
     if (lat != null && lng != null) {
-      start = LatLng(lat, lng);
+      final start = LatLng(lat, lng);
       _address = draft.formattedAddress;
-    } else {
-      start = await _deviceLocation(request: true) ?? _fallbackTarget;
+      setState(() {
+        _start = start;
+        _target = start;
+        _locating = false;
+      });
+      final perm = await Geolocator.checkPermission();
+      if (mounted) {
+        setState(() {
+          _hasLocationPermission =
+              perm == LocationPermission.always ||
+              perm == LocationPermission.whileInUse;
+          _locationPermanentlyDenied = perm == LocationPermission.deniedForever;
+        });
+      }
+      await _handleCenterChanged(start);
+      return;
     }
-    if (!mounted) return;
-    setState(() {
-      _start = start;
-      _target = start;
-      _locating = false;
-    });
-    await _handleCenterChanged(start);
+    await _locateStart();
   }
 
-  /// Device position, or null without service / permission / a fix.
-  /// A recent last-known fix is used at once instead of waiting for GPS.
+  /// First fix when there is no saved pin; on failure the gate says why.
+  Future<void> _locateStart({
+    bool request = true,
+    bool openServiceSettings = false,
+  }) async {
+    setState(() {
+      _locating = true;
+      _failure = null;
+    });
+    final here = await _deviceLocation(
+      request: request,
+      openSettings: openServiceSettings,
+    );
+    if (!mounted) return;
+    if (here == null) {
+      setState(() => _locating = false);
+      return;
+    }
+    setState(() {
+      _start = here;
+      _target = here;
+      _locating = false;
+    });
+    await _handleCenterChanged(here);
+  }
+
+  Future<void> _onGateAction() async {
+    if (_locationBusy) return;
+    setState(() => _locationBusy = true);
+    try {
+      switch (_failure) {
+        case ToukhLocationFailure.deniedForever:
+          await openAppSettings();
+        case ToukhLocationFailure.serviceOff:
+          await _locateStart(openServiceSettings: true);
+        case ToukhLocationFailure.denied:
+        case ToukhLocationFailure.noFix:
+        case null:
+          await _locateStart();
+      }
+    } finally {
+      if (mounted) setState(() => _locationBusy = false);
+    }
+  }
+
+  /// Precise device position, or null (and [_failure] set) without GPS,
+  /// permission or a fix. No last-known shortcut: it can be far off.
   Future<LatLng?> _deviceLocation({
     bool request = false,
     bool openSettings = false,
   }) async {
-    try {
-      final serviceOn = await Geolocator.isLocationServiceEnabled();
-      if (!serviceOn) {
-        if (openSettings) await Geolocator.openLocationSettings();
-        if (mounted) {
-          setState(() {
-            _hasLocationPermission = false;
-            _locationPermanentlyDenied = true;
-          });
-        }
-        return null;
-      }
-      var perm = await Geolocator.checkPermission();
-      if (request &&
-          (perm == LocationPermission.denied ||
-              perm == LocationPermission.unableToDetermine)) {
-        perm = await Geolocator.requestPermission();
-      }
-      final granted =
-          perm == LocationPermission.always ||
-          perm == LocationPermission.whileInUse;
-      if (mounted) {
-        setState(() {
-          _hasLocationPermission = granted;
-          _locationPermanentlyDenied = perm == LocationPermission.deniedForever;
-        });
-      }
-      if (!granted) return null;
-      if (!kIsWeb) {
-        final last = await Geolocator.getLastKnownPosition();
-        if (last != null &&
-            DateTime.now().difference(last.timestamp) < _freshFixAge) {
-          return LatLng(last.latitude, last.longitude);
-        }
-      }
-      final pos = await ToukhPreciseLocation.current(timeout: _locationTimeout);
-      return LatLng(pos.latitude, pos.longitude);
-    } catch (_) {
-      if (kIsWeb) return null;
-      try {
-        final last = await Geolocator.getLastKnownPosition();
-        return last == null ? null : LatLng(last.latitude, last.longitude);
-      } catch (_) {
-        return null;
-      }
+    final fix = await ToukhLocationFix.acquire(
+      request: request,
+      openServiceSettings: openSettings,
+      timeout: _locationTimeout,
+    );
+    if (mounted) {
+      final f = fix.failure;
+      setState(() {
+        _failure = f;
+        _hasLocationPermission =
+            f != ToukhLocationFailure.denied &&
+            f != ToukhLocationFailure.deniedForever &&
+            f != ToukhLocationFailure.serviceOff;
+        _locationPermanentlyDenied =
+            f == ToukhLocationFailure.deniedForever ||
+            f == ToukhLocationFailure.serviceOff;
+      });
     }
+    return fix.found ? LatLng(fix.lat!, fix.lng!) : null;
   }
 
   Future<void> _goToCurrentLocation() async {
@@ -194,7 +243,17 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
     );
     if (!mounted) return;
     setState(() => _locating = false);
-    if (here == null) return;
+    if (here == null) {
+      if (_failure == ToukhLocationFailure.noFix) {
+        AppSnack.show(
+          context,
+          message: AppStrings.Permissions.locationFailedSnack.tr,
+          state: AppSnackState.warning,
+          icon: ToukhIcons.location,
+        );
+      }
+      return;
+    }
     _target = here;
     _zoom = 15;
     await _handleCenterChanged(here);
@@ -349,15 +408,27 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final bottomInset = MediaQuery.of(context).padding.bottom + 270;
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(ToukhIcons.back),
-          onPressed: () => context.pop(),
-        ),
-        title: CustomText(AppStrings.Registration.mapTitle),
+    // Map area hidden by the bottom card (card + its bottom margin).
+    final bottomInset = _cardHeight + AppSizes.spaceBase;
+    final appBar = AppBar(
+      leading: IconButton(
+        icon: Icon(ToukhIcons.back),
+        onPressed: () => context.pop(),
       ),
+      title: CustomText(AppStrings.Registration.mapTitle),
+    );
+    if (_start == null) {
+      return Scaffold(
+        appBar: appBar,
+        body: StoreLocationGate(
+          locating: _locating,
+          failure: _failure,
+          onAction: _locationBusy ? null : _onGateAction,
+        ),
+      );
+    }
+    return Scaffold(
+      appBar: appBar,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -482,71 +553,77 @@ class _RegisterMapScreenState extends State<RegisterMapScreen> {
             left: AppSizes.spaceBase,
             right: AppSizes.spaceBase,
             bottom: AppSizes.spaceBase,
-            child: Material(
-              elevation: 6,
-              borderRadius: BorderRadius.circular(AppSizes.radiusLg),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSizes.spaceBase),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const RegistrationStageProgress(
-                      stage: RegistrationStage.place,
-                    ),
-                    SizedBox(height: AppSizes.spaceMd),
-                    Row(
-                      children: [
-                        const RegistrationIllustration(
-                          icon: PhosphorIconsDuotone.mapPinLine,
-                          size: 44,
-                        ),
-                        SizedBox(width: AppSizes.spaceMd),
-                        Expanded(
-                          child: CustomText(
-                            AppStrings.Registration.mapHint,
-                            style: TextStyle(
-                              fontSize: AppSizes.fontCaption,
-                              height: 1.4,
-                              color: AppColors.muted(context),
+            child: ToukhMeasureSize(
+              onChange: (size) {
+                if (!mounted || (size.height - _cardHeight).abs() < 8) return;
+                setState(() => _cardHeight = size.height);
+              },
+              child: Material(
+                elevation: 6,
+                borderRadius: BorderRadius.circular(AppSizes.radiusLg),
+                child: Padding(
+                  padding: const EdgeInsets.all(AppSizes.spaceBase),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const RegistrationStageProgress(
+                        stage: RegistrationStage.place,
+                      ),
+                      SizedBox(height: AppSizes.spaceMd),
+                      Row(
+                        children: [
+                          const RegistrationIllustration(
+                            icon: PhosphorIconsDuotone.mapPinLine,
+                            size: 44,
+                          ),
+                          SizedBox(width: AppSizes.spaceMd),
+                          Expanded(
+                            child: CustomText(
+                              AppStrings.Registration.mapHint,
+                              style: TextStyle(
+                                fontSize: AppSizes.fontCaption,
+                                height: 1.4,
+                                color: AppColors.muted(context),
+                              ),
                             ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: AppSizes.spaceMd),
+                      CustomText(
+                        _address.isEmpty ? '…' : _address,
+                        maxLines: 3,
+                        style: const TextStyle(
+                          fontSize: AppSizes.fontBody,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      if (!_inServiceArea && !_checkingArea) ...[
+                        SizedBox(height: AppSizes.spaceSm),
+                        CustomText(
+                          AppStrings.Registration.locationOutsideServiceArea.tr,
+                          style: TextStyle(
+                            fontSize: AppSizes.fontCaption,
+                            color: scheme.error,
+                            height: 1.35,
                           ),
                         ),
                       ],
-                    ),
-                    SizedBox(height: AppSizes.spaceMd),
-                    CustomText(
-                      _address.isEmpty ? '…' : _address,
-                      maxLines: 3,
-                      style: const TextStyle(
-                        fontSize: AppSizes.fontBody,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    if (!_inServiceArea && !_checkingArea) ...[
-                      SizedBox(height: AppSizes.spaceSm),
-                      CustomText(
-                        AppStrings.Registration.locationOutsideServiceArea.tr,
-                        style: TextStyle(
-                          fontSize: AppSizes.fontCaption,
-                          color: scheme.error,
-                          height: 1.35,
-                        ),
+                      SizedBox(height: AppSizes.spaceMd),
+                      RegistrationStepNavFooter(
+                        useSafeArea: false,
+                        padding: EdgeInsets.zero,
+                        onBack: () => context.pop(),
+                        onNext: _continue,
+                        nextEnabled:
+                            _start != null &&
+                            !_locating &&
+                            !_checkingArea &&
+                            _inServiceArea,
                       ),
                     ],
-                    SizedBox(height: AppSizes.spaceMd),
-                    RegistrationStepNavFooter(
-                      useSafeArea: false,
-                      padding: EdgeInsets.zero,
-                      onBack: () => context.pop(),
-                      onNext: _continue,
-                      nextEnabled:
-                          _start != null &&
-                          !_locating &&
-                          !_checkingArea &&
-                          _inServiceArea,
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),

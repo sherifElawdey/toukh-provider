@@ -11,6 +11,7 @@ import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_provider/features/onboarding/presentation/widgets/permission_required_sheet.dart';
 import 'package:toukh_provider/features/registration/cubit/registration_cubit.dart';
 import 'package:toukh_provider/features/registration/presentation/map_pin_lat_lng.dart';
+import 'package:toukh_provider/features/registration/presentation/widgets/store_location_gate.dart';
 import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 
@@ -19,7 +20,12 @@ class ReviewEditLocationBody extends StatefulWidget {
     super.key,
     this.onAddressChanged,
     this.onInServiceAreaChanged,
+    this.onLocatedChanged,
   });
+
+  /// Whether there is a pin yet (a saved one, or the device position).
+  /// Saving waits for it.
+  final ValueChanged<bool>? onLocatedChanged;
 
   /// Live reverse-geocoded address for the sheet footer.
   final ValueChanged<String>? onAddressChanged;
@@ -35,7 +41,11 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   final _mapKey = GlobalKey();
   final _pinKey = GlobalKey();
   GoogleMapController? _map;
+
+  /// Null until there is a saved pin or a device fix; no made-up start.
+  LatLng? _start;
   late LatLng _target;
+  ToukhLocationFailure? _failure;
   String _address = '';
   bool _locating = false;
   bool _hasLocationPermission = false;
@@ -56,6 +66,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
     final d = context.read<RegistrationCubit>().state;
     if (d.lat != null && d.lng != null) {
       _target = LatLng(d.lat!, d.lng!);
+      _start = _target;
       // Keep the saved address — do not reverse-geocode on open (APIs differ).
       _address = d.formattedAddress.trim();
       _lastHandledCenter = _target;
@@ -65,9 +76,61 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
         _refreshPermissionState();
       });
     } else {
-      _target = const LatLng(30.0444, 31.2357);
       _locating = true;
-      _initLocation(request: false);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        widget.onLocatedChanged?.call(false);
+        _locateStart();
+      });
+    }
+  }
+
+  /// First fix when there is no saved pin; on failure the gate says why.
+  Future<void> _locateStart({bool openServiceSettings = false}) async {
+    setState(() {
+      _locating = true;
+      _failure = null;
+    });
+    final fix = await ToukhLocationFix.acquire(
+      openServiceSettings: openServiceSettings,
+      timeout: _locationTimeout,
+    );
+    if (!mounted) return;
+    if (!fix.found) {
+      setState(() {
+        _locating = false;
+        _failure = fix.failure;
+      });
+      return;
+    }
+    final here = LatLng(fix.lat!, fix.lng!);
+    setState(() {
+      _locating = false;
+      _hasLocationPermission = true;
+      _locationPermanentlyDenied = false;
+      _start = here;
+      _target = here;
+      _zoom = 15;
+    });
+    widget.onLocatedChanged?.call(true);
+    await _handleCenterChanged(here, reverseGeocode: true);
+  }
+
+  Future<void> _onGateAction() async {
+    if (_locationBusy) return;
+    setState(() => _locationBusy = true);
+    try {
+      if (_failure == ToukhLocationFailure.deniedForever) {
+        await openAppSettings();
+        // Coming back from Settings: try again with whatever was granted.
+        await _locateStart();
+      } else {
+        await _locateStart(
+          openServiceSettings: _failure == ToukhLocationFailure.serviceOff,
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _locationBusy = false);
     }
   }
 
@@ -204,10 +267,15 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
       _zoom = 15;
       await _handleCenterChanged(next, reverseGeocode: true);
     } catch (_) {
-      if (mounted) {
-        setState(() => _locating = false);
-      }
-      await _handleCenterChanged(_target, reverseGeocode: true);
+      // No fix: the pin stays where it is.
+      if (!mounted) return;
+      setState(() => _locating = false);
+      AppSnack.show(
+        context,
+        message: AppStrings.Permissions.locationFailedSnack.tr,
+        state: AppSnackState.warning,
+        icon: ToukhIcons.location,
+      );
     }
   }
 
@@ -296,6 +364,7 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   }
 
   Future<bool> save(RegistrationCubit cubit) async {
+    if (_start == null) return false;
     ++_lookupGen;
     final point = await _resolvePin();
     if (!mounted) return false;
@@ -348,6 +417,16 @@ class ReviewEditLocationBodyState extends State<ReviewEditLocationBody> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    if (_start == null) {
+      return ColoredBox(
+        color: scheme.surface,
+        child: StoreLocationGate(
+          locating: _locating,
+          failure: _failure,
+          onAction: _locationBusy ? null : _onGateAction,
+        ),
+      );
+    }
     return Stack(
       fit: StackFit.expand,
       children: [

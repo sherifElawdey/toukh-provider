@@ -21,6 +21,7 @@ abstract final class AppStrings {
   static const AccountStatus = _AccountStatus();
   static const Shell = _Shell();
   static const Home = _Home();
+  static const StoreCourier = _StoreCourier();
   static const HomeServiceSchedule = _HomeServiceSchedule();
   static const HomeServiceRequests = _HomeServiceRequests();
   static const Orders = _Orders();
@@ -189,6 +190,14 @@ class _Permissions {
   String get bannerSubtitle => 'permissions.banner_subtitle';
   String get allowLocation => 'permissions.allow_location';
   String get openSettings => 'permissions.open_settings';
+  String get locatingCurrent => 'permissions.locating_current';
+  String get storeLocationNeededBody => 'permissions.store_location_needed_body';
+  String get locationOffTitle => 'permissions.location_off_title';
+  String get locationOffBody => 'permissions.location_off_body';
+  String get turnOnLocation => 'permissions.turn_on_location';
+  String get locationFailedTitle => 'permissions.location_failed_title';
+  String get locationFailedBody => 'permissions.location_failed_body';
+  String get locationFailedSnack => 'permissions.location_failed_snack';
 }
 
 class _AccountStatus {
@@ -642,6 +651,21 @@ class _Settings {
   String get reviewsCount => 'settings.reviews_count';
   String get manageDrivers => 'settings.manage_drivers';
   String get gallery => 'settings.gallery';
+  String get profileQr => 'settings.profile_qr';
+  String get profileQrHint => 'settings.profile_qr_hint';
+  String get shareProfile => 'settings.share_profile';
+  String get shareProfileHint => 'settings.share_profile_hint';
+  String get shareProfileLinkTab => 'settings.share_profile_link_tab';
+  String get shareProfileQrTab => 'settings.share_profile_qr_tab';
+  String get shareProfileCopy => 'settings.share_profile_copy';
+  String get shareProfileCopied => 'settings.share_profile_copied';
+  String get shareProfileShareLink => 'settings.share_profile_share_link';
+  String get shareProfileSaveQr => 'settings.share_profile_save_qr';
+  String get shareProfileShareQr => 'settings.share_profile_share_qr';
+  String get shareProfileSaved => 'settings.share_profile_saved';
+  String get shareProfileSaveFailed => 'settings.share_profile_save_failed';
+  String get shareProfileQrCaption => 'settings.share_profile_qr_caption';
+  String get shareProfileMessage => 'settings.share_profile_message';
   String get gallerySubtitle => 'settings.gallery_subtitle';
   String get pharmacyGalleryEntry => 'settings.pharmacy_gallery_entry';
   String get pharmacyGalleryEntrySubtitle => 'settings.pharmacy_gallery_entry_subtitle';
@@ -667,6 +691,18 @@ class _Settings {
   String get termsAndConditions => 'settings.terms_and_conditions';
   String get privacyPolicy => 'settings.privacy_policy';
   String get deleteAccount => 'settings.delete_account';
+  String get changePasswordTitle => 'settings.change_password_title';
+  String get changePasswordCurrent => 'settings.change_password_current';
+  String get changePasswordNew => 'settings.change_password_new';
+  String get changePasswordConfirm => 'settings.change_password_confirm';
+  String get changePasswordAction => 'settings.change_password_action';
+  String get changePasswordCurrentRequired => 'settings.change_password_current_required';
+  String get changePasswordTooShort => 'settings.change_password_too_short';
+  String get changePasswordSpaces => 'settings.change_password_spaces';
+  String get changePasswordSame => 'settings.change_password_same';
+  String get changePasswordMismatch => 'settings.change_password_mismatch';
+  String get changePasswordWrongCurrent => 'settings.change_password_wrong_current';
+  String get changePasswordDone => 'settings.change_password_done';
   String get deleteAccountTitle => 'settings.delete_account_title';
   String get deleteAccountBody => 'settings.delete_account_body';
   String get deleteAccountContinue => 'settings.delete_account_continue';
@@ -1314,4 +1350,50 @@ class _ShopRequests {
   String get sendToCustomer => 'shop_requests.send_to_customer';
   String get answerAll => 'shop_requests.answer_all';
   String get needOne => 'shop_requests.need_one';
+}
+
+class _StoreCourier {
+  const _StoreCourier();
+  String get homeTitle => 'store_courier.home_title';
+  String get homeSubtitle => 'store_courier.home_subtitle';
+  String get title => 'store_courier.title';
+  String get intro => 'store_courier.intro';
+  String get destinationTitle => 'store_courier.destination_title';
+  String get pickDestination => 'store_courier.pick_destination';
+  String get choose => 'store_courier.choose';
+  String get change => 'store_courier.change';
+  String get destinationRequired => 'store_courier.destination_required';
+  String get addressDetails => 'store_courier.address_details';
+  String get addressDetailsHint => 'store_courier.address_details_hint';
+  String get recipientTitle => 'store_courier.recipient_title';
+  String get recipientPhone => 'store_courier.recipient_phone';
+  String get recipientPhoneRequired => 'store_courier.recipient_phone_required';
+  String get recipientName => 'store_courier.recipient_name';
+  String get orderTitle => 'store_courier.order_title';
+  String get orderPrice => 'store_courier.order_price';
+  String get orderPriceHint => 'store_courier.order_price_hint';
+  String get orderPriceInvalid => 'store_courier.order_price_invalid';
+  String get note => 'store_courier.note';
+  String get noteHint => 'store_courier.note_hint';
+  String get feeTitle => 'store_courier.fee_title';
+  String get feeNeedsDestination => 'store_courier.fee_needs_destination';
+  String get feeLabel => 'store_courier.fee_label';
+  String get distance => 'store_courier.distance';
+  String get distanceKm => 'store_courier.distance_km';
+  String get collectLabel => 'store_courier.collect_label';
+  String get feeCashNote => 'store_courier.fee_cash_note';
+  String get submit => 'store_courier.submit';
+  String get submitWithFee => 'store_courier.submit_with_fee';
+  String get noCodeNote => 'store_courier.no_code_note';
+  String get created => 'store_courier.created';
+  String get pickTitle => 'store_courier.pick_title';
+  String get pickHint => 'store_courier.pick_hint';
+  String get pickConfirm => 'store_courier.pick_confirm';
+  String get searchHint => 'store_courier.search_hint';
+  String get paymentTitle => 'store_courier.payment_title';
+  String get paymentCash => 'store_courier.payment_cash';
+  String get paymentCashHint => 'store_courier.payment_cash_hint';
+  String get paymentPrepaid => 'store_courier.payment_prepaid';
+  String get paymentPrepaidHint => 'store_courier.payment_prepaid_hint';
+  String get orderPricePrepaidHint => 'store_courier.order_price_prepaid_hint';
 }

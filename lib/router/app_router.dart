@@ -97,6 +97,7 @@ import 'package:toukh_provider/l10n/app_strings.dart';
 import 'package:toukh_provider/router/widgets/login_with_deleted_sheet.dart';
 import 'package:toukh_ui/toukh_ui.dart';
 import 'package:toukh_provider/router/widgets/company_account_switch.dart';
+import 'package:toukh_provider/features/store_courier/presentation/request_courier_screen.dart';
 import 'package:toukh_provider/router/widgets/menu_or_gallery_tab_screen.dart';
 import 'package:toukh_provider/router/widgets/verify_otp_missing_args_placeholder.dart';
 
@@ -323,6 +324,11 @@ GoRouter createAppRouter({
         path: AppRoutes.notifications,
         parentNavigatorKey: providerRootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.requestCourier,
+        parentNavigatorKey: providerRootNavigatorKey,
+        builder: (context, state) => const RequestCourierScreen(),
       ),
       GoRoute(
         path: AppRoutes.shopRequests,

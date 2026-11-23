@@ -10,7 +10,9 @@ import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/domain/entities/provider_kind.dart';
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/drivers/presentation/driver_requests_badge.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/share_profile_sheet.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/brand_info_banner.dart';
+import 'package:toukh_provider/features/settings/presentation/widgets/change_password_section.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/language_selection_sheet.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/location_operations_section.dart';
 import 'package:toukh_provider/features/settings/presentation/widgets/settings_app_version_footer.dart';
@@ -127,6 +129,21 @@ class SettingsScreen extends StatelessWidget {
                   LocationOperationsSection(profile: auth.profile),
                   SizedBox(height: AppSizes.spaceLg),
                 ],
+                // Every provider type gets a public page: share it as a link
+                // or QR that opens it in the customer app (or the website).
+                if (auth is Authenticated)
+                  SettingsTile(
+                    icon: PhosphorIconsRegular.shareNetwork,
+                    titleKey: AppStrings.Settings.shareProfile,
+                    trailing: Icon(
+                      ToukhIcons.chevronRight,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.45),
+                    ),
+                    onTap: () =>
+                        showShareProfileSheet(context, profile: auth.profile),
+                  ),
                 SettingsTile(
                   icon: ToukhIcons.history,
                   titleKey: AppStrings.Settings.ordersHistory,
@@ -252,7 +269,11 @@ class SettingsScreen extends StatelessWidget {
                     subtitleKey: AppStrings.Settings.highPriorityAlertsHint,
                     batteryHintKey: AppStrings.Settings.batteryHint,
                     batteryActionKey: AppStrings.Settings.batteryAction,
+                    // On unless the store switches it off (server default).
+                    defaultEnabled: true,
                   ),
+                  SizedBox(height: AppSizes.spaceXl),
+                  const ChangePasswordSection(),
                   SizedBox(height: AppSizes.spaceXl),
                 ],
                 SettingsSectionTitle(labelKey: AppStrings.Settings.appearance),

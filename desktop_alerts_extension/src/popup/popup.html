@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HAVIT Desktop Alerts</title>
+  <link rel="stylesheet" href="../ui/theme.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-row">
+      <img class="logo" src="../../assets/icons/logo-256.png" alt="HAVIT">
+      <div class="hero-text">
+        <h1 data-i18n="appName"></h1>
+        <p id="hero-sub" data-i18n="tagline"></p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Signed out -->
+  <main id="view-signin" class="stack" hidden>
+    <form id="signin-form" class="card pad stack" novalidate>
+      <div class="field">
+        <label for="phone" data-i18n="phone"></label>
+        <div class="input-group ltr">
+          <span class="prefix">+20</span>
+          <input id="phone" class="input" type="tel" inputmode="numeric" autocomplete="username"
+                 maxlength="14" data-i18n-placeholder="phoneHint" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="password" data-i18n="password"></label>
+        <input id="password" class="input" type="password" autocomplete="current-password" required>
+      </div>
+      <div id="signin-error" class="alert-banner" role="alert" hidden></div>
+      <button id="signin-btn" class="btn btn-primary btn-block btn-lg" type="submit" data-i18n="signIn"></button>
+      <p class="small muted center" data-i18n="signInHelp"></p>
+    </form>
+    <p class="small faint limits" data-i18n="limits"></p>
+  </main>
+
+  <!-- Signed in -->
+  <main id="view-main" class="stack" hidden>
+    <section class="card store">
+      <img id="store-logo" class="store-logo" alt="" hidden>
+      <div class="store-text">
+        <div id="store-name" class="store-name"></div>
+        <div id="store-branch" class="small muted"></div>
+        <div id="store-phone" class="small faint ltr-inline"></div>
+      </div>
+    </section>
+
+    <section id="pending" class="card pending" hidden>
+      <span class="pulse" aria-hidden="true"></span>
+      <span id="pending-text" class="pending-text"></span>
+      <button id="pending-show" class="btn btn-primary" type="button" data-i18n="showOrders"></button>
+    </section>
+
+    <section class="card pad">
+      <h2 class="section-title" data-i18n="status"></h2>
+      <ul class="status-list">
+        <li>
+          <span id="conn-dot" class="dot"></span>
+          <span data-i18n="connection"></span>
+          <span id="conn-text" class="status-value"></span>
+          <button id="conn-retry" class="btn btn-ghost btn-xs" type="button" data-i18n="retry" hidden></button>
+        </li>
+        <li>
+          <span id="perm-dot" class="dot"></span>
+          <span data-i18n="permission"></span>
+          <span id="perm-text" class="status-value"></span>
+        </li>
+        <li>
+          <span class="dot ok"></span>
+          <span data-i18n="device"></span>
+          <span id="device-text" class="status-value"></span>
+        </li>
+      </ul>
+      <p id="perm-help" class="alert-banner warn small" data-i18n="blockedHelp" hidden></p>
+      <p id="conn-error" class="alert-banner small" hidden></p>
+    </section>
+
+    <section id="sound-card" class="card pad stack-sm">
+      <h2 class="section-title" data-i18n="sound"></h2>
+      <p class="policy small" data-i18n="alertPolicy"></p>
+      <div class="sound-options stack-sm">
+        <div class="field">
+          <label data-i18n="soundChoice"></label>
+          <div id="sound-choice" class="segmented" role="radiogroup"></div>
+        </div>
+        <div class="field">
+          <label for="volume" data-i18n="volume"></label>
+          <div class="row">
+            <input id="volume" class="range" type="range" min="20" max="100" step="5">
+            <button id="play-sound" class="btn btn-secondary btn-sm" type="button" data-i18n="testSound"></button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="actions stack-sm">
+      <button id="open-dashboard" class="btn btn-primary btn-block btn-lg" type="button" data-i18n="openDashboard"></button>
+      <button id="test-alert" class="btn btn-secondary btn-block" type="button" data-i18n="testAlert"></button>
+    </section>
+
+    <details class="card pad advanced">
+      <summary data-i18n="advanced"></summary>
+      <form id="advanced-form" class="stack-sm" novalidate>
+        <div class="field">
+          <label for="device-label" data-i18n="deviceName"></label>
+          <input id="device-label" class="input" maxlength="60">
+        </div>
+        <div class="field">
+          <label for="dashboard-url" data-i18n="dashboardUrl"></label>
+          <input id="dashboard-url" class="input ltr" type="url" data-i18n-placeholder="dashboardUrlHint">
+        </div>
+        <div class="field">
+          <label for="language" data-i18n="language"></label>
+          <select id="language" class="input">
+            <option value="auto" data-i18n="langAuto"></option>
+            <option value="ar">العربية</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+        <div class="row">
+          <button class="btn btn-secondary" type="submit" data-i18n="save"></button>
+          <span id="advanced-msg" class="small muted" role="status"></span>
+        </div>
+      </form>
+    </details>
+
+    <p class="small faint limits" data-i18n="limits"></p>
+    <button id="sign-out" class="btn btn-danger-text btn-block" type="button" data-i18n="signOut"></button>
+  </main>
+
+  <script type="module" src="popup.js"></script>
+</body>
+</html>

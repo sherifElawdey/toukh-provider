@@ -1,4 +1,5 @@
 import 'package:toukh_provider/core/router/app_routes.dart';
+import 'package:toukh_provider/core/router/pending_order_link.dart';
 import 'package:toukh_provider/core/settings/settings_cubit.dart';
 import 'package:toukh_provider/di/service_locator.dart';
 import 'package:toukh_ui/toukh_ui.dart';
@@ -47,6 +48,7 @@ String? resolveProviderRedirect({
   }
 
   final loc = matchedLocation;
+  PendingOrderLink.remember(loc);
 
   final versionGate = getIt<AppVersionGateService>();
   if (versionGate.checked && versionGate.needsUpdate) {
@@ -167,7 +169,7 @@ String? resolveProviderRedirect({
             }
             return AppRoutes.permissions;
           case OnboardingGate.ready:
-            return AppRoutes.home;
+            return PendingOrderLink.take() ?? AppRoutes.home;
         }
       }
       logRedirect(null, 'on postLoginStatus route');
@@ -265,11 +267,13 @@ String? resolveProviderRedirect({
             return next;
           case OnboardingGate.ready:
             if (AppRoutes.isShellPathOrSubroute(loc)) {
+              PendingOrderLink.clearIf(loc);
               logRedirect(null, 'active + ready on shell route');
               return null;
             }
-            logRedirect(AppRoutes.home, 'active + ready');
-            return AppRoutes.home;
+            final next = PendingOrderLink.take() ?? AppRoutes.home;
+            logRedirect(next, 'active + ready');
+            return next;
         }
     }
   }

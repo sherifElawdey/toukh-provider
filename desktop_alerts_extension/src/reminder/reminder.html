@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HAVIT · Order waiting</title>
+  <link rel="stylesheet" href="../ui/theme.css">
+  <link rel="stylesheet" href="reminder.css">
+</head>
+<body>
+  <header class="bar">
+    <img class="mark" src="../../assets/icons/icon-48.png" alt="HAVIT">
+    <div class="bar-text">
+      <h1 id="title"></h1>
+      <p class="small" data-i18n="reminderBody"></p>
+    </div>
+    <span class="pulse" aria-hidden="true"></span>
+  </header>
+  <main id="list" class="list" aria-live="polite"></main>
+  <footer id="footer" class="footer" hidden>
+    <button id="show-all" class="btn btn-ghost btn-block" type="button" data-i18n="showAll"></button>
+  </footer>
+  <script type="module" src="reminder.js"></script>
+</body>
+</html>

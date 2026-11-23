@@ -780,6 +780,36 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
+  /// Verifies [currentPassword], then sets [newPassword]. Returns an error
+  /// message (translation key resolved), or `null` on success.
+  Future<String?> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    if (_authRepository.currentUser == null) {
+      return AppStrings.Common.notSignedIn.tr;
+    }
+    try {
+      await _authRepository.changePassword(
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+      );
+      return null;
+    } on FirebaseAuthException catch (e) {
+      return switch (e.code) {
+        'wrong-password' ||
+        'invalid-credential' ||
+        'invalid-login-credentials' ||
+        'user-mismatch' =>
+          AppStrings.Settings.changePasswordWrongCurrent.tr,
+        'weak-password' => AppStrings.Settings.changePasswordTooShort.tr,
+        _ => appFirebaseError(e),
+      };
+    } catch (e) {
+      return appFirebaseError(e);
+    }
+  }
+
   Future<void> signOut() async {
     final uid = _authRepository.currentUser?.uid;
     if (uid != null && uid.isNotEmpty) {

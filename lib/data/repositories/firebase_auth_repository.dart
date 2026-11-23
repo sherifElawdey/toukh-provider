@@ -55,4 +55,28 @@ class FirebaseAuthRepository implements AuthRepository {
     }
     await user.delete();
   }
+
+  @override
+  Future<void> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    final user = _auth.currentUser;
+    final email = user?.email;
+    if (user == null || email == null || email.isEmpty) {
+      throw StateError('No signed-in user');
+    }
+    // The login address on the account itself, not one rebuilt from the
+    // profile phone (an admin may have moved the account to a new number).
+    await user.reauthenticateWithCredential(
+      EmailAuthProvider.credential(email: email, password: currentPassword),
+    );
+    await user.updatePassword(newPassword);
+    // Server keeps accountPasswords/{uid} and providers/{uid}.password in step.
+    syncAccountPassword(
+      app: ToukhAccountApp.provider,
+      password: newPassword,
+      source: ToukhPasswordSource.change,
+    );
+  }
 }

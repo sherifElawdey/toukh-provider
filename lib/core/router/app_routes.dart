@@ -52,6 +52,7 @@ abstract final class AppRoutes {
   static const settings = '/settings';
   static const notifications = '/notifications';
   static const shopRequests = '/shop-requests';
+  static const requestCourier = '/request-courier';
 
   static const legalTerms = '/legal/terms';
   static const legalPrivacy = '/legal/privacy';
@@ -117,6 +118,7 @@ abstract final class AppRoutes {
         matchedLocation == walletTransactions ||
         matchedLocation == reviews ||
         matchedLocation == manageDrivers ||
+        matchedLocation == requestCourier ||
         matchedLocation == ordersHistory ||
         matchedLocation == settingsGallery ||
         matchedLocation == settingsPharmacyGallery ||

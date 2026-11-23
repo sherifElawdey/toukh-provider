@@ -70,6 +70,9 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
   late String _locationAddress;
   bool _locationInServiceArea = true;
 
+  /// False until the location body has a pin (saved or the device fix).
+  bool _locationLocated = true;
+
   @override
   void initState() {
     super.initState();
@@ -191,6 +194,10 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
             if (!mounted || _locationInServiceArea == inArea) return;
             setState(() => _locationInServiceArea = inArea);
           },
+          onLocatedChanged: (located) {
+            if (!mounted || _locationLocated == located) return;
+            setState(() => _locationLocated = located);
+          },
         );
       case ReviewField.hours:
         return ReviewEditHoursBody(key: _hoursKey);
@@ -277,10 +284,12 @@ class _RegisterReviewEditSheetState extends State<_RegisterReviewEditSheet> {
                     SizedBox(height: AppSizes.spaceMd),
                     AppFilledButton(
                       text: AppStrings.Registration.reviewEditSave,
-                      status: _locationInServiceArea
+                      status: _locationInServiceArea && _locationLocated
                           ? AppButtonStatus.enabled
                           : AppButtonStatus.disabled,
-                      onTap: _locationInServiceArea ? _persistAndClose : null,
+                      onTap: _locationInServiceArea && _locationLocated
+                          ? _persistAndClose
+                          : null,
                     ),
                   ],
                 ),

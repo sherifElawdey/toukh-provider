@@ -12,7 +12,6 @@ import 'package:toukh_provider/domain/repositories/provider_home_service_request
 import 'package:toukh_provider/features/auth/cubit/auth_cubit.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/home_service_schedule_helpers.dart';
 import 'package:toukh_provider/features/home_service_requests/cubit/provider_home_service_requests_cubit.dart';
-import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_contact_customer.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_date_change_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_request_actions_sheet.dart';
 import 'package:toukh_provider/features/home_service_requests/presentation/widgets/home_service_submit_quote_sheet.dart';
@@ -196,12 +195,10 @@ class _HomeServiceRequestDetailBodyState
         final isBlockedOnMyWay =
             request.canMarkOnMyWay && hasOtherActiveOnMyWay;
         final canFinishVisit = request.isOnTheWay;
-        final showContactCustomer = request.isOverdueAccepted;
         final showBottomBar = canRespond ||
             canMarkOnMyWay ||
             isBlockedOnMyWay ||
-            canFinishVisit ||
-            showContactCustomer;
+            canFinishVisit;
         final created = request.createdAt;
         final statusLabel = _statusLabel(request.statusNormalized);
 
@@ -429,19 +426,7 @@ class _HomeServiceRequestDetailBodyState
                                           ? AppButtonStatus.loading
                                           : AppButtonStatus.enabled,
                                     )
-                                  : AppOutlinedButton(
-                                      text: AppStrings
-                                          .HomeServiceRequests.contactCustomer,
-                                      onTap: _busy
-                                          ? null
-                                          : () => contactHomeServiceCustomer(
-                                                context,
-                                                request,
-                                              ),
-                                      status: _busy
-                                          ? AppButtonStatus.disabled
-                                          : AppButtonStatus.enabled,
-                                    ),
+                                  : const SizedBox.shrink(),
                     ),
                   ),
                 )
@@ -580,7 +565,6 @@ class _HomeServiceRequestDetailBodyState
                             ? request.customerName!.trim()
                             : AppStrings
                                 .HomeServiceRequests.customerFallback.tr,
-                        phone: request.customerPhone,
                         photoUrl: request.customerPhotoUrl,
                         addressTitle:
                             request.startAddressTitle ?? request.addressTitle,
